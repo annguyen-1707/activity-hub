@@ -20,8 +20,8 @@ import lombok.experimental.FieldDefaults;
 public class ActivityLog {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    String id;
 
     @Column(name = "event_id", nullable = false, unique = true, length = 100)
     private String eventId;

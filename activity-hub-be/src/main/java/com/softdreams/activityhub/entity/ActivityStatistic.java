@@ -1,6 +1,7 @@
 package com.softdreams.activityhub.entity;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 import jakarta.persistence.*;
 
@@ -24,8 +25,8 @@ import lombok.experimental.FieldDefaults;
 public class ActivityStatistic {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    String id;
 
     @Column(name = "stat_date", nullable = false)
     private LocalDate statDate;
@@ -35,4 +36,27 @@ public class ActivityStatistic {
 
     @Column(name = "total_count", nullable = false)
     private Integer totalCount;
+
+    @Column(name = "unique_users", nullable = false)
+    private Integer uniqueUsers;
+
+    @Column(name = "success_count", nullable = false)
+    private Integer successCount;
+
+    @Column(name = "failed_count", nullable = false)
+    private Integer failedCount;
+
+    @Column(name = "updated_at", nullable = false)
+    private LocalDateTime updatedAt;
+
+    @PrePersist
+    protected void onCreate() {
+        LocalDateTime now = LocalDateTime.now();
+        updatedAt = now;
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        updatedAt = LocalDateTime.now();
+    }
 }

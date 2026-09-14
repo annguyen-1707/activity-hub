@@ -1,11 +1,15 @@
 package com.softdreams.activityhub.exception;
 
+import java.util.Arrays;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
+import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import jakarta.validation.ConstraintViolation;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -22,7 +26,7 @@ public class GlobalExceptionHandler {
     private static final String MIN_ATTRIBUTE = "min";
 
     @ExceptionHandler(value = Exception.class)
-    ResponseEntity<ApiResponse> handlingRuntimeException(RuntimeException exception) {
+    ResponseEntity<ApiResponse> handlingException(Exception exception) {
         log.error("Exception: ", exception);
         ApiResponse apiResponse = new ApiResponse();
 
@@ -38,7 +42,7 @@ public class GlobalExceptionHandler {
         ApiResponse apiResponse = new ApiResponse();
 
         apiResponse.setCode(errorCode.getCode());
-        apiResponse.setMessage(errorCode.getMessage());
+        apiResponse.setMessage(exception.getMessage());
 
         return ResponseEntity.status(errorCode.getStatusCode()).body(apiResponse);
     }
@@ -58,7 +62,7 @@ public class GlobalExceptionHandler {
     ResponseEntity<ApiResponse> handlingValidation(MethodArgumentNotValidException exception) {
         String enumKey = exception.getFieldError().getDefaultMessage();
 
-        ErrorCode errorCode = ErrorCode.INVALID_KEY;
+        ErrorCode errorCode = ErrorCode.INVALID_REQUEST_BODY;
         Map<String, Object> attributes = null;
         try {
             errorCode = ErrorCode.valueOf(enumKey);
@@ -83,6 +87,42 @@ public class GlobalExceptionHandler {
                         : errorCode.getMessage());
 
         return ResponseEntity.badRequest().body(apiResponse);
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    ResponseEntity<ApiResponse> handlingHttpMessageNotReadableException(
+            HttpMessageNotReadableException exception) {
+
+        Throwable cause = exception.getCause();
+
+        if (cause instanceof InvalidFormatException invalidFormatException
+                && invalidFormatException.getTargetType().isEnum()) {
+
+            String fieldName = invalidFormatException.getPath()
+                    .getFirst()
+                    .getFieldName();
+
+            String acceptedValues = Arrays.stream(
+                            invalidFormatException.getTargetType().getEnumConstants())
+                    .map(Object::toString)
+                    .collect(Collectors.joining(", "));
+
+            ErrorCode errorCode = ErrorCode.INVALID_ENUM_VALUE;
+
+            return ResponseEntity.status(errorCode.getStatusCode())
+                    .body(ApiResponse.builder()
+                            .code(errorCode.getCode())
+                            .message(fieldName + " must be one of: " + acceptedValues)
+                            .build());
+        }
+
+        ErrorCode errorCode = ErrorCode.INVALID_REQUEST_BODY;
+
+        return ResponseEntity.status(errorCode.getStatusCode())
+                .body(ApiResponse.builder()
+                        .code(errorCode.getCode())
+                        .message(errorCode.getMessage())
+                        .build());
     }
 
     private String mapAttribute(String message, Map<String, Object> attributes) {

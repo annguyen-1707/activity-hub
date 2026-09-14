@@ -3,6 +3,7 @@ package com.softdreams.activityhub.entity;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+import com.softdreams.activityhub.enums.PaymentMethodEnum;
 import jakarta.persistence.*;
 
 import lombok.*;
@@ -19,8 +20,8 @@ import lombok.experimental.FieldDefaults;
 public class Order {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    String id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
@@ -34,6 +35,15 @@ public class Order {
 
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
+
+    @Column(name = "payment_method", length = 30)
+    PaymentMethodEnum paymentMethod;
+
+    @Column(name = "shipping_address", length = 500)
+    String shippingAddress;
+
+    @Column(name = "note", length = 500)
+    String note;
 
     @PrePersist
     protected void onCreate() {

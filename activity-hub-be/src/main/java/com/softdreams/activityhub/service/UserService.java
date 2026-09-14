@@ -4,6 +4,8 @@ import java.util.HashSet;
 import java.util.List;
 
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PostAuthorize;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -83,10 +85,10 @@ public class UserService {
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    public List<UserResponse> getUsers() {
+    public Page<UserResponse> getUsers(Pageable pageable, String keyword) {
         log.info("In method get Users");
-        return userRepository.findAll().stream().map(userMapper::toUserResponse).toList();
-    }
+        return userRepository.searchUserByKeyword(pageable, keyword)
+                .map(userMapper::toUserResponse);    }
 
     @PreAuthorize("hasRole('ADMIN')")
     public UserResponse getUser(String id) {

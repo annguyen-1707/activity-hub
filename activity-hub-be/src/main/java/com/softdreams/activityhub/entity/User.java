@@ -29,6 +29,6 @@ public class User {
     LocalDate dob;
     String lastName;
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.LAZY)
     Set<Role> roles;
 }

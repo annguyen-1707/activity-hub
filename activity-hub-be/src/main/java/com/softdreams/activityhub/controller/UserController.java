@@ -4,6 +4,8 @@ import java.util.List;
 
 import jakarta.validation.Valid;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 
 import com.softdreams.activityhub.dto.request.ApiResponse;
@@ -33,9 +35,11 @@ public class UserController {
     }
 
     @GetMapping
-    ApiResponse<List<UserResponse>> getUsers() {
-        return ApiResponse.<List<UserResponse>>builder()
-                .result(userService.getUsers())
+    ApiResponse<Page<UserResponse>> getUsers(
+            Pageable pageable,
+            @RequestParam(required = false) String keyword) {
+        return ApiResponse.<Page<UserResponse>>builder()
+                .result(userService.getUsers(pageable, keyword))
                 .build();
     }
 

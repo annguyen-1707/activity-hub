@@ -1,0 +1,25 @@
+package com.softdreams.activityhub.mapper;
+
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
+
+import com.softdreams.activityhub.dto.request.OrderRequest;
+import com.softdreams.activityhub.dto.response.OrderResponse;
+import com.softdreams.activityhub.entity.Order;
+
+@Mapper(componentModel = "spring")
+public interface OrderMapper {
+    @Mapping(target = "user", ignore = true)
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "createdAt", ignore = true)
+    Order toOrder(OrderRequest request);
+
+    @Mapping(target = "userId", source = "user.id")
+    OrderResponse toOrderResponse(Order order);
+
+    @Mapping(target = "user", ignore = true)
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "createdAt", ignore = true)
+    void updateOrder(@MappingTarget Order order, OrderRequest request);
+}
