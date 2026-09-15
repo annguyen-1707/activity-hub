@@ -62,7 +62,6 @@ import { IconDirective } from '@coreui/icons-angular';
     DropdownItemDirective,
     DropdownMenuDirective,
     DropdownToggleDirective,
-    FormControlDirective,
     HeaderNavComponent,
     HeaderTogglerDirective,
     IconDirective,
@@ -71,11 +70,9 @@ import { IconDirective } from '@coreui/icons-angular';
     ModalBodyComponent,
     ModalComponent,
     ModalHeaderComponent,
-    ModalTitleDirective,
     NavLinkDirective,
     NgTemplateOutlet,
     RouterLink,
-    SearchButtonComponent,
     SidebarToggleDirective
   ]
 })

@@ -131,13 +131,13 @@ export const routes: Routes = [
           title: 'Progress'
         }
       },
-      {
-        path: 'search-button',
-        loadComponent: () => import('./search-button/search-button.component').then(m => m.AppSearchButtonComponent),
-        data: {
-          title: 'Search Button'
-        }
-      },
+      // {
+      //   path: 'search-button',
+      //   loadComponent: () => import('./search-button/search-button.component').then(m => m.AppSearchButtonComponent),
+      //   data: {
+      //     title: 'Search Button'
+      //   }
+      // },
       {
         path: 'spinners',
         loadComponent: () => import('./spinners/spinners.component').then(m => m.SpinnersComponent),

@@ -12,16 +12,10 @@
           <code>c-modal</code> you own.
         </p>
         <app-docs-example href="components/search-button#basic-example">
-          <c-search-button
-            (trigger)="basicVisible.set(true)"
-            aria-label="Open search dialog"
-            aria-controls="search-button-basic-example"
-          />
-          <c-modal
-            id="search-button-basic-example"
-            [(visible)]="basicVisible"
-            aria-labelledby="search-button-basic-example-title"
-          >
+          <c-search-button (trigger)="basicVisible.set(true)" aria-label="Open search dialog"
+            aria-controls="search-button-basic-example" />
+          <c-modal id="search-button-basic-example" [(visible)]="basicVisible"
+            aria-labelledby="search-button-basic-example-title">
             <c-modal-header>
               <h5 cModalTitle id="search-button-basic-example-title" class="w-100">
                 <input cFormControl type="search" placeholder="Search" aria-label="Search">
@@ -60,12 +54,8 @@
         </p>
         <app-docs-example href="components/search-button#custom-shortcut">
           <div>
-            <c-search-button
-              placeholder="Command palette"
-              shortcut="meta+i,ctrl+i"
-              (trigger)="triggerCount.update(value => value + 1)"
-              aria-label="Open command palette"
-            />
+            <c-search-button placeholder="Command palette" shortcut="meta+i,ctrl+i"
+              (trigger)="triggerCount.update(value => value + 1)" aria-label="Open command palette" />
             <c-alert color="info" class="mt-3 mb-0">
               Triggered {{ triggerCount() }} {{ triggerCount() === 1 ? 'time' : 'times' }} with click
               or shortcut.
@@ -85,17 +75,9 @@
           instead of a modal when you want a docked panel for quick navigation or command results.
         </p>
         <app-docs-example href="components/search-button#launch-an-offcanvas">
-          <c-search-button
-            (trigger)="offcanvasVisible.set(true)"
-            shortcut="meta+shift+o,ctrl+shift+o"
-            aria-label="Open search panel"
-            aria-controls="search-button-offcanvas-example"
-          />
-          <c-offcanvas
-            id="search-button-offcanvas-example"
-            placement="end"
-            [(visible)]="offcanvasVisible"
-          >
+          <c-search-button (trigger)="offcanvasVisible.set(true)" shortcut="meta+shift+o,ctrl+shift+o"
+            aria-label="Open search panel" aria-controls="search-button-offcanvas-example" />
+          <c-offcanvas id="search-button-offcanvas-example" placement="end" [(visible)]="offcanvasVisible">
             <c-offcanvas-header>
               <h5 cOffcanvasTitle>Search panel</h5>
               <button cButtonClose class="text-reset" (click)="offcanvasVisible.set(false)"></button>

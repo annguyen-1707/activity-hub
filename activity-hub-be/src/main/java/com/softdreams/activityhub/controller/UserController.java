@@ -63,7 +63,7 @@ public class UserController {
         return ApiResponse.<String>builder().result("User has been deleted").build();
     }
 
-    @PutMapping("/{userId}")
+    @PatchMapping("/{userId}")
     ApiResponse<UserResponse> updateUser(@PathVariable String userId, @RequestBody UserUpdateRequest request) {
         return ApiResponse.<UserResponse>builder()
                 .result(userService.updateUser(userId, request))

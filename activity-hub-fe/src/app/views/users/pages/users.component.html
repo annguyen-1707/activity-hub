@@ -1,0 +1,356 @@
+<div class="user-management">
+  <!-- Toast / Alert notification -->
+  @if (alertMessage()) {
+  <c-alert [color]="alertType()" [dismissible]="true" class="mb-3 d-flex align-items-center shadow-sm">
+    <svg cIcon [name]="alertType() === 'success' ? 'cilCheck' : 'cilBug'" class="me-2" size="lg"></svg>
+    <div>{{ alertMessage() }}</div>
+  </c-alert>
+  }
+
+  <c-card class="mb-4 shadow-sm border-0">
+    <c-card-header class="bg-body d-flex flex-wrap justify-content-between align-items-center py-3 border-bottom">
+      <div>
+        <h4 class="mb-1 fw-bold text-primary d-flex align-items-center">
+          <svg cIcon name="cilPeople" class="me-2"></svg>
+          Quản Lý Người Dùng
+        </h4>
+        <span class="text-body-secondary small">
+          Quản lý danh sách tài khoản, phân quyền và thông tin người dùng trong hệ thống.
+        </span>
+      </div>
+      <div class="mt-2 mt-md-0">
+        <button cButton color="primary" class="d-flex align-items-center shadow-sm" (click)="openCreateModal()">
+          <svg cIcon name="cilPlus" class="me-1"></svg>
+          Thêm người dùng mới
+        </button>
+      </div>
+    </c-card-header>
+
+    <c-card-body>
+      <!-- Filter and Search Toolbar -->
+      <c-row class="mb-3 g-2 align-items-center justify-content-between">
+        <c-col xs="12" md="6" lg="5">
+          <c-input-group>
+            <span cInputGroupText>
+              <svg cIcon name="cilMagnifyingGlass"></svg>
+            </span>
+            <input cFormControl placeholder="Tìm kiếm theo username, họ tên..." [ngModel]="keyword()"
+              (ngModelChange)="onKeywordChange($event)" (keyup.enter)="onSearch()" />
+            <button cButton color="primary" variant="outline" (click)="onSearch()">
+              Tìm kiếm
+            </button>
+          </c-input-group>
+        </c-col>
+
+        <c-col xs="12" md="6" lg="4" class="d-flex justify-content-md-end align-items-center gap-2">
+          <span class="text-body-secondary small text-nowrap">Hiển thị:</span>
+          <select cSelect class="form-select w-auto" [ngModel]="pageSize()" (ngModelChange)="onPageSizeChange($event)">
+            <option [value]="5">5 dòng</option>
+            <option [value]="10">10 dòng</option>
+            <option [value]="20">20 dòng</option>
+            <option [value]="50">50 dòng</option>
+          </select>
+
+          <button cButton color="secondary" variant="outline" (click)="loadUsers()" title="Tải lại danh sách">
+            <svg cIcon name="cilSpeedometer"></svg>
+          </button>
+        </c-col>
+      </c-row>
+
+      <!-- Users Table -->
+      <div class="table-responsive border rounded">
+        <table cTable hover class="align-middle mb-0">
+          <thead class="table-light">
+            <tr>
+              <th scope="col" class="text-center" style="width: 60px;">#</th>
+              <th scope="col">Người dùng</th>
+              <th scope="col">Tài khoản</th>
+              <th scope="col">Ngày sinh</th>
+              <th scope="col">Vai trò</th>
+              <th scope="col" class="text-center" style="width: 140px;">Thao tác</th>
+            </tr>
+          </thead>
+          <tbody>
+            @if (loading()) {
+            <tr>
+              <td colspan="6" class="text-center py-5">
+                <c-spinner color="primary" class="me-2"></c-spinner>
+                <span class="text-body-secondary">Đang tải dữ liệu...</span>
+              </td>
+            </tr>
+            } @else if (users().length === 0) {
+            <tr>
+              <td colspan="6" class="empty-state">
+                <div class="text-body-secondary my-3">
+                  <svg cIcon name="cilUser" size="3xl" class="mb-2 text-secondary opacity-50"></svg>
+                  <h6>Không tìm thấy người dùng nào</h6>
+                  <p class="small text-secondary mb-0">
+                    Thử tìm kiếm với từ khóa khác hoặc bấm nút "Thêm người dùng mới".
+                  </p>
+                </div>
+              </td>
+            </tr>
+            } @else {
+            @for (user of users(); track user.id; let i = $index) {
+            <tr>
+              <!-- Index -->
+              <td class="text-center text-body-secondary small fw-semibold">
+                {{ page() * pageSize() + i + 1 }}
+              </td>
+
+              <!-- Name & Avatar -->
+              <td>
+                <div class="d-flex align-items-center">
+                  <div class="avatar-initial me-3">
+                    {{ getUserInitials(user) }}
+                  </div>
+                  <div>
+                    <div class="fw-bold">{{ user.lastName }} {{ user.firstName }}</div>
+                  </div>
+                </div>
+              </td>
+
+              <!-- Username -->
+              <td>
+                <span class="badge bg-secondary-subtle text-secondary-emphasis font-monospace px-2 py-1">
+                  &#64;{{ user.username }}
+                </span>
+              </td>
+
+              <!-- Date of birth -->
+              <td>
+                @if (user.dob) {
+                <span>{{ user.dob }}</span>
+                } @else {
+                <span class="text-body-tertiary fst-italic">Chưa cập nhật</span>
+                }
+              </td>
+
+              <!-- Roles -->
+              <td>
+                @if (user.roles && user.roles.length > 0) {
+                @for (role of user.roles; track role.name) {
+                <c-badge [color]="getRoleBadgeColor(role.name)" class="role-badge">
+                  {{ role.name }}
+                </c-badge>
+                }
+                } @else {
+                <c-badge color="secondary" class="role-badge">USER</c-badge>
+                }
+              </td>
+
+              <!-- Actions -->
+              <td class="text-center">
+                <div class="btn-group btn-group-sm" role="group">
+                  <button cButton color="info" variant="outline" class="action-btn" (click)="openEditModal(user)"
+                    title="Chỉnh sửa thông tin">
+                    <svg cIcon name="cilPencil"></svg>
+                  </button>
+                  <button cButton color="danger" variant="outline" class="action-btn" (click)="openDeleteModal(user)"
+                    title="Xóa người dùng">
+                    <svg cIcon name="cilTrash"></svg>
+                  </button>
+                </div>
+              </td>
+            </tr>
+            }
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination Footer -->
+      @if (!loading() && users().length > 0) {
+      <div class="d-flex flex-wrap justify-content-between align-items-center mt-3 pt-2">
+        <div class="text-body-secondary small mb-2 mb-md-0">
+          Hiển thị <strong>{{ users().length }}</strong> trên tổng số <strong>{{ totalElements() }}</strong> người dùng
+          (Trang {{ page() + 1 }} / {{ totalPages() }})
+        </div>
+
+        <c-pagination align="end" class="mb-0">
+          <!-- First Page -->
+          <c-page-item [disabled]="page() === 0">
+            <a cPageLink (click)="goToPage(0)" aria-label="First">&laquo;</a>
+          </c-page-item>
+          <!-- Previous -->
+          <c-page-item [disabled]="page() === 0">
+            <a cPageLink (click)="goToPage(page() - 1)" aria-label="Previous">&lsaquo;</a>
+          </c-page-item>
+
+          <!-- Page numbers -->
+          @for (p of getPageNumbers(); track p) {
+          <c-page-item [active]="p === page()">
+            <a cPageLink (click)="goToPage(p)">{{ p + 1 }}</a>
+          </c-page-item>
+          }
+
+          <!-- Next -->
+          <c-page-item [disabled]="page() >= totalPages() - 1">
+            <a cPageLink (click)="goToPage(page() + 1)" aria-label="Next">&rsaquo;</a>
+          </c-page-item>
+          <!-- Last Page -->
+          <c-page-item [disabled]="page() >= totalPages() - 1">
+            <a cPageLink (click)="goToPage(totalPages() - 1)" aria-label="Last">&raquo;</a>
+          </c-page-item>
+        </c-pagination>
+      </div>
+      }
+    </c-card-body>
+  </c-card>
+</div>
+
+<!-- CREATE / EDIT USER MODAL                       -->
+<c-modal [visible]="modalVisible()" (visibleChange)="handleModalVisibleChange($event)" backdrop="static" id="userModal">
+  <c-modal-header>
+    <h5 cModalTitle class="d-flex align-items-center">
+      <svg cIcon [name]="isEditMode() ? 'cilPencil' : 'cilPlus'" class="me-2"></svg>
+      {{ isEditMode() ? 'Chỉnh Sửa Người Dùng' : 'Thêm Mới Người Dùng' }}
+    </h5>
+    <button (click)="closeModal()" cButtonClose></button>
+  </c-modal-header>
+
+  <c-modal-body>
+    <form [formGroup]="userForm" (ngSubmit)="saveUser()">
+      <!-- Username -->
+      <div class="mb-3">
+        <label cLabel for="username">Tên tài khoản (Username) <span class="text-danger">*</span></label>
+        <input cFormControl id="username" formControlName="username"
+          placeholder="Nhập tên tài khoản (tối thiểu 4 ký tự)"
+          [valid]="userForm.get('username')?.touched ? userForm.get('username')?.valid : undefined" />
+        @if (userForm.get('username')?.touched && userForm.get('username')?.invalid) {
+        <div class="text-danger small mt-1">
+          @if (userForm.get('username')?.hasError('required')) {
+          Vui lòng nhập tên tài khoản!
+          } @else if (userForm.get('username')?.hasError('minlength')) {
+          Tên tài khoản phải có ít nhất 4 ký tự!
+          }
+        </div>
+        }
+      </div>
+
+      <!-- Password -->
+      <div class="mb-3">
+        <label cLabel for="password">
+          Mật khẩu
+          @if (!isEditMode()) {
+          <span class="text-danger">*</span>
+          } @else {
+          <span class="text-body-secondary small">(Để trống nếu không đổi)</span>
+          }
+        </label>
+        <input cFormControl id="password" type="password" formControlName="password"
+          placeholder="Nhập mật khẩu (tối thiểu 6 ký tự)"
+          [valid]="userForm.get('password')?.touched ? userForm.get('password')?.valid : undefined" />
+        @if (userForm.get('password')?.touched && userForm.get('password')?.invalid) {
+        <div class="text-danger small mt-1">
+          @if (userForm.get('password')?.hasError('required')) {
+          Vui lòng nhập mật khẩu!
+          } @else if (userForm.get('password')?.hasError('minlength')) {
+          Mật khẩu phải có ít nhất 6 ký tự!
+          }
+        </div>
+        }
+      </div>
+
+      <!-- First Name & Last Name -->
+      <c-row class="mb-3 g-2">
+        <c-col md="6">
+          <label cLabel for="lastName">Họ đệm <span class="text-danger">*</span></label>
+          <input cFormControl id="lastName" formControlName="lastName" placeholder="Ví dụ: Nguyễn Văn"
+            [valid]="userForm.get('lastName')?.touched ? userForm.get('lastName')?.valid : undefined" />
+          @if (userForm.get('lastName')?.touched && userForm.get('lastName')?.invalid) {
+          <div class="text-danger small mt-1">Vui lòng nhập họ đệm!</div>
+          }
+        </c-col>
+
+        <c-col md="6">
+          <label cLabel for="firstName">Tên <span class="text-danger">*</span></label>
+          <input cFormControl id="firstName" formControlName="firstName" placeholder="Ví dụ: An"
+            [valid]="userForm.get('firstName')?.touched ? userForm.get('firstName')?.valid : undefined" />
+          @if (userForm.get('firstName')?.touched && userForm.get('firstName')?.invalid) {
+          <div class="text-danger small mt-1">Vui lòng nhập tên!</div>
+          }
+        </c-col>
+      </c-row>
+
+      <!-- Date of Birth -->
+      <div class="mb-3">
+        <label cLabel for="dob">Ngày sinh</label>
+        <input cFormControl id="dob" type="date" formControlName="dob" />
+      </div>
+
+      <!-- Roles (in Edit Mode) -->
+      @if (isEditMode()) {
+      <div class="mb-3">
+        <label cLabel class="d-block mb-2">Phân quyền / Vai trò</label>
+        <div class="d-flex flex-wrap gap-3 p-2 bg-body-tertiary rounded border">
+          @for (role of roles(); track role.name) {
+          <c-form-check>
+            <input cFormCheckInput type="checkbox" [id]="'role_' + role.name" [checked]="isRoleSelected(role.name)"
+              (change)="toggleRole(role.name)" />
+            <label cFormCheckLabel [for]="'role_' + role.name" class="fw-semibold">
+              {{ role.name }}
+              <span class="text-body-secondary small fw-normal">({{ role.description || role.name }})</span>
+            </label>
+          </c-form-check>
+          }
+        </div>
+      </div>
+      }
+    </form>
+  </c-modal-body>
+
+  <c-modal-footer>
+    <button (click)="closeModal()" cButton color="secondary" variant="outline" [disabled]="saving()">
+      Hủy bỏ
+    </button>
+    <button (click)="saveUser()" cButton color="primary" [disabled]="saving() || userForm.invalid">
+      @if (saving()) {
+      <c-spinner size="sm" class="me-1"></c-spinner>
+      Đang lưu...
+      } @else {
+      <svg cIcon name="cilCheck" class="me-1"></svg>
+      {{ isEditMode() ? 'Lưu thay đổi' : 'Tạo người dùng' }}
+      }
+    </button>
+  </c-modal-footer>
+</c-modal>
+
+<!-- ============================================== -->
+<!-- DELETE CONFIRMATION MODAL                      -->
+<!-- ============================================== -->
+<c-modal [visible]="deleteModalVisible()" (visibleChange)="handleDeleteModalVisibleChange($event)" backdrop="static"
+  id="deleteModal">
+  <c-modal-header class="bg-danger-subtle text-danger">
+    <h5 cModalTitle class="d-flex align-items-center">
+      <svg cIcon name="cilTrash" class="me-2"></svg>
+      Xác Nhận Xóa Người Dùng
+    </h5>
+    <button (click)="closeDeleteModal()" cButtonClose></button>
+  </c-modal-header>
+
+  <c-modal-body>
+    <p class="mb-2">
+      Bạn có chắc chắn muốn xóa tài khoản <strong>{{ selectedUser()?.username }}</strong>
+      ({{ selectedUser()?.lastName }} {{ selectedUser()?.firstName }}) không?
+    </p>
+    <p class="text-danger small mb-0">
+      * Hành động này không thể hoàn tác. Mọi dữ liệu liên quan đến người dùng này sẽ bị xóa khỏi hệ thống.
+    </p>
+  </c-modal-body>
+
+  <c-modal-footer>
+    <button (click)="closeDeleteModal()" cButton color="secondary" variant="outline" [disabled]="deleting()">
+      Hủy
+    </button>
+    <button (click)="confirmDelete()" cButton color="danger" [disabled]="deleting()">
+      @if (deleting()) {
+      <c-spinner size="sm" class="me-1"></c-spinner>
+      Đang xóa...
+      } @else {
+      <svg cIcon name="cilTrash" class="me-1"></svg>
+      Xác nhận xóa
+      }
+    </button>
+  </c-modal-footer>
+</c-modal>

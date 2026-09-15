@@ -1,23 +1,17 @@
 <!--<c-header class="mb-4 d-print-none" position="sticky">-->
 <ng-container>
   <c-container [fluid]="true" class="border-bottom px-4">
-    <button
-      [cSidebarToggle]="sidebarId()"
-      aria-label="Toggle sidebar navigation"
-      cHeaderToggler
-      class="btn"
-      style="margin-inline-start: -14px"
-      toggle="visible"
-    >
+    <button [cSidebarToggle]="sidebarId()" aria-label="Toggle sidebar navigation" cHeaderToggler class="btn"
+      style="margin-inline-start: -14px" toggle="visible">
       <svg cIcon name="cilMenu" size="lg"></svg>
     </button>
-    <c-search-button
+    <!-- <c-search-button
       (trigger)="searchVisible.set(true)"
       aria-controls="app-header-search-modal"
       aria-label="Open search dialog"
       class="d-none d-sm-flex"
       shortcut="meta+k,ctrl+k"
-    />
+    /> -->
     <c-header-nav class="d-none d-md-flex ms-auto">
       <a cNavLink>
         <svg cIcon class="my-1" name="cilBell" size="lg"></svg>
@@ -50,43 +44,30 @@
 </ng-container>
 <!--</c-header>-->
 
-<c-modal
-  [(visible)]="searchVisible"
-  aria-labelledby="app-header-search-modal-title"
-  id="app-header-search-modal"
-  portal
->
+<c-modal [(visible)]="searchVisible" aria-labelledby="app-header-search-modal-title" id="app-header-search-modal"
+  portal>
   <c-modal-header>
-    <h5 cModalTitle class="w-100" id="app-header-search-modal-title">
+    <!-- <h5 cModalTitle class="w-100" id="app-header-search-modal-title">
       <input
         aria-label="Search"
         cFormControl
         placeholder="Search"
         type="search"
       />
-    </h5>
+    </h5> -->
   </c-modal-header>
   <c-modal-body>
     <p class="text-body-secondary small mb-2">Recent searches</p>
     <div cListGroup flush>
-      <button
-        cListGroupItem
-        class="d-flex justify-content-between align-items-center"
-      >
+      <button cListGroupItem class="d-flex justify-content-between align-items-center">
         CoreUI components overview
         <c-badge color="secondary" shape="rounded-pill">Open</c-badge>
       </button>
-      <button
-        cListGroupItem
-        class="d-flex justify-content-between align-items-center"
-      >
+      <button cListGroupItem class="d-flex justify-content-between align-items-center">
         Modal dialog examples
         <c-badge color="secondary" shape="rounded-pill">Open</c-badge>
       </button>
-      <button
-        cListGroupItem
-        class="d-flex justify-content-between align-items-center"
-      >
+      <button cListGroupItem class="d-flex justify-content-between align-items-center">
         Sidebar navigation customization
         <c-badge color="secondary" shape="rounded-pill">Open</c-badge>
       </button>
@@ -95,31 +76,14 @@
 </c-modal>
 
 <ng-template #userDropdown>
-  <c-dropdown
-    [popperOptions]="{ placement: 'bottom-start' }"
-    variant="nav-item"
-  >
-    <button
-      [caret]="false"
-      aria-label="Open user menu"
-      cDropdownToggle
-      class="py-0 pe-0"
-    >
-      <c-avatar
-        alt="User avatar"
-        shape="rounded-1"
-        size="md"
-        src="./assets/images/avatars/8.jpg"
-        status="success"
-        textColor="primary"
-      />
+  <c-dropdown [popperOptions]="{ placement: 'bottom-start' }" variant="nav-item">
+    <button [caret]="false" aria-label="Open user menu" cDropdownToggle class="py-0 pe-0">
+      <c-avatar alt="User avatar" shape="rounded-1" size="md" src="./assets/images/avatars/8.jpg" status="success"
+        textColor="primary" />
     </button>
     <ul cDropdownMenu class="pt-0 w-auto">
       <li>
-        <h6
-          cDropdownHeader
-          class="bg-body-secondary text-body-secondary fw-semibold py-2 rounded-top"
-        >
+        <h6 cDropdownHeader class="bg-body-secondary text-body-secondary fw-semibold py-2 rounded-top">
           Account
         </h6>
       </li>
@@ -152,10 +116,7 @@
         </a>
       </li>
       <li>
-        <h6
-          cDropdownHeader
-          class="bg-body-secondary text-body-secondary fw-semibold py-2"
-        >
+        <h6 cDropdownHeader class="bg-body-secondary text-body-secondary fw-semibold py-2">
           Settings
         </h6>
       </li>
@@ -212,15 +173,11 @@
     </button>
     <div cDropdownMenu>
       @for (mode of colorModes; track mode.name) {
-        <button
-          (click)="colorMode.set(mode.name)"
-          [active]="colorMode() === mode.name"
-          cDropdownItem
-          class="d-flex align-items-center"
-        >
-          <svg [name]="mode.icon" cIcon class="me-2" size="lg"></svg>
-          {{ mode.text }}
-        </button>
+      <button (click)="colorMode.set(mode.name)" [active]="colorMode() === mode.name" cDropdownItem
+        class="d-flex align-items-center">
+        <svg [name]="mode.icon" cIcon class="me-2" size="lg"></svg>
+        {{ mode.text }}
+      </button>
       }
     </div>
   </c-dropdown>

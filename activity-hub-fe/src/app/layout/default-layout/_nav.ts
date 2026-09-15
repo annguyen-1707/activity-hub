@@ -11,6 +11,11 @@ export const navItems: INavData[] = [
     }
   },
   {
+    name: 'Quản lý người dùng',
+    url: '/users',
+    iconComponent: { name: 'cil-people' },
+  },
+  {
     title: true,
     name: 'UI Elements'
   },

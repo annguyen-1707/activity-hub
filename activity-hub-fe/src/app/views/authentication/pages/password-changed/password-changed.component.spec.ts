@@ -1,23 +1,24 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideRouter } from '@angular/router';
 import { IconSetService } from '@coreui/icons-angular';
-import { iconSubset } from '../../../icons/icon-subset';
-import { ChangePasswordComponent } from './change-password.component';
+import { iconSubset } from '../../../../icons/icon-subset';
+import { PasswordChangedComponent } from './password-changed.component';
 
-describe('ChangePasswordComponent', () => {
-  let component: ChangePasswordComponent;
-  let fixture: ComponentFixture<ChangePasswordComponent>;
+describe('PasswordChangedComponent', () => {
+  let component: PasswordChangedComponent;
+  let fixture: ComponentFixture<PasswordChangedComponent>;
   let iconSetService: IconSetService;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [ChangePasswordComponent],
-      providers: [IconSetService]
+      imports: [PasswordChangedComponent],
+      providers: [IconSetService, provideRouter([])]
     }).compileComponents();
 
     iconSetService = TestBed.inject(IconSetService);
     iconSetService.icons = { ...iconSubset };
 
-    fixture = TestBed.createComponent(ChangePasswordComponent);
+    fixture = TestBed.createComponent(PasswordChangedComponent);
     component = fixture.componentInstance;
     await fixture.whenStable();
   });

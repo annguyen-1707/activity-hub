@@ -14,21 +14,21 @@ export const routes: Routes = [
       },
       {
         path: 'login',
-        loadComponent: () => import('./login/login.component').then(m => m.LoginComponent),
+        loadComponent: () => import('./pages/login/login.component').then(m => m.LoginComponent),
         data: {
           title: 'Login'
         }
       },
       {
         path: 'register',
-        loadComponent: () => import('./register/register.component').then(m => m.RegisterComponent),
+        loadComponent: () => import('./pages/register/register.component').then(m => m.RegisterComponent),
         data: {
           title: 'Register'
         }
       },
       {
         path: 'check-email',
-        loadComponent: () => import('./check-email/check-email.component').then(m => m.CheckEmailComponent),
+        loadComponent: () => import('./pages/check-email/check-email.component').then(m => m.CheckEmailComponent),
         data: {
           title: 'Check Email'
         }
@@ -38,21 +38,21 @@ export const routes: Routes = [
         children: [
           {
             path: 'reset',
-            loadComponent: () => import('./reset-password/reset-password.component').then(m => m.ResetPasswordComponent),
+            loadComponent: () => import('./pages/reset-password/reset-password.component').then(m => m.ResetPasswordComponent),
             data: {
               title: 'Reset Password'
             }
           },
           {
             path: 'change',
-            loadComponent: () => import('./change-password/change-password.component').then(m => m.ChangePasswordComponent),
+            loadComponent: () => import('./pages/change-password/change-password.component').then(m => m.ChangePasswordComponent),
             data: {
               title: 'Change Password'
             }
           },
           {
             path: 'changed',
-            loadComponent: () => import('./password-changed/password-changed.component').then(m => m.PasswordChangedComponent),
+            loadComponent: () => import('./pages/password-changed/password-changed.component').then(m => m.PasswordChangedComponent),
             data: {
               title: 'Password Changed'
             }

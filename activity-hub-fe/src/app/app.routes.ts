@@ -1,4 +1,5 @@
 import { Routes } from '@angular/router';
+import {authGuard} from './core/guards/auth.guard';
 
 export const routes: Routes = [
   {
@@ -15,29 +16,44 @@ export const routes: Routes = [
     children: [
       {
         path: 'dashboard',
-        loadChildren: () => import('./views/dashboard/routes').then((m) => m.routes)
+        loadChildren: () => import('./views/dashboard/routes').then((m) => m.routes),
+        canActivate : [authGuard],
+      },
+      {
+        path: 'users',
+        loadChildren: () => import('./views/users/routes').then((m) => m.routes),
+        canActivate : [authGuard],
       },
       {
         path: 'components',
-        loadChildren: () => import('./views/components/routes').then((m) => m.routes)
+        loadChildren: () => import('./views/components/routes').then((m) => m.routes),
       },
       {
         path: 'forms',
-        loadChildren: () => import('./views/forms/routes').then((m) => m.routes)
+        loadChildren: () => import('./views/forms/routes').then((m) => m.routes),
+        canActivate : [authGuard],
       },
       {
         path: 'icons',
-        loadChildren: () => import('./views/icons/routes').then((m) => m.routes)
+        loadChildren: () => import('./views/icons/routes').then((m) => m.routes),
+        canActivate : [authGuard],
       },
       {
         path: 'widgets',
-        loadChildren: () => import('./views/widgets/routes').then((m) => m.routes)
+        loadChildren: () => import('./views/widgets/routes').then((m) => m.routes),
+        canActivate : [authGuard],
       },
       {
         path: 'charts',
-        loadChildren: () => import('./views/charts/routes').then((m) => m.routes)
+        loadChildren: () => import('./views/charts/routes').then((m) => m.routes),
+        canActivate : [authGuard],
       }
     ]
+  },
+  {
+    path: 'login',
+    redirectTo: 'authentication/login',
+    pathMatch: 'full'
   },
   {
     path: 'authentication',

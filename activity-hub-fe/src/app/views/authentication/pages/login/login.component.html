@@ -8,10 +8,16 @@
         <c-card class="p-4">
           <c-card-body class="d-flex flex-column gap-4">
             <h2 class="h5 text-center mb-0">Login to your account</h2>
-            <form cForm cRow class="gy-3">
+            @if (errorMessage()) {
+              <c-alert color="danger" class="py-2 mb-0">
+                <div class="small">{{ errorMessage() }}</div>
+              </c-alert>
+            }
+            <form cForm cRow class="gy-3" [formGroup]="loginForm" (ngSubmit)="handleLogin()">
               <c-col xs="12">
-                <label cLabel for="email">Email address</label>
-                <input autocomplete="email" cFormControl id="email" placeholder="your@email.com" type="email" />
+                <label cLabel for="username">Username</label>
+                <input formControlName="username"
+                       autocomplete="username" cFormControl id="username" placeholder="Your username" type="text"/>
               </c-col>
               <c-col xs="12">
                 <div class="d-flex justify-content-between">
@@ -19,7 +25,9 @@
                   <a routerLink="/authentication/password/reset">I forgot password</a>
                 </div>
                 <c-input-group>
-                  <input autocomplete="current-password" cFormControl id="password" placeholder="Your password" type="password" />
+                  <input formControlName="password"
+                         autocomplete="current-password" cFormControl id="password" placeholder="Your password"
+                         type="password"/>
                   <span cInputGroupText>
                     <button cButton cTooltip="Show password" class="p-0 link-secondary" color="link" type="button">
                       <svg cIcon name="eye" size="sm"></svg>
@@ -29,17 +37,26 @@
               </c-col>
               <c-col xs="12">
                 <c-form-check>
-                  <input cFormCheckInput id="rememberMe" type="checkbox" />
+                  <input cFormCheckInput id="rememberMe" type="checkbox"/>
                   <label cFormCheckLabel for="rememberMe">Remember me on this device</label>
                 </c-form-check>
               </c-col>
               <c-col xs="12">
                 <button cButton class="w-100" color="primary" type="submit">Sign in</button>
+                <button cButton class="w-100" color="primary" type="submit" [disabled]="loading()">
+                  @if (loading()) {
+                    <c-spinner size="sm" class="me-1"></c-spinner>
+                    Đang đăng nhập...
+                  } @else {
+                    Sign in
+                  }
+                </button>
               </c-col>
             </form>
             <div class="position-relative">
-              <hr />
-              <div class="position-absolute top-50 start-50 translate-middle bg-body px-2 text-body-tertiary text-uppercase small">
+              <hr/>
+              <div
+                class="position-absolute top-50 start-50 translate-middle bg-body px-2 text-body-tertiary text-uppercase small">
                 or
               </div>
             </div>
@@ -66,4 +83,3 @@
     </c-col>
   </c-row>
 </c-container>
-
