@@ -1,156 +1,299 @@
 <div class="order-list-page">
-  <!-- Header Banner -->
-  <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 pb-2 border-bottom">
-    <div>
-      <h3 class="fw-bold text-primary mb-1 d-flex align-items-center">
-        <svg cIcon name="cilNotes" class="me-2"></svg>
-        Danh Sách Đơn Hàng
-      </h3>
-      <p class="text-body-secondary mb-0 small">
-        Theo dõi toàn bộ đơn hàng và các mặt hàng (OrderLines) đã được lưu vào cơ sở dữ liệu.
-      </p>
+  <!-- Sub-Navigation Bar & Page Header -->
+  <div class="orders-nav-tabs d-flex flex-wrap align-items-center justify-content-between p-2 rounded-4 bg-body shadow-sm mb-4 border">
+    <div class="d-flex gap-2">
+      <a routerLink="/orders/create" class="tab-btn d-flex align-items-center gap-2 px-3 py-2 rounded-3 text-decoration-none fw-semibold text-body-secondary">
+        <svg cIcon name="cilBasket" size="sm"></svg>
+        <span>Bán Hàng / Sản Phẩm</span>
+      </a>
+      <a routerLink="/orders/checkout" class="tab-btn d-flex align-items-center gap-2 px-3 py-2 rounded-3 text-decoration-none fw-semibold text-body-secondary">
+        <svg cIcon name="cilCart" size="sm"></svg>
+        <span>Giỏ Hàng & Thanh Toán</span>
+      </a>
+      <a routerLink="/orders/list" class="tab-btn active d-flex align-items-center gap-2 px-3 py-2 rounded-3 text-decoration-none fw-semibold">
+        <svg cIcon name="cilNotes" size="sm"></svg>
+        <span>Danh Sách Đơn Hàng</span>
+        <span class="badge bg-primary text-white rounded-pill px-2">{{ totalOrdersCount() }}</span>
+      </a>
     </div>
+
     <div class="mt-2 mt-md-0">
-      <a cButton color="primary" routerLink="/orders/create" class="d-flex align-items-center shadow-sm">
-        <svg cIcon name="cilBasket" class="me-1"></svg>
-        Tạo đơn hàng mới
+      <a cButton color="primary" size="sm" routerLink="/orders/create" class="rounded-pill px-3 shadow-sm d-flex align-items-center gap-1">
+        <svg cIcon name="cilPlus" size="sm"></svg>
+        <span>Tạo đơn hàng mới</span>
       </a>
     </div>
   </div>
 
-  <c-card class="border-0 shadow-sm mb-4">
-    <c-card-header class="bg-body d-flex flex-wrap justify-content-between align-items-center py-3 border-bottom">
-      <div class="fw-bold text-body">
-        Lịch sử đơn hàng ({{ totalElements() }} đơn)
-      </div>
+  <!-- KPI METRICS SUMMARY ROW -->
+  <c-row class="g-3 mb-4">
+    <!-- Total Orders -->
+    <c-col sm="6" xl="3">
+      <c-card class="border-0 shadow-sm rounded-4 stat-card h-100 p-3">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <div class="text-body-secondary small fw-medium">Tổng Đơn Hàng</div>
+            <div class="fs-4 fw-bold text-body mt-1">{{ totalOrdersCount() }}</div>
+          </div>
+          <div class="stat-icon-wrapper bg-primary-subtle text-primary rounded-3 p-2">
+            <svg cIcon name="cilNotes" size="xl"></svg>
+          </div>
+        </div>
+      </c-card>
+    </c-col>
 
-      <div class="d-flex gap-2">
-        <button cButton color="secondary" variant="outline" size="sm" (click)="loadOrders()" title="Tải lại">
-          <svg cIcon name="cilSpeedometer" class="me-1"></svg>
-          Làm mới
-        </button>
-      </div>
-    </c-card-header>
+    <!-- Completed Orders -->
+    <c-col sm="6" xl="3">
+      <c-card class="border-0 shadow-sm rounded-4 stat-card h-100 p-3">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <div class="text-body-secondary small fw-medium">Đã Hoàn Thành</div>
+            <div class="fs-4 fw-bold text-success mt-1">{{ completedOrdersCount() }}</div>
+          </div>
+          <div class="stat-icon-wrapper bg-success-subtle text-success rounded-3 p-2">
+            <svg cIcon name="cilCheckCircle" size="xl"></svg>
+          </div>
+        </div>
+      </c-card>
+    </c-col>
 
-    <c-card-body>
-      <!-- Search Toolbar -->
-      <c-row class="mb-3">
-        <c-col md="6" xs="12">
-          <c-input-group>
-            <span cInputGroupText>
-              <svg cIcon name="cilMagnifyingGlass"></svg>
+    <!-- Pending Orders -->
+    <c-col sm="6" xl="3">
+      <c-card class="border-0 shadow-sm rounded-4 stat-card h-100 p-3">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <div class="text-body-secondary small fw-medium">Đang Xử Lý</div>
+            <div class="fs-4 fw-bold text-warning mt-1">{{ pendingOrdersCount() }}</div>
+          </div>
+          <div class="stat-icon-wrapper bg-warning-subtle text-warning rounded-3 p-2">
+            <svg cIcon name="cilClock" size="xl"></svg>
+          </div>
+        </div>
+      </c-card>
+    </c-col>
+
+    <!-- Total Revenue -->
+    <c-col sm="6" xl="3">
+      <c-card class="border-0 shadow-sm rounded-4 stat-card h-100 p-3">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <div class="text-body-secondary small fw-medium">Tổng Doanh Thu</div>
+            <div class="fs-5 fw-bold text-danger mt-1">{{ formatCurrency(totalRevenueSum()) }}</div>
+          </div>
+          <div class="stat-icon-wrapper bg-info-subtle text-info rounded-3 p-2">
+            <svg cIcon name="cilDollar" size="xl"></svg>
+          </div>
+        </div>
+      </c-card>
+    </c-col>
+  </c-row>
+
+  <!-- FILTERS & TABLE CARD -->
+  <c-card class="border-0 shadow-sm rounded-4 overflow-hidden mb-4">
+    <!-- Toolbar Header -->
+    <c-card-header class="bg-body py-3 px-4 border-bottom">
+      <c-row class="g-3 align-items-center justify-content-between">
+        <!-- Search Input -->
+        <c-col md="5" xs="12">
+          <c-input-group size="sm">
+            <span cInputGroupText class="bg-body-secondary border-end-0">
+              <svg cIcon name="cilMagnifyingGlass" class="text-body-secondary" size="sm"></svg>
             </span>
             <input
               cFormControl
-              placeholder="Tìm kiếm theo mã đơn, địa chỉ giao hàng..."
+              placeholder="Tìm theo mã đơn, địa chỉ..."
+              class="border-start-0"
               [ngModel]="keyword()"
               (ngModelChange)="onKeywordChange($event)"
               (keyup.enter)="onSearch()"
             />
-            <button cButton color="primary" variant="outline" (click)="onSearch()">
-              Tìm kiếm
+            @if (keyword()) {
+            <button class="btn btn-outline-secondary border-start-0 bg-transparent" (click)="keyword.set(''); onSearch()">
+              <svg cIcon name="cilX" size="sm"></svg>
             </button>
+            }
           </c-input-group>
         </c-col>
-      </c-row>
 
-      <!-- Orders Table -->
-      <div class="table-responsive border rounded">
-        <table cTable hover class="align-middle mb-0">
+        <!-- Dropdown Filters -->
+        <c-col md="7" xs="12">
+          <div class="d-flex flex-wrap gap-2 justify-content-md-end align-items-center">
+            <!-- Status Filter -->
+            <select
+              cSelect
+              size="sm"
+              class="form-select-sm w-auto rounded-3"
+              [ngModel]="statusFilter()"
+              (ngModelChange)="statusFilter.set($event)"
+            >
+              <option value="ALL">Tất cả trạng thái</option>
+              <option value="CREATED">Mới tạo</option>
+              <option value="CONFIRMED">Đang chuẩn bị</option>
+              <option value="COMPLETED">Hoàn thành</option>
+              <option value="CANCELLED">Đã hủy</option>
+            </select>
+
+            <!-- Payment Filter -->
+            <select
+              cSelect
+              size="sm"
+              class="form-select-sm w-auto rounded-3"
+              [ngModel]="paymentFilter()"
+              (ngModelChange)="paymentFilter.set($event)"
+            >
+              <option value="ALL">Tất cả thanh toán</option>
+              <option value="BANK">Chuyển khoản</option>
+              <option value="CASH">Tiền mặt (COD)</option>
+            </select>
+
+            <!-- Refresh Button -->
+            <button
+              cButton
+              color="secondary"
+              variant="outline"
+              size="sm"
+              class="rounded-3 d-flex align-items-center gap-1"
+              (click)="loadOrders()"
+              title="Tải lại dữ liệu"
+              [disabled]="loading()"
+            >
+              <svg cIcon name="cilSpeedometer" size="sm"></svg>
+              <span>Làm mới</span>
+            </button>
+          </div>
+        </c-col>
+      </c-row>
+    </c-card-header>
+
+    <!-- Table Body -->
+    <c-card-body class="p-0">
+      <div class="table-responsive">
+        <table cTable hover class="align-middle mb-0 orders-table">
           <thead class="table-light">
             <tr>
-              <th scope="col" class="text-center" style="width: 50px;">#</th>
-              <th scope="col">Mã đơn hàng</th>
-              <th scope="col">Thời gian tạo</th>
-              <th scope="col">Địa chỉ giao hàng</th>
-              <th scope="col">Thanh toán</th>
-              <th scope="col">Trạng thái</th>
-              <th scope="col" class="text-end">Tổng tiền</th>
-              <th scope="col" class="text-center" style="width: 100px;">Chi tiết</th>
+              <th scope="col" class="text-center ps-4" style="width: 50px;">#</th>
+              <th scope="col">Mã Đơn Hàng</th>
+              <th scope="col">Thời Gian Tạo</th>
+              <th scope="col">Địa Chỉ Giao Hàng</th>
+              <th scope="col">Thanh Toán</th>
+              <th scope="col">Trạng Thái</th>
+              <th scope="col" class="text-center">Mặt Hàng</th>
+              <th scope="col" class="text-end">Tổng Tiền</th>
+              <th scope="col" class="text-center pe-4" style="width: 110px;">Thao Tác</th>
             </tr>
           </thead>
           <tbody>
             @if (loading()) {
             <tr>
-              <td colspan="8" class="text-center py-5">
+              <td colspan="9" class="text-center py-5">
                 <c-spinner color="primary" class="me-2"></c-spinner>
-                <span class="text-body-secondary">Đang tải danh sách đơn hàng...</span>
+                <span class="text-body-secondary">Đang tải dữ liệu từ máy chủ...</span>
               </td>
             </tr>
-            } @else if (orders().length === 0) {
+            } @else if (filteredOrders().length === 0) {
             <tr>
-              <td colspan="8" class="text-center py-5">
-                <svg cIcon name="cilNotes" size="3xl" class="text-secondary opacity-50 mb-2"></svg>
-                <h6>Chưa có đơn hàng nào trong hệ thống</h6>
+              <td colspan="9" class="text-center py-5">
+                <div class="empty-icon mx-auto mb-2 text-body-tertiary">
+                  <svg cIcon name="cilNotes" size="3xl"></svg>
+                </div>
+                <h6 class="fw-bold">Không có đơn hàng nào</h6>
                 <p class="text-body-secondary small mb-3">
-                  Hãy vào trang "Bán hàng" để tạo đơn hàng mẫu đầu tiên.
+                  Chưa có đơn hàng nào khớp với bộ lọc hiện tại.
                 </p>
-                <a cButton color="primary" size="sm" routerLink="/orders/create">
-                  Đến trang bán hàng
+                <a cButton color="primary" size="sm" class="rounded-pill px-4" routerLink="/orders/create">
+                  Tạo đơn hàng ngay
                 </a>
               </td>
             </tr>
             } @else {
-            @for (order of orders(); track order.id; let i = $index) {
-            <tr>
-              <td class="text-center text-body-secondary small fw-semibold">
+            @for (order of filteredOrders(); track order.id; let i = $index) {
+            <tr class="order-row">
+              <td class="text-center text-body-secondary small fw-semibold ps-4">
                 {{ page() * pageSize() + i + 1 }}
               </td>
 
-              <!-- Order ID -->
+              <!-- Order ID with Copy -->
               <td>
-                <span class="badge bg-secondary-subtle text-secondary-emphasis font-monospace px-2 py-1">
-                  {{ order.id ? (order.id.slice(0, 8) + '...') : ('#ORD-' + (i + 1)) }}
-                </span>
+                <div class="d-flex align-items-center gap-1">
+                  <span class="badge bg-body-secondary text-body font-monospace px-2 py-1 border" [title]="order.id">
+                    #{{ order.id ? order.id.slice(0, 8) : ('ORD-' + (i + 1)) }}
+                  </span>
+                  <button
+                    type="button"
+                    class="btn btn-link text-body-tertiary p-0 border-0 copy-btn"
+                    (click)="copyOrderId(order.id)"
+                    [title]="copiedId() === order.id ? 'Đã sao chép!' : 'Sao chép mã đơn'"
+                  >
+                    <svg cIcon [name]="copiedId() === order.id ? 'cilCheck' : 'cilCopy'" size="sm" [class.text-success]="copiedId() === order.id"></svg>
+                  </button>
+                </div>
               </td>
 
               <!-- Created At -->
-              <td class="small text-nowrap">
+              <td class="small text-nowrap text-body-secondary">
                 {{ formatDate(order.createdAt) }}
               </td>
 
               <!-- Shipping Address -->
               <td>
-                <div class="small text-truncate" style="max-width: 250px;" [title]="order.shippingAddress">
+                <div class="small fw-medium text-truncate" style="max-width: 220px;" [title]="order.shippingAddress">
                   {{ order.shippingAddress || '—' }}
                 </div>
                 @if (order.note) {
-                <div class="text-body-secondary fst-italic small text-truncate" style="max-width: 250px;">
-                  Ghi chú: {{ order.note }}
+                <div class="text-body-secondary fst-italic small text-truncate" style="max-width: 220px;" [title]="order.note">
+                  "{{ order.note }}"
                 </div>
                 }
               </td>
 
               <!-- Payment Method -->
               <td>
-                <c-badge [color]="order.paymentMethod === 'BANK' ? 'info' : 'warning'">
-                  {{ order.paymentMethod === 'BANK' ? 'Chuyển khoản' : 'Tiền mặt' }}
-                </c-badge>
+                <span class="badge rounded-pill d-inline-flex align-items-center gap-1 px-2 py-1"
+                  [class.bg-info-subtle]="order.paymentMethod === 'BANK'"
+                  [class.text-info]="order.paymentMethod === 'BANK'"
+                  [class.border]="true"
+                  [class.border-info-subtle]="order.paymentMethod === 'BANK'"
+                  [class.bg-warning-subtle]="order.paymentMethod === 'CASH'"
+                  [class.text-warning]="order.paymentMethod === 'CASH'"
+                  [class.border-warning-subtle]="order.paymentMethod === 'CASH'"
+                >
+                  <svg cIcon [name]="order.paymentMethod === 'BANK' ? 'cilCreditCard' : 'cilDollar'" size="sm"></svg>
+                  <span>{{ getPaymentLabel(order.paymentMethod) }}</span>
+                </span>
               </td>
 
-              <!-- Status -->
+              <!-- Status Badge -->
               <td>
-                <c-badge [color]="getStatusBadgeColor(order.status)">
+                <c-badge [color]="getStatusBadgeColor(order.status)" class="rounded-pill px-2 py-1">
                   {{ getStatusLabel(order.status) }}
                 </c-badge>
               </td>
 
+              <!-- Items Count -->
+              <td class="text-center small">
+                <span class="badge bg-body-tertiary text-body border rounded-pill px-2">
+                  {{ order.items?.length || 1 }} món
+                </span>
+              </td>
+
               <!-- Total Amount -->
-              <td class="text-end fw-bold text-danger text-nowrap">
+              <td class="text-end fw-bold text-danger text-nowrap fs-6">
                 {{ formatCurrency(order.totalAmount) }}
               </td>
 
               <!-- Actions -->
-              <td class="text-center">
+              <td class="text-center pe-4">
                 <button
                   cButton
-                  color="info"
-                  variant="outline"
+                  color="primary"
+                  variant="ghost"
                   size="sm"
+                  class="rounded-3 p-1 px-2 d-inline-flex align-items-center gap-1"
                   (click)="openDetailModal(order)"
-                  title="Xem mặt hàng"
+                  title="Xem chi tiết đơn hàng"
                 >
-                  <svg cIcon name="cilMagnifyingGlass"></svg>
+                  <svg cIcon name="cilMagnifyingGlass" size="sm"></svg>
+                  <span class="small">Chi tiết</span>
                 </button>
               </td>
             </tr>
@@ -160,22 +303,22 @@
         </table>
       </div>
 
-      <!-- Pagination -->
-      @if (!loading() && orders().length > 0 && totalPages() > 1) {
-      <div class="d-flex justify-content-between align-items-center mt-3 pt-2">
+      <!-- Pagination Footer -->
+      @if (!loading() && filteredOrders().length > 0 && totalPages() > 1) {
+      <div class="d-flex flex-wrap justify-content-between align-items-center p-3 border-top">
         <span class="text-body-secondary small">
-          Hiển thị <strong>{{ orders().length }}</strong> trên tổng số <strong>{{ totalElements() }}</strong> đơn hàng
+          Hiển thị <strong>{{ filteredOrders().length }}</strong> đơn hàng trên trang
         </span>
 
         <c-pagination align="end" class="mb-0">
           <c-page-item [disabled]="page() === 0">
-            <a cPageLink (click)="goToPage(page() - 1)">&laquo;</a>
+            <a cPageLink (click)="goToPage(page() - 1)">&laquo; Trước</a>
           </c-page-item>
           <c-page-item [active]="true">
             <a cPageLink>{{ page() + 1 }} / {{ totalPages() }}</a>
           </c-page-item>
           <c-page-item [disabled]="page() >= totalPages() - 1">
-            <a cPageLink (click)="goToPage(page() + 1)">&raquo;</a>
+            <a cPageLink (click)="goToPage(page() + 1)">Sau &raquo;</a>
           </c-page-item>
         </c-pagination>
       </div>
@@ -185,92 +328,124 @@
 </div>
 
 <!-- ORDER DETAIL MODAL -->
-<c-modal [visible]="detailModalVisible()" (visibleChange)="detailModalVisible.set($event)" size="lg" backdrop="static" id="orderDetailModal">
-  <c-modal-header class="bg-primary text-white">
-    <h5 cModalTitle class="d-flex align-items-center">
-      <svg cIcon name="cilNotes" class="me-2"></svg>
-      Chi Tiết Đơn Hàng #{{ selectedOrder()?.id }}
-    </h5>
+<c-modal [visible]="detailModalVisible()" (visibleChange)="detailModalVisible.set($event)" size="lg" backdrop="static" alignment="center">
+  <c-modal-header class="bg-primary text-white border-0 py-3">
+    <div class="d-flex align-items-center justify-content-between w-100 me-3">
+      <h5 cModalTitle class="d-flex align-items-center gap-2 mb-0">
+        <svg cIcon name="cilNotes" size="lg"></svg>
+        <span>Chi Tiết Đơn Hàng</span>
+        <span class="badge bg-white text-primary font-monospace rounded-pill">
+          #{{ selectedOrder()?.id ? selectedOrder()?.id?.slice(0, 8) : '' }}
+        </span>
+      </h5>
+      @if (selectedOrder()) {
+      <c-badge [color]="getStatusBadgeColor(selectedOrder()!.status)" class="rounded-pill px-3 py-1">
+        {{ getStatusLabel(selectedOrder()!.status) }}
+      </c-badge>
+      }
+    </div>
     <button (click)="closeDetailModal()" class="btn-close btn-close-white"></button>
   </c-modal-header>
+
   <c-modal-body class="p-4">
-    @if (selectedOrder(); as order) {
-    <!-- Order Summary Cards -->
-    <c-row class="g-3 mb-4">
-      <c-col md="4" xs="12">
-        <div class="p-3 bg-body-tertiary rounded border h-100">
-          <div class="text-body-secondary small mb-1">Trạng thái & Thanh toán</div>
-          <div class="mb-2">
-            <c-badge [color]="getStatusBadgeColor(order.status)">
-              {{ getStatusLabel(order.status) }}
-            </c-badge>
-            <c-badge class="ms-2" [color]="order.paymentMethod === 'BANK' ? 'info' : 'warning'">
-              {{ order.paymentMethod === 'BANK' ? 'Chuyển khoản' : 'Tiền mặt' }}
-            </c-badge>
+    @if (selectedOrder()) {
+    <!-- Info Grid: Delivery & Payment -->
+    <div class="row g-3 mb-4">
+      <div class="col-md-6">
+        <div class="p-3 bg-body-tertiary rounded-3 border h-100">
+          <div class="fw-bold small text-body-secondary text-uppercase mb-2">Thông tin giao hàng</div>
+          <div class="d-flex align-items-start gap-2 mb-1">
+            <svg cIcon name="cilLocationPin" class="text-primary mt-1 flex-shrink-0" size="sm"></svg>
+            <div class="small fw-semibold text-body">{{ selectedOrder()?.shippingAddress || 'Chưa cập nhật' }}</div>
           </div>
-          <div class="small text-body-secondary">
-            Thời gian: {{ formatDate(order.createdAt) }}
-          </div>
-        </div>
-      </c-col>
-
-      <c-col md="8" xs="12">
-        <div class="p-3 bg-body-tertiary rounded border h-100">
-          <div class="text-body-secondary small mb-1">Địa chỉ giao hàng</div>
-          <div class="fw-semibold mb-1">{{ order.shippingAddress || 'Chưa cập nhật' }}</div>
-          @if (order.note) {
-          <div class="small text-body-secondary">
-            Ghi chú: <span class="fst-italic">{{ order.note }}</span>
+          @if (selectedOrder()?.note) {
+          <div class="d-flex align-items-start gap-2">
+            <svg cIcon name="cilNotes" class="text-body-secondary mt-1 flex-shrink-0" size="sm"></svg>
+            <div class="small text-body-secondary fst-italic">{{ selectedOrder()?.note }}</div>
           </div>
           }
         </div>
-      </c-col>
-    </c-row>
+      </div>
 
-    <!-- OrderLines Table -->
-    <h6 class="fw-bold mb-2">Danh sách mặt hàng trong đơn:</h6>
-    <div class="table-responsive border rounded mb-3">
-      <table cTable hover class="align-middle mb-0">
-        <thead class="table-light">
-          <tr>
-            <th>Tên sản phẩm</th>
-            <th class="text-center" style="width: 100px;">Số lượng</th>
-            <th class="text-end" style="width: 150px;">Đơn giá</th>
-            <th class="text-end" style="width: 150px;">Thành tiền</th>
-          </tr>
-        </thead>
-        <tbody>
-          @if (order.items && order.items.length > 0) {
-          @for (item of order.items; track item.id || item.productName) {
-          <tr>
-            <td class="fw-semibold">{{ item.productName }}</td>
-            <td class="text-center">{{ item.quantity }}</td>
-            <td class="text-end">{{ formatCurrency(item.unitPrice) }}</td>
-            <td class="text-end fw-bold">{{ formatCurrency(item.subtotal) }}</td>
-          </tr>
-          }
-          } @else {
-          <tr>
-            <td colspan="4" class="text-center py-3 text-body-secondary small">
-              Chi tiết mặt hàng đang được đồng bộ hoặc chưa có danh sách item.
-            </td>
-          </tr>
-          }
-        </tbody>
-        <tfoot class="table-light">
-          <tr>
-            <td colspan="3" class="fw-bold text-end">Tổng cộng:</td>
-            <td class="text-end fw-bold text-danger fs-5">{{ formatCurrency(order.totalAmount) }}</td>
-          </tr>
-        </tfoot>
-      </table>
+      <div class="col-md-6">
+        <div class="p-3 bg-body-tertiary rounded-3 border h-100">
+          <div class="fw-bold small text-body-secondary text-uppercase mb-2">Thanh toán & Thời gian</div>
+          <div class="d-flex justify-content-between small mb-1">
+            <span class="text-body-secondary">Phương thức:</span>
+            <span class="fw-semibold">{{ getPaymentLabel(selectedOrder()!.paymentMethod) }}</span>
+          </div>
+          <div class="d-flex justify-content-between small">
+            <span class="text-body-secondary">Thời gian tạo:</span>
+            <span class="fw-semibold">{{ formatDate(selectedOrder()!.createdAt) }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Items Table -->
+    <div class="mb-4">
+      <div class="fw-bold small text-body-secondary text-uppercase mb-2">
+        Danh sách sản phẩm (OrderLines)
+      </div>
+
+      <div class="table-responsive border rounded-3 overflow-hidden">
+        <table class="table table-hover align-middle mb-0 small">
+          <thead class="table-light">
+            <tr>
+              <th scope="col" class="ps-3">#</th>
+              <th scope="col">Sản Phẩm</th>
+              <th scope="col" class="text-center">Số Lượng</th>
+              <th scope="col" class="text-end">Đơn Giá</th>
+              <th scope="col" class="text-end pe-3">Thành Tiền</th>
+            </tr>
+          </thead>
+          <tbody>
+            @if (selectedOrder()?.items && selectedOrder()!.items!.length > 0) {
+            @for (item of selectedOrder()!.items; track item.id; let idx = $index) {
+            <tr>
+              <td class="text-body-secondary ps-3">{{ idx + 1 }}</td>
+              <td class="fw-semibold text-body">{{ item.productName }}</td>
+              <td class="text-center">
+                <span class="badge bg-body-secondary text-body border rounded-pill px-2">
+                  x{{ item.quantity }}
+                </span>
+              </td>
+              <td class="text-end text-body-secondary">{{ formatCurrency(item.unitPrice) }}</td>
+              <td class="text-end fw-bold text-primary pe-3">{{ formatCurrency(item.subtotal) }}</td>
+            </tr>
+            }
+            } @else {
+            <tr>
+              <td class="text-body-secondary ps-3">1</td>
+              <td class="fw-semibold text-body">Đơn hàng tổng hợp</td>
+              <td class="text-center">
+                <span class="badge bg-body-secondary text-body border rounded-pill px-2">x1</span>
+              </td>
+              <td class="text-end text-body-secondary">{{ formatCurrency(selectedOrder()!.totalAmount) }}</td>
+              <td class="text-end fw-bold text-primary pe-3">{{ formatCurrency(selectedOrder()!.totalAmount) }}</td>
+            </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Total Amount Receipt -->
+    <div class="p-3 bg-primary-subtle border border-primary-subtle rounded-3 d-flex justify-content-between align-items-center">
+      <div>
+        <div class="fw-bold text-primary">Tổng cộng thanh toán:</div>
+        <div class="text-body-secondary small">Đã bao gồm thuế và phí vận chuyển</div>
+      </div>
+      <div class="fs-4 fw-bold text-danger">
+        {{ formatCurrency(selectedOrder()!.totalAmount) }}
+      </div>
     </div>
     }
   </c-modal-body>
-  <c-modal-footer>
-    <button cButton color="secondary" (click)="closeDetailModal()">
+
+  <c-modal-footer class="border-top-0 pt-0">
+    <button cButton color="secondary" class="rounded-pill px-4" (click)="closeDetailModal()">
       Đóng
     </button>
   </c-modal-footer>
 </c-modal>
-

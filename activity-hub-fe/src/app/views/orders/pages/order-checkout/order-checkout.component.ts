@@ -7,23 +7,27 @@ import {
   ButtonDirective,
   CardBodyComponent,
   CardComponent,
+  CardHeaderComponent,
   ColComponent,
   FormControlDirective,
   InputGroupComponent,
   InputGroupTextDirective,
+  ModalBodyComponent,
+  ModalComponent,
   RowComponent,
+  SpinnerComponent,
 } from '@coreui/angular';
 import { IconDirective } from '@coreui/icons-angular';
-import { CartItem, OrderRequest, PaymentMethod, Product } from '../../../../core/models/order.model';
+import { CartItem, OrderRequest, PaymentMethod } from '../../../../core/models/order.model';
 import { OrderService } from '../../../../core/services/order.service';
 import { AuthService } from '../../../../core/services/auth.service';
 import { ActivityLogService } from '../../../../core/services/activity-log.service';
 
 @Component({
-  selector: 'app-order-create',
+  selector: 'app-order-checkout',
   standalone: true,
-  templateUrl: './order-create.component.html',
-  styleUrls: ['./order-create.component.scss'],
+  templateUrl: './order-checkout.component.html',
+  styleUrls: ['./order-checkout.component.scss'],
   imports: [
     CommonModule,
     FormsModule,
@@ -34,42 +38,35 @@ import { ActivityLogService } from '../../../../core/services/activity-log.servi
     CardHeaderComponent,
     CardBodyComponent,
     ButtonDirective,
-    BadgeComponent,
     SpinnerComponent,
     AlertComponent,
     FormControlDirective,
-    FormLabelDirective,
-    FormSelectDirective,
     InputGroupComponent,
     InputGroupTextDirective,
     ModalComponent,
-    ModalHeaderComponent,
-    ModalTitleDirective,
     ModalBodyComponent,
-    ModalFooterComponent,
     IconDirective,
   ],
 })
-export class OrderCreateComponent implements OnInit {
+export class OrderCheckoutComponent implements OnInit {
   private readonly orderService = inject(OrderService);
   private readonly authService = inject(AuthService);
   private readonly activityLogService = inject(ActivityLogService);
   private readonly router = inject(Router);
 
-  // Data signals
-  products = signal<Product[]>([]);
+  // Cart from global OrderService
   cart = this.orderService.cart;
   totalCartQuantity = this.orderService.totalCartQuantity;
   totalCartAmount = this.orderService.totalCartAmount;
-  selectedCategory = signal<string>('Tất cả');
-  searchKeyword = signal<string>('');
 
-  // Checkout Form signals
+  // Checkout Form fields
+  receiverName = signal<string>('');
+  receiverPhone = signal<string>('0987654321');
   shippingAddress = signal<string>('Tòa nhà Softdreams, Cầu Giấy, Hà Nội');
   paymentMethod = signal<PaymentMethod>('BANK');
   note = signal<string>('');
 
-  // State signals
+  // States
   submitting = signal<boolean>(false);
   alertMessage = signal<string>('');
   alertType = signal<'success' | 'danger'>('success');
@@ -78,80 +75,16 @@ export class OrderCreateComponent implements OnInit {
   createdOrderAmount = signal<number>(0);
   createdOrderItemsCount = signal<number>(0);
 
-  // Computed properties
-  categories = computed(() => {
-    const all = this.products().map((p) => p.category);
-    return ['Tất cả', ...Array.from(new Set(all))];
-  });
-
-  filteredProducts = computed(() => {
-    const cat = this.selectedCategory();
-    const kw = this.searchKeyword().trim().toLowerCase();
-
-    return this.products().filter((p) => {
-      const matchCat = cat === 'Tất cả' || p.category === cat;
-      const matchKw =
-        !kw ||
-        p.name.toLowerCase().includes(kw) ||
-        p.description.toLowerCase().includes(kw) ||
-        p.category.toLowerCase().includes(kw);
-      return matchCat && matchKw;
-    });
-  });
-
   ngOnInit(): void {
-    this.loadProducts();
-  }
-
-  loadProducts(): void {
-    this.products.set(this.orderService.getMockProducts());
-  }
-
-  selectCategory(category: string): void {
-    this.selectedCategory.set(category);
+    const user = this.authService.getCurrentUser()();
+    if (user) {
+      const name = `${user.lastName || ''} ${user.firstName || ''}`.trim() || user.username;
+      this.receiverName.set(name);
+    }
   }
 
   selectPaymentMethod(method: PaymentMethod): void {
     this.paymentMethod.set(method);
-  }
-
-  getProductCartQuantity(productId: string): number {
-    const item = this.cart().find((i) => i.product.id === productId);
-    return item ? item.quantity : 0;
-  }
-
-  addToCart(product: Product): void {
-    const currentCart = [...this.cart()];
-    const index = currentCart.findIndex((item) => item.product.id === product.id);
-
-    if (index > -1) {
-      const item = currentCart[index];
-      if (item.quantity < product.stock) {
-        item.quantity += 1;
-        item.subtotal = item.quantity * item.product.price;
-        this.orderService.saveCart(currentCart);
-        this.showAlert(`Đã tăng số lượng ${product.name}!`, 'success');
-      } else {
-        this.showAlert(`Sản phẩm ${product.name} chỉ còn ${product.stock} trong kho!`, 'danger');
-      }
-    } else {
-      currentCart.push({
-        product,
-        quantity: 1,
-        subtotal: product.price,
-      });
-      this.orderService.saveCart(currentCart);
-      this.showAlert(`Đã thêm "${product.name}" vào giỏ hàng!`, 'success');
-    }
-  }
-
-  updateQuantityByProduct(product: Product, delta: number): void {
-    const item = this.cart().find((i) => i.product.id === product.id);
-    if (item) {
-      this.updateQuantity(item, delta);
-    } else if (delta > 0) {
-      this.addToCart(product);
-    }
   }
 
   updateQuantity(item: CartItem, delta: number): void {
@@ -162,7 +95,7 @@ export class OrderCreateComponent implements OnInit {
       const newQty = item.quantity + delta;
       if (newQty <= 0) {
         currentCart.splice(index, 1);
-        this.showAlert(`Đã xóa ${item.product.name} khỏi giỏ!`, 'success');
+        this.showAlert(`Đã xóa "${item.product.name}" khỏi giỏ hàng!`, 'success');
       } else if (newQty > item.product.stock) {
         this.showAlert(`Số lượng vượt quá tồn kho (${item.product.stock})!`, 'danger');
         return;
@@ -177,16 +110,17 @@ export class OrderCreateComponent implements OnInit {
   removeFromCart(item: CartItem): void {
     const updated = this.cart().filter((i) => i.product.id !== item.product.id);
     this.orderService.saveCart(updated);
-    this.showAlert(`Đã xóa ${item.product.name} khỏi giỏ hàng!`, 'success');
+    this.showAlert(`Đã xóa "${item.product.name}" khỏi giỏ hàng!`, 'success');
   }
 
   clearCart(): void {
     this.orderService.clearCart();
+    this.showAlert('Đã xóa toàn bộ giỏ hàng!', 'success');
   }
 
   submitOrder(): void {
     if (this.cart().length === 0) {
-      this.showAlert('Vui lòng chọn ít nhất 1 sản phẩm vào giỏ hàng!', 'danger');
+      this.showAlert('Giỏ hàng đang trống. Vui lòng chọn sản phẩm trước khi thanh toán!', 'danger');
       return;
     }
 
@@ -237,14 +171,14 @@ export class OrderCreateComponent implements OnInit {
           },
         });
 
-        this.clearCart();
+        this.orderService.clearCart();
         this.successModalVisible.set(true);
       },
       error: (err) => {
         this.submitting.set(false);
         const msg =
           err?.error?.message ||
-          'Có lỗi xảy ra khi tạo đơn hàng. Vui lòng kiểm tra lại backend!';
+          'Có lỗi xảy ra khi tạo đơn hàng. Vui lòng kiểm tra lại kết nối backend!';
         this.showAlert(msg, 'danger');
       },
     });
@@ -255,12 +189,13 @@ export class OrderCreateComponent implements OnInit {
     this.router.navigate(['/orders/list']);
   }
 
-  closeSuccessModal(): void {
+  goToProducts(): void {
     this.successModalVisible.set(false);
+    this.router.navigate(['/orders/create']);
   }
 
   formatCurrency(value: number): string {
-    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value);
+    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value || 0);
   }
 
   showAlert(message: string, type: 'success' | 'danger'): void {

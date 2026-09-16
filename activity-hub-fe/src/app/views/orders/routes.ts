@@ -13,7 +13,17 @@ export const routes: Routes = [
         (m) => m.OrderCreateComponent
       ),
     data: {
-      title: 'Tạo đơn hàng',
+      title: 'Sản phẩm',
+    },
+  },
+  {
+    path: 'checkout',
+    loadComponent: () =>
+      import('./pages/order-checkout/order-checkout.component').then(
+        (m) => m.OrderCheckoutComponent
+      ),
+    data: {
+      title: 'Giỏ hàng & Thanh toán',
     },
   },
   {

@@ -21,6 +21,7 @@ import {
 
 import { IconDirective } from '@coreui/icons-angular';
 import { AuthService } from '../../../core/services/auth.service';
+import { OrderService } from '../../../core/services/order.service';
 
 @Component({
   selector: 'app-default-header',
@@ -46,7 +47,12 @@ import { AuthService } from '../../../core/services/auth.service';
 })
 export class DefaultHeaderComponent extends HeaderComponent {
   private readonly authService = inject(AuthService);
+  private readonly orderService = inject(OrderService);
   private readonly router = inject(Router);
+
+  readonly cartCount = this.orderService.totalCartQuantity;
+  readonly cartAmount = this.orderService.totalCartAmount;
+  readonly cartItems = this.orderService.cart;
 
   readonly #colorModeService = inject(ColorModeService);
   readonly colorMode = this.#colorModeService.colorMode;
@@ -89,5 +95,9 @@ export class DefaultHeaderComponent extends HeaderComponent {
   logout(): void {
     this.authService.logout();
     this.router.navigate(['/authentication/login']);
+  }
+
+  formatCurrency(value: number): string {
+    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value || 0);
   }
 }

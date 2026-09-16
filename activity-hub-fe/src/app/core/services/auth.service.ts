@@ -4,7 +4,7 @@ import {environment} from '../../../environments/environment';
 import {Observable, switchMap} from 'rxjs';
 import {ApiResponse} from '../models/api-response.model';
 import {LoginRequest, LoginResponse} from '../models/auth.model';
-import {User, UserResponse} from '../models/user.model';
+import {UserResponse} from '../models/user.model';
 import {map, tap} from 'rxjs/operators';
 
 @Injectable({
@@ -14,8 +14,19 @@ export class AuthService {
 
   private readonly http = inject(HttpClient);
   private readonly baseUrl = environment.apiUrl;
-  private readonly currentUser = signal<UserResponse | null>(null);
   private readonly TOKEN_KEY = 'access_token';
+  private readonly USER_KEY = 'user_profile';
+
+  private readonly currentUser = signal<UserResponse | null>(this.getStoredUser());
+
+  private getStoredUser(): UserResponse | null {
+    try {
+      const stored = localStorage.getItem(this.USER_KEY);
+      return stored ? JSON.parse(stored) : null;
+    } catch {
+      return null;
+    }
+  }
 
   setToken(token: string): void {
     localStorage.setItem(this.TOKEN_KEY, token);
@@ -35,10 +46,14 @@ export class AuthService {
 
   setUser(user: UserResponse): void {
     this.currentUser.set(user);
+    try {
+      localStorage.setItem(this.USER_KEY, JSON.stringify(user));
+    } catch {}
   }
 
   clearUser(): void {
     this.currentUser.set(null);
+    localStorage.removeItem(this.USER_KEY);
   }
 
   login(request : LoginRequest): Observable<UserResponse> {
@@ -54,7 +69,7 @@ export class AuthService {
         }),
         switchMap(() => this.getUserProfile()),
         tap((user) => {
-          this.currentUser.set(user);
+          this.setUser(user);
         })
       );
   }

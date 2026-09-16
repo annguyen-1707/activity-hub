@@ -1,10 +1,10 @@
 import { Routes } from '@angular/router';
-import {authGuard, roleGuard} from './core/guards/auth.guard';
+import { authGuard, roleGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
   {
     path: '',
-    redirectTo: 'dashboard',
+    redirectTo: 'orders',
     pathMatch: 'full'
   },
   {
@@ -27,23 +27,28 @@ export const routes: Routes = [
       {
         path: 'users',
         loadChildren: () => import('./views/users/routes').then((m) => m.routes),
-        canActivate: [authGuard],
+        canActivate: [roleGuard(['ADMIN'])],
       },
       {
         path: 'roles',
         loadChildren: () => import('./views/roles/routes').then((m) => m.routes),
-        canActivate: [authGuard],
+        canActivate: [roleGuard(['ADMIN'])],
       },
       {
         path: 'activity-logs',
         loadChildren: () => import('./views/activity-logs/routes').then((m) => m.routes),
-        canActivate: [authGuard],
+        canActivate: [roleGuard(['ADMIN'])],
       }
     ]
   },
   {
     path: 'login',
     redirectTo: 'authentication/login',
+    pathMatch: 'full'
+  },
+  {
+    path: '404',
+    redirectTo: 'error-pages/404',
     pathMatch: 'full'
   },
   {
@@ -54,5 +59,5 @@ export const routes: Routes = [
     path: 'error-pages',
     loadChildren: () => import('./views/error-pages/routes').then((m) => m.routes)
   },
-  { path: '**', redirectTo: 'dashboard' }
+  { path: '**', redirectTo: 'error-pages/404' }
 ];

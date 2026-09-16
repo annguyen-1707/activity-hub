@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -10,6 +10,7 @@ import {
   CardHeaderComponent,
   ColComponent,
   FormControlDirective,
+  FormSelectDirective,
   InputGroupComponent,
   InputGroupTextDirective,
   ModalBodyComponent,
@@ -25,7 +26,7 @@ import {
   TableDirective,
 } from '@coreui/angular';
 import { IconDirective } from '@coreui/icons-angular';
-import { OrderResponse, OrderStatus } from '../../../../core/models/order.model';
+import { OrderResponse, OrderStatus, PaymentMethod } from '../../../../core/models/order.model';
 import { OrderService } from '../../../../core/services/order.service';
 
 @Component({
@@ -47,6 +48,7 @@ import { OrderService } from '../../../../core/services/order.service';
     BadgeComponent,
     SpinnerComponent,
     FormControlDirective,
+    FormSelectDirective,
     InputGroupComponent,
     InputGroupTextDirective,
     PaginationComponent,
@@ -66,6 +68,9 @@ export class OrderListComponent implements OnInit {
   orders = signal<OrderResponse[]>([]);
   loading = signal<boolean>(false);
   keyword = signal<string>('');
+  statusFilter = signal<string>('ALL');
+  paymentFilter = signal<string>('ALL');
+
   page = signal<number>(0);
   pageSize = signal<number>(10);
   totalElements = signal<number>(0);
@@ -74,10 +79,36 @@ export class OrderListComponent implements OnInit {
   // Detail Modal
   selectedOrder = signal<OrderResponse | null>(null);
   detailModalVisible = signal<boolean>(false);
+  copiedId = signal<string>('');
 
-  // Alert
-  alertMessage = signal<string>('');
-  alertType = signal<'success' | 'danger'>('success');
+  // Computed KPI Metrics
+  totalOrdersCount = computed(() => this.orders().length);
+
+  completedOrdersCount = computed(() => {
+    return this.orders().filter((o) => o.status === 'COMPLETED').length;
+  });
+
+  pendingOrdersCount = computed(() => {
+    return this.orders().filter((o) => o.status === 'CREATED' || o.status === 'CONFIRMED').length;
+  });
+
+  totalRevenueSum = computed(() => {
+    return this.orders().reduce((sum, o) => sum + (o.totalAmount || 0), 0);
+  });
+
+  filteredOrders = computed(() => {
+    let list = this.orders();
+    const st = this.statusFilter();
+    const pm = this.paymentFilter();
+
+    if (st !== 'ALL') {
+      list = list.filter((o) => o.status === st);
+    }
+    if (pm !== 'ALL') {
+      list = list.filter((o) => o.paymentMethod === pm);
+    }
+    return list;
+  });
 
   ngOnInit(): void {
     this.loadOrders();
@@ -86,7 +117,6 @@ export class OrderListComponent implements OnInit {
   loadOrders(): void {
     this.loading.set(true);
 
-    // Call getMyOrders first; if user is admin or on failure fallback to getAllOrders
     this.orderService.getMyOrders(this.page(), this.pageSize(), this.keyword()).subscribe({
       next: (res) => {
         this.loading.set(false);
@@ -99,7 +129,6 @@ export class OrderListComponent implements OnInit {
         }
       },
       error: () => {
-        // Fallback to getAllOrders if /orders/me fails
         this.fallbackLoadAllOrders();
       },
     });
@@ -109,12 +138,13 @@ export class OrderListComponent implements OnInit {
     this.orderService.getAllOrders().subscribe({
       next: (list) => {
         this.loading.set(false);
+        const kw = this.keyword().trim().toLowerCase();
         const filtered = list.filter((o) => {
-          if (!this.keyword()) return true;
-          const kw = this.keyword().toLowerCase();
+          if (!kw) return true;
           return (
             (o.id && o.id.toLowerCase().includes(kw)) ||
-            (o.shippingAddress && o.shippingAddress.toLowerCase().includes(kw))
+            (o.shippingAddress && o.shippingAddress.toLowerCase().includes(kw)) ||
+            (o.note && o.note.toLowerCase().includes(kw))
           );
         });
         this.orders.set(filtered);
@@ -158,33 +188,24 @@ export class OrderListComponent implements OnInit {
     this.selectedOrder.set(null);
   }
 
-  getStatusBadgeColor(status: OrderStatus | string): string {
-    switch (status) {
-      case 'CREATED':
-        return 'primary';
-      case 'CONFIRMED':
-        return 'info';
-      case 'COMPLETED':
-        return 'success';
-      case 'CANCELLED':
-        return 'danger';
-      default:
-        return 'secondary';
-    }
+  copyOrderId(id: string): void {
+    if (!id) return;
+    navigator.clipboard?.writeText(id).then(() => {
+      this.copiedId.set(id);
+      setTimeout(() => this.copiedId.set(''), 2000);
+    });
   }
 
-  getStatusLabel(status: OrderStatus | string): string {
-    switch (status) {
-      case 'CREATED':
-        return 'Đã tạo';
-      case 'CONFIRMED':
-        return 'Đã xác nhận';
-      case 'COMPLETED':
-        return 'Hoàn thành';
-      case 'CANCELLED':
-        return 'Đã hủy';
-      default:
-        return status;
+  formatDate(dateStr: string): string {
+    if (!dateStr) return '—';
+    try {
+      const d = new Date(dateStr);
+      return new Intl.DateTimeFormat('vi-VN', {
+        dateStyle: 'short',
+        timeStyle: 'short',
+      }).format(d);
+    } catch {
+      return dateStr;
     }
   }
 
@@ -192,13 +213,37 @@ export class OrderListComponent implements OnInit {
     return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value || 0);
   }
 
-  formatDate(dateStr: string): string {
-    if (!dateStr) return '—';
-    try {
-      return new Date(dateStr).toLocaleString('vi-VN');
-    } catch {
-      return dateStr;
+  getStatusBadgeColor(status: OrderStatus): string {
+    switch (status) {
+      case 'COMPLETED':
+        return 'success';
+      case 'CONFIRMED':
+        return 'warning';
+      case 'CREATED':
+        return 'info';
+      case 'CANCELLED':
+        return 'danger';
+      default:
+        return 'secondary';
     }
   }
-}
 
+  getStatusLabel(status: OrderStatus): string {
+    switch (status) {
+      case 'CREATED':
+        return 'Mới tạo';
+      case 'CONFIRMED':
+        return 'Đang chuẩn bị';
+      case 'COMPLETED':
+        return 'Hoàn thành';
+      case 'CANCELLED':
+        return 'Đã hủy';
+      default:
+        return status || '—';
+    }
+  }
+
+  getPaymentLabel(method: PaymentMethod): string {
+    return method === 'BANK' ? 'Chuyển khoản' : 'Tiền mặt';
+  }
+}

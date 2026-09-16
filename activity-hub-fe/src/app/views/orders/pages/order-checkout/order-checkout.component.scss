@@ -1,0 +1,100 @@
+.order-checkout-page {
+  /* Sub-Navigation Tabs */
+  .orders-nav-tabs {
+    .tab-btn {
+      color: inherit;
+      background: transparent;
+      transition: all 0.2s ease;
+      font-size: 0.92rem;
+
+      &:hover {
+        background-color: var(--cui-tertiary-bg, rgba(0, 0, 0, 0.05));
+      }
+
+      &.active {
+        background-color: var(--cui-primary, #4f46e5);
+        color: #ffffff !important;
+        box-shadow: 0 4px 12px rgba(79, 70, 229, 0.25);
+
+        .badge {
+          background-color: rgba(255, 255, 255, 0.25) !important;
+          color: #ffffff !important;
+        }
+      }
+    }
+  }
+
+  /* Cart Table */
+  .cart-table {
+    thead th {
+      font-size: 0.78rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--cui-body-color, #6b7280);
+      padding-top: 0.85rem;
+      padding-bottom: 0.85rem;
+      border-bottom-width: 1px;
+    }
+
+    .cart-row {
+      transition: background-color 0.15s ease;
+
+      &:hover {
+        background-color: var(--cui-tertiary-bg, rgba(79, 70, 229, 0.02));
+      }
+    }
+
+    .cart-product-img {
+      width: 60px;
+      height: 60px;
+      object-fit: cover;
+      flex-shrink: 0;
+    }
+
+    .qty-btn {
+      width: 26px;
+      height: 26px;
+      font-weight: bold;
+      line-height: 1;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.85rem;
+    }
+  }
+
+  /* Checkout Panel */
+  .checkout-panel {
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .payment-tile {
+      background-color: var(--cui-body-bg, #ffffff);
+      border: 1px solid var(--cui-border-color, #e5e7eb) !important;
+      transition: all 0.2s ease;
+      cursor: pointer;
+
+      &:hover {
+        border-color: var(--cui-primary, #4f46e5) !important;
+      }
+
+      &.active {
+        border-color: var(--cui-primary, #4f46e5) !important;
+        background-color: var(--cui-primary-subtle, rgba(79, 70, 229, 0.08));
+        box-shadow: 0 0 0 1px var(--cui-primary, #4f46e5);
+      }
+    }
+  }
+
+  .hover-danger:hover {
+    color: var(--cui-danger, #dc2626) !important;
+  }
+
+  .cursor-pointer {
+    cursor: pointer;
+  }
+}
+

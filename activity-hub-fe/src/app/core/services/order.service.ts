@@ -1,10 +1,10 @@
-import { Injectable, inject } from '@angular/core';
+import { Injectable, inject, signal, computed } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import { ApiResponse, PageResponse } from '../models/api-response.model';
-import { OrderRequest, OrderResponse, Product } from '../models/order.model';
+import { CartItem, OrderRequest, OrderResponse, Product } from '../models/order.model';
 
 const MOCK_PRODUCTS: Product[] = [
   {
@@ -95,6 +95,40 @@ const MOCK_PRODUCTS: Product[] = [
 export class OrderService {
   private readonly http = inject(HttpClient);
   private readonly baseUrl = environment.apiUrl;
+  private readonly CART_KEY = 'pos_cart';
+
+  readonly cart = signal<CartItem[]>(this.getStoredCart());
+
+  readonly totalCartQuantity = computed(() => {
+    return this.cart().reduce((sum, item) => sum + item.quantity, 0);
+  });
+
+  readonly totalCartAmount = computed(() => {
+    return this.cart().reduce((sum, item) => sum + item.subtotal, 0);
+  });
+
+  private getStoredCart(): CartItem[] {
+    try {
+      const data = localStorage.getItem(this.CART_KEY);
+      return data ? JSON.parse(data) : [];
+    } catch {
+      return [];
+    }
+  }
+
+  saveCart(items: CartItem[]): void {
+    this.cart.set(items);
+    try {
+      localStorage.setItem(this.CART_KEY, JSON.stringify(items));
+    } catch {}
+  }
+
+  clearCart(): void {
+    this.cart.set([]);
+    try {
+      localStorage.removeItem(this.CART_KEY);
+    } catch {}
+  }
 
   getMockProducts(): Product[] {
     return [...MOCK_PRODUCTS];

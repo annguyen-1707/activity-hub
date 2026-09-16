@@ -12,12 +12,17 @@
       <svg cIcon name="cilMenu" size="lg"></svg>
     </button>
 
-    <!-- Right-aligned Header Navigation: Theme & Profile -->
-    <c-header-nav class="ms-auto d-flex align-items-center gap-3">
+    <!-- Right-aligned Header Navigation: POS Cart, Theme & Profile -->
+    <c-header-nav class="ms-auto d-flex align-items-center gap-2">
+      <!-- POS Cart Quick Dropdown -->
+      <ng-container *ngTemplateOutlet="cartDropdown" />
+
+      <div class="vr h-50 my-auto text-body text-opacity-25 mx-1"></div>
+
       <!-- Theme Switcher -->
       <ng-container *ngTemplateOutlet="themeDropdown" />
 
-      <div class="vr h-50 my-auto text-body text-opacity-25"></div>
+      <div class="vr h-50 my-auto text-body text-opacity-25 mx-1"></div>
 
       <!-- User Profile Dropdown -->
       <ng-container *ngTemplateOutlet="userDropdown" />
@@ -29,6 +34,90 @@
     <c-breadcrumb-router />
   </c-container>
 </ng-container>
+
+<!-- POS CART DROPDOWN TEMPLATE -->
+<ng-template #cartDropdown>
+  <c-dropdown alignment="end" variant="nav-item">
+    <button
+      [caret]="false"
+      aria-label="Giỏ hàng POS"
+      cDropdownToggle
+      class="btn p-2 rounded-circle border-0 position-relative d-flex align-items-center justify-content-center bg-body-tertiary"
+      style="width: 38px; height: 38px;"
+      title="Giỏ hàng POS"
+    >
+      <svg cIcon name="cilBasket" size="lg" class="text-primary"></svg>
+      @if (cartCount() > 0) {
+      <span
+        class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger border border-light"
+        style="font-size: 0.65rem;"
+      >
+        {{ cartCount() > 99 ? '99+' : cartCount() }}
+      </span>
+      }
+    </button>
+
+    <div cDropdownMenu class="shadow-lg border-0 mt-2 p-0 rounded-4 overflow-hidden" style="width: 320px;">
+      <!-- Header -->
+      <div class="bg-primary text-white p-3 d-flex justify-content-between align-items-center">
+        <div class="fw-bold d-flex align-items-center gap-2">
+          <svg cIcon name="cilBasket" size="sm"></svg>
+          <span>Giỏ Hàng POS</span>
+        </div>
+        <span class="badge bg-white text-primary rounded-pill px-2 small">
+          {{ cartCount() }} món
+        </span>
+      </div>
+
+      <!-- Items preview -->
+      <div class="p-2" style="max-height: 240px; overflow-y: auto;">
+        @if (cartItems().length === 0) {
+        <div class="text-center py-4 text-body-secondary">
+          <svg cIcon name="cilBasket" size="2xl" class="opacity-25 mb-2"></svg>
+          <div class="small fw-semibold">Giỏ hàng đang trống</div>
+          <div style="font-size: 0.75rem;">Chọn sản phẩm tại trang Bán hàng</div>
+        </div>
+        } @else {
+          @for (item of cartItems(); track item.product.id) {
+          <div class="d-flex align-items-center gap-2 p-2 rounded-3 border-bottom">
+            <img [src]="item.product.image" [alt]="item.product.name" class="rounded-2" style="width: 36px; height: 36px; object-fit: cover;" />
+            <div class="flex-grow-1 overflow-hidden">
+              <div class="small fw-semibold text-truncate" [title]="item.product.name">
+                {{ item.product.name }}
+              </div>
+              <div class="text-body-secondary" style="font-size: 0.72rem;">
+                {{ item.quantity }} x {{ formatCurrency(item.product.price) }}
+              </div>
+            </div>
+            <div class="small fw-bold text-primary text-nowrap">
+              {{ formatCurrency(item.subtotal) }}
+            </div>
+          </div>
+          }
+        }
+      </div>
+
+      <!-- Footer action -->
+      <div class="p-3 bg-body-tertiary border-top">
+        @if (cartItems().length > 0) {
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <span class="small text-body-secondary">Tổng cộng:</span>
+          <span class="fw-bold text-danger fs-6">{{ formatCurrency(cartAmount()) }}</span>
+        </div>
+        }
+        <a
+          cButton
+          color="primary"
+          [routerLink]="cartItems().length > 0 ? '/orders/checkout' : '/orders/create'"
+          class="w-100 py-2 fw-semibold rounded-pill d-flex align-items-center justify-content-center gap-1 small text-decoration-none"
+        >
+          <svg cIcon name="cilCart" size="sm"></svg>
+          <span>{{ cartItems().length > 0 ? 'Vào giỏ & Thanh toán' : 'Đến trang sản phẩm' }}</span>
+        </a>
+      </div>
+    </div>
+  </c-dropdown>
+</ng-template>
 
 <!-- USER PROFILE DROPDOWN TEMPLATE -->
 <ng-template #userDropdown>

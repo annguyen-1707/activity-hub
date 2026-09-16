@@ -1,0 +1,361 @@
+<div class="order-checkout-page">
+  <!-- Toast Notification -->
+  @if (alertMessage()) {
+  <c-alert [color]="alertType()" [dismissible]="true" class="mb-4 d-flex align-items-center shadow-sm rounded-3">
+    <svg cIcon [name]="alertType() === 'success' ? 'cilCheck' : 'cilWarning'" class="me-2 flex-shrink-0" size="lg"></svg>
+    <div class="fw-medium">{{ alertMessage() }}</div>
+  </c-alert>
+  }
+
+  @if (cart().length === 0) {
+  <!-- EMPTY CART STATE -->
+  <c-card class="border-0 shadow-sm rounded-4 text-center py-5 px-4 mb-4">
+    <div class="empty-cart-circle mx-auto mb-4 bg-primary-subtle text-primary rounded-circle d-flex align-items-center justify-content-center" style="width: 90px; height: 90px;">
+      <svg cIcon name="cilCart" size="3xl"></svg>
+    </div>
+    <h4 class="fw-bold text-body mb-2">Giỏ hàng của bạn đang trống</h4>
+    <p class="text-body-secondary small mx-auto mb-4" style="max-width: 450px;">
+      Hiện tại chưa có sản phẩm nào trong giỏ hàng. Hãy ghé qua trang Bán Hàng để chọn những sản phẩm công nghệ tuyệt vời nhất!
+    </p>
+    <div>
+      <a cButton color="primary" class="rounded-pill px-4 py-2 fw-semibold shadow-sm d-inline-flex align-items-center gap-2" routerLink="/orders/create">
+        <svg cIcon name="cilBasket" size="sm"></svg>
+        <span>Khám Phá Sản Phẩm Ngay</span>
+      </a>
+    </div>
+  </c-card>
+  } @else {
+  <!-- ACTIVE CART & CHECKOUT ROW -->
+  <c-row class="g-4">
+    <!-- LEFT COLUMN: CART ITEMS LIST (7 cols on lg, 8 on xl) -->
+    <c-col lg="7" xl="8" xs="12">
+      <c-card class="border-0 shadow-sm rounded-4 overflow-hidden mb-4">
+        <!-- Card Header -->
+        <c-card-header class="bg-body py-3 px-4 border-bottom d-flex justify-content-between align-items-center">
+          <div class="fw-bold text-body d-flex align-items-center gap-2 fs-6">
+            <svg cIcon name="cilCart" class="text-primary"></svg>
+            <span>Chi tiết giỏ hàng</span>
+            <span class="badge bg-primary-subtle text-primary rounded-pill px-2 small">
+              {{ totalCartQuantity() }} sản phẩm
+            </span>
+          </div>
+
+          <button
+            type="button"
+            class="btn btn-link text-danger text-decoration-none p-0 small d-flex align-items-center gap-1"
+            (click)="clearCart()"
+          >
+            <svg cIcon name="cilTrash" size="sm"></svg>
+            <span>Xóa tất cả</span>
+          </button>
+        </c-card-header>
+
+        <!-- Cart Items Table / List -->
+        <c-card-body class="p-0">
+          <div class="table-responsive">
+            <table class="table align-middle mb-0 cart-table">
+              <thead class="table-light">
+                <tr>
+                  <th scope="col" class="ps-4">Sản Phẩm</th>
+                  <th scope="col" class="text-end" style="width: 130px;">Đơn Giá</th>
+                  <th scope="col" class="text-center" style="width: 140px;">Số Lượng</th>
+                  <th scope="col" class="text-end" style="width: 140px;">Thành Tiền</th>
+                  <th scope="col" class="text-center pe-4" style="width: 50px;"></th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (item of cart(); track item.product.id) {
+                <tr class="cart-row">
+                  <!-- Product Info -->
+                  <td class="ps-4 py-3">
+                    <div class="d-flex align-items-center gap-3">
+                      <img [src]="item.product.image" [alt]="item.product.name" class="cart-product-img rounded-3 shadow-xs" />
+                      <div>
+                        <div class="fw-bold text-body mb-1" [title]="item.product.name">
+                          {{ item.product.name }}
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                          <span class="badge bg-body-secondary text-body-secondary small">
+                            {{ item.product.category }}
+                          </span>
+                          <span class="text-body-tertiary small">Kho: {{ item.product.stock }}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+
+                  <!-- Unit Price -->
+                  <td class="text-end fw-medium text-body-secondary">
+                    {{ formatCurrency(item.product.price) }}
+                  </td>
+
+                  <!-- Quantity Stepper -->
+                  <td class="text-center">
+                    <div class="stepper-box d-inline-flex align-items-center gap-1 bg-body-secondary rounded-pill p-1">
+                      <button
+                        type="button"
+                        class="btn btn-sm btn-light border-0 rounded-circle p-0 qty-btn"
+                        (click)="updateQuantity(item, -1)"
+                        title="Giảm"
+                      >
+                        -
+                      </button>
+                      <span class="qty-number fw-bold px-2 small">
+                        {{ item.quantity }}
+                      </span>
+                      <button
+                        type="button"
+                        class="btn btn-sm btn-light border-0 rounded-circle p-0 qty-btn"
+                        (click)="updateQuantity(item, 1)"
+                        title="Tăng"
+                      >
+                        +
+                      </button>
+                    </div>
+                  </td>
+
+                  <!-- Subtotal -->
+                  <td class="text-end fw-bold text-primary fs-6">
+                    {{ formatCurrency(item.subtotal) }}
+                  </td>
+
+                  <!-- Delete Item -->
+                  <td class="text-center pe-4">
+                    <button
+                      type="button"
+                      class="btn btn-link text-body-tertiary hover-danger p-0 border-0"
+                      (click)="removeFromCart(item)"
+                      title="Xóa món này"
+                    >
+                      <svg cIcon name="cilTrash" size="sm"></svg>
+                    </button>
+                  </td>
+                </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Bottom bar of table -->
+          <div class="p-3 px-4 bg-body-tertiary border-top d-flex justify-content-between align-items-center">
+            <a routerLink="/orders/create" class="text-primary text-decoration-none fw-semibold small d-flex align-items-center gap-1">
+              <svg cIcon name="cilArrowLeft" size="sm"></svg>
+              <span>Tiếp tục chọn thêm sản phẩm</span>
+            </a>
+
+            <div class="small text-body-secondary">
+              Tổng số lượng: <strong class="text-body">{{ totalCartQuantity() }} món</strong>
+            </div>
+          </div>
+        </c-card-body>
+      </c-card>
+    </c-col>
+
+    <!-- RIGHT COLUMN: SHIPPING & CHECKOUT FORM (5 cols on lg, 4 on xl) -->
+    <c-col lg="5" xl="4" xs="12">
+      <div class="checkout-panel sticky-top" style="top: 80px; z-index: 10;">
+        <c-card class="border-0 shadow-sm rounded-4 overflow-hidden mb-3">
+          <c-card-header class="bg-primary text-white py-3 px-4 border-0">
+            <h6 class="fw-bold mb-0 d-flex align-items-center gap-2">
+              <svg cIcon name="cilCheckCircle"></svg>
+              <span>Thông Tin Đặt Hàng</span>
+            </h6>
+          </c-card-header>
+
+          <c-card-body class="p-4">
+            <!-- Receiver Name & Phone -->
+            <div class="row g-2 mb-3">
+              <div class="col-sm-6">
+                <label class="form-label fw-bold small text-body mb-1">Người nhận</label>
+                <c-input-group size="sm">
+                  <span cInputGroupText class="bg-body-secondary">
+                    <svg cIcon name="cilUser" size="sm"></svg>
+                  </span>
+                  <input
+                    cFormControl
+                    placeholder="Tên người nhận"
+                    [ngModel]="receiverName()"
+                    (ngModelChange)="receiverName.set($event)"
+                  />
+                </c-input-group>
+              </div>
+
+              <div class="col-sm-6">
+                <label class="form-label fw-bold small text-body mb-1">Số điện thoại</label>
+                <c-input-group size="sm">
+                  <span cInputGroupText class="bg-body-secondary">
+                    <svg cIcon name="cilPhone" size="sm"></svg>
+                  </span>
+                  <input
+                    cFormControl
+                    placeholder="Số điện thoại"
+                    [ngModel]="receiverPhone()"
+                    (ngModelChange)="receiverPhone.set($event)"
+                  />
+                </c-input-group>
+              </div>
+            </div>
+
+            <!-- Shipping Address -->
+            <div class="mb-3">
+              <label class="form-label fw-bold small text-body mb-1">
+                Địa chỉ giao hàng <span class="text-danger">*</span>
+              </label>
+              <c-input-group size="sm">
+                <span cInputGroupText class="bg-body-secondary">
+                  <svg cIcon name="cilLocationPin" size="sm"></svg>
+                </span>
+                <input
+                  cFormControl
+                  placeholder="Số nhà, tên đường, phường/xã, quận/huyện..."
+                  [ngModel]="shippingAddress()"
+                  (ngModelChange)="shippingAddress.set($event)"
+                />
+              </c-input-group>
+            </div>
+
+            <!-- Note -->
+            <div class="mb-3">
+              <label class="form-label fw-bold small text-body mb-1">Ghi chú giao hàng</label>
+              <c-input-group size="sm">
+                <span cInputGroupText class="bg-body-secondary">
+                  <svg cIcon name="cilNotes" size="sm"></svg>
+                </span>
+                <input
+                  cFormControl
+                  placeholder="Ghi chú thêm cho shipper (tùy chọn)..."
+                  [ngModel]="note()"
+                  (ngModelChange)="note.set($event)"
+                />
+              </c-input-group>
+            </div>
+
+            <!-- Payment Method Selector -->
+            <div class="mb-4">
+              <label class="form-label fw-bold small text-body mb-2">Hình thức thanh toán</label>
+              <div class="d-grid grid-2 gap-2">
+                <div
+                  class="payment-tile p-2 rounded-3 border text-center cursor-pointer"
+                  [class.active]="paymentMethod() === 'BANK'"
+                  (click)="selectPaymentMethod('BANK')"
+                >
+                  <div class="fw-bold small d-flex align-items-center justify-content-center gap-1">
+                    <svg cIcon name="cilCreditCard" class="text-primary" size="sm"></svg>
+                    <span>Chuyển khoản</span>
+                  </div>
+                  <div class="text-body-secondary" style="font-size: 0.72rem;">Quét QR / Online</div>
+                </div>
+
+                <div
+                  class="payment-tile p-2 rounded-3 border text-center cursor-pointer"
+                  [class.active]="paymentMethod() === 'CASH'"
+                  (click)="selectPaymentMethod('CASH')"
+                >
+                  <div class="fw-bold small d-flex align-items-center justify-content-center gap-1">
+                    <svg cIcon name="cilDollar" class="text-success" size="sm"></svg>
+                    <span>Tiền mặt</span>
+                  </div>
+                  <div class="text-body-secondary" style="font-size: 0.72rem;">Thanh toán COD</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Price Breakdown -->
+            <div class="order-invoice-box bg-body-tertiary rounded-3 p-3 mb-3 border">
+              <div class="d-flex justify-content-between small text-body-secondary mb-2">
+                <span>Tạm tính ({{ totalCartQuantity() }} món):</span>
+                <strong class="text-body">{{ formatCurrency(totalCartAmount()) }}</strong>
+              </div>
+              <div class="d-flex justify-content-between small text-body-secondary mb-2">
+                <span>Phí vận chuyển:</span>
+                <span class="badge bg-success-subtle text-success border border-success-subtle">Miễn phí</span>
+              </div>
+              <div class="d-flex justify-content-between small text-body-secondary mb-2">
+                <span>Khuyến mãi:</span>
+                <span class="text-success fw-semibold">-0 đ</span>
+              </div>
+              <div class="d-flex justify-content-between align-items-center pt-2 border-top">
+                <span class="fw-bold fs-6">Tổng thanh toán:</span>
+                <span class="fs-4 fw-bold text-danger">
+                  {{ formatCurrency(totalCartAmount()) }}
+                </span>
+              </div>
+            </div>
+
+            <!-- Checkout Button -->
+            <button
+              cButton
+              color="primary"
+              class="w-100 py-3 fw-bold shadow-sm rounded-pill d-flex align-items-center justify-content-center gap-2 fs-6"
+              [disabled]="submitting() || cart().length === 0"
+              (click)="submitOrder()"
+            >
+              @if (submitting()) {
+                <c-spinner size="sm"></c-spinner>
+                <span>Đang xử lý đơn hàng...</span>
+              } @else {
+                <svg cIcon name="cilCheckCircle" size="lg"></svg>
+                <span>Xác Nhận Đặt Hàng ({{ formatCurrency(totalCartAmount()) }})</span>
+              }
+            </button>
+          </c-card-body>
+        </c-card>
+
+        <!-- Trust Badges -->
+        <div class="text-center text-body-secondary small px-2">
+          <div class="d-flex justify-content-center gap-3">
+            <span>✓ Cam kết chính hãng 100%</span>
+            <span>✓ Đổi trả trong 30 ngày</span>
+          </div>
+        </div>
+      </div>
+    </c-col>
+  </c-row>
+  }
+</div>
+
+<!-- SUCCESS ORDER MODAL -->
+<c-modal [visible]="successModalVisible()" (visibleChange)="successModalVisible.set($event)" backdrop="static" alignment="center">
+  <c-modal-body class="p-4 text-center">
+    <div class="success-animation-circle mx-auto mb-3 bg-success-subtle text-success rounded-circle d-flex align-items-center justify-content-center" style="width: 70px; height: 70px;">
+      <svg cIcon name="cilCheckCircle" size="2xl"></svg>
+    </div>
+    <h4 class="fw-bold mb-1">Đặt Hàng Thành Công!</h4>
+    <p class="text-body-secondary small mb-3">
+      Đơn hàng và các mặt hàng (OrderLines) đã được lưu thành công vào cơ sở dữ liệu.
+    </p>
+
+    <div class="order-receipt-card bg-body-secondary rounded-3 p-3 mb-4 text-start small">
+      <div class="d-flex justify-content-between mb-1">
+        <span class="text-body-secondary">Mã đơn hàng:</span>
+        <span class="font-monospace fw-bold text-primary">{{ createdOrderId() }}</span>
+      </div>
+      <div class="d-flex justify-content-between mb-1">
+        <span class="text-body-secondary">Người nhận:</span>
+        <strong class="text-body">{{ receiverName() || 'Khách hàng' }}</strong>
+      </div>
+      <div class="d-flex justify-content-between mb-1">
+        <span class="text-body-secondary">Địa chỉ:</span>
+        <span class="text-body text-truncate" style="max-width: 240px;">{{ shippingAddress() }}</span>
+      </div>
+      <div class="d-flex justify-content-between mb-1">
+        <span class="text-body-secondary">Phương thức:</span>
+        <span class="fw-semibold">{{ paymentMethod() === 'BANK' ? 'Chuyển khoản ngân hàng' : 'Tiền mặt khi nhận' }}</span>
+      </div>
+      <div class="d-flex justify-content-between pt-2 border-top">
+        <span class="fw-bold">Tổng thanh toán:</span>
+        <span class="fw-bold text-danger fs-6">{{ formatCurrency(createdOrderAmount()) }}</span>
+      </div>
+    </div>
+
+    <div class="d-flex gap-2 justify-content-center">
+      <button cButton color="secondary" variant="outline" class="rounded-pill px-4" (click)="goToProducts()">
+        Tiếp tục mua hàng
+      </button>
+      <button cButton color="primary" class="rounded-pill px-4" (click)="goToOrderList()">
+        Xem danh sách đơn
+      </button>
+    </div>
+  </c-modal-body>
+</c-modal>
+
