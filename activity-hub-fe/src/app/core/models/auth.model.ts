@@ -10,4 +10,9 @@ export interface LoginResponse {
   authenticated?: boolean;
 }
 
+export interface RefreshRequest {
+  refreshToken?: string;
+  token?: string;
+}
+
 export type AuthenticationResponse = LoginResponse;

@@ -310,6 +310,8 @@ export class UsersComponent implements OnInit {
           });
 
           this.loadUsers();
+          this.authService.setUser(updated);
+
         },
         error: (err) => {
           this.saving.set(false);

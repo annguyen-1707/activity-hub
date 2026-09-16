@@ -29,7 +29,7 @@
   <c-card class="border-0 shadow-sm mb-4">
     <c-card-header class="bg-body d-flex flex-wrap justify-content-between align-items-center py-3 border-bottom">
       <div class="fw-bold text-body">
-        Danh sách vai trò ({{ filteredRoles().length }} vai trò)
+        Danh sách vai trò ({{ filteredRolesCount() }} vai trò)
       </div>
 
       <button cButton color="secondary" variant="outline" size="sm" (click)="loadRoles()" title="Làm mới">
@@ -39,8 +39,8 @@
     </c-card-header>
 
     <c-card-body>
-      <!-- Search Filter -->
-      <c-row class="mb-3">
+      <!-- Search & PageSize Toolbar -->
+      <c-row class="mb-3 g-2 align-items-center justify-content-between">
         <c-col md="6" xs="12">
           <c-input-group>
             <span cInputGroupText>
@@ -50,9 +50,23 @@
               cFormControl
               placeholder="Tìm kiếm theo tên vai trò, mô tả..."
               [ngModel]="keyword()"
-              (ngModelChange)="keyword.set($event)"
+              (ngModelChange)="onKeywordChange($event)"
             />
           </c-input-group>
+        </c-col>
+
+        <c-col md="6" xs="12" class="d-flex justify-content-md-end align-items-center gap-2">
+          <span class="text-body-secondary small text-nowrap">Hiển thị:</span>
+          <select
+            cSelect
+            class="form-select w-auto"
+            [ngModel]="pageSize()"
+            (ngModelChange)="onPageSizeChange($event)"
+          >
+            <option [value]="5">5 dòng</option>
+            <option [value]="10">10 dòng</option>
+            <option [value]="20">20 dòng</option>
+          </select>
         </c-col>
       </c-row>
 
@@ -75,7 +89,7 @@
                 <span class="text-body-secondary">Đang tải danh sách vai trò...</span>
               </td>
             </tr>
-            } @else if (filteredRoles().length === 0) {
+            } @else if (filteredRolesCount() === 0) {
             <tr>
               <td colspan="4" class="text-center py-5">
                 <svg cIcon name="cilLockLocked" size="3xl" class="text-secondary opacity-50 mb-2"></svg>
@@ -84,10 +98,10 @@
               </td>
             </tr>
             } @else {
-            @for (role of filteredRoles(); track role.name; let i = $index) {
+            @for (role of paginatedRoles(); track role.name; let i = $index) {
             <tr>
               <td class="text-center text-body-secondary small fw-semibold">
-                {{ i + 1 }}
+                {{ page() * pageSize() + i + 1 }}
               </td>
 
               <!-- Role Name & Badge -->
@@ -127,6 +141,43 @@
           </tbody>
         </table>
       </div>
+
+      <!-- Pagination Footer (Sticky Bottom) -->
+      @if (!loading() && filteredRolesCount() > 0) {
+      <div class="sticky-pagination-footer d-flex flex-wrap justify-content-between align-items-center gap-2">
+        <div class="text-body-secondary small mb-2 mb-md-0">
+          Hiển thị <strong>{{ paginatedRoles().length }}</strong> trên tổng số <strong>{{ filteredRolesCount() }}</strong> vai trò
+          (Trang {{ page() + 1 }} / {{ totalPages() }})
+        </div>
+
+        <c-pagination align="end" class="mb-0">
+          <!-- First Page -->
+          <c-page-item [disabled]="page() === 0">
+            <a cPageLink (click)="goToPage(0)" aria-label="First">&laquo;</a>
+          </c-page-item>
+          <!-- Previous -->
+          <c-page-item [disabled]="page() === 0">
+            <a cPageLink (click)="goToPage(page() - 1)" aria-label="Previous">&lsaquo;</a>
+          </c-page-item>
+
+          <!-- Page numbers -->
+          @for (p of getPageNumbers(); track p) {
+          <c-page-item [active]="p === page()">
+            <a cPageLink (click)="goToPage(p)">{{ p + 1 }}</a>
+          </c-page-item>
+          }
+
+          <!-- Next -->
+          <c-page-item [disabled]="page() >= totalPages() - 1">
+            <a cPageLink (click)="goToPage(page() + 1)" aria-label="Next">&rsaquo;</a>
+          </c-page-item>
+          <!-- Last Page -->
+          <c-page-item [disabled]="page() >= totalPages() - 1">
+            <a cPageLink (click)="goToPage(totalPages() - 1)" aria-label="Last">&raquo;</a>
+          </c-page-item>
+        </c-pagination>
+      </div>
+      }
     </c-card-body>
   </c-card>
 </div>

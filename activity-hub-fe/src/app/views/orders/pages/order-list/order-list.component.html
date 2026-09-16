@@ -1,9 +1,9 @@
 <div class="order-list-page">
 
   <!-- FILTERS & TABLE CARD -->
-  <c-card class="border-0 shadow-sm rounded-4 overflow-hidden mb-4">
+  <c-card class="border-0 shadow-sm rounded-4 mb-4">
     <!-- Toolbar Header -->
-    <c-card-header class="bg-body py-3 px-4 border-bottom">
+    <c-card-header class="bg-body py-3 px-4 border-bottom rounded-top-4">
       <c-row class="g-3 align-items-center justify-content-between">
         <!-- Search Input -->
         <c-col md="5" xs="12">
@@ -57,6 +57,23 @@
               <option value="BANK">Chuyển khoản</option>
               <option value="CASH">Tiền mặt (COD)</option>
             </select>
+
+            <!-- Page Size Selector -->
+            <div class="d-flex align-items-center gap-1 ms-auto ms-md-0">
+              <span class="text-body-secondary small text-nowrap d-none d-sm-inline">Hiển thị:</span>
+              <select
+                cSelect
+                size="sm"
+                class="form-select-sm w-auto rounded-3"
+                [ngModel]="pageSize()"
+                (ngModelChange)="onPageSizeChange($event)"
+              >
+                <option [value]="5">5 dòng</option>
+                <option [value]="10">10 dòng</option>
+                <option [value]="20">20 dòng</option>
+                <option [value]="50">50 dòng</option>
+              </select>
+            </div>
 
             <!-- Refresh Button -->
             <button
@@ -215,22 +232,38 @@
         </table>
       </div>
 
-      <!-- Pagination Footer -->
-      @if (!loading() && filteredOrders().length > 0 && totalPages() > 1) {
-      <div class="d-flex flex-wrap justify-content-between align-items-center p-3 border-top">
+      <!-- Pagination Footer (Sticky Bottom) -->
+      @if (!loading() && filteredOrders().length > 0) {
+      <div class="sticky-pagination-footer d-flex flex-wrap justify-content-between align-items-center gap-2 rounded-bottom-4">
         <span class="text-body-secondary small">
-          Hiển thị <strong>{{ filteredOrders().length }}</strong> đơn hàng trên trang
+          Hiển thị <strong>{{ filteredOrders().length }}</strong> trên tổng số <strong>{{ totalElements() }}</strong> đơn hàng
+          (Trang {{ page() + 1 }} / {{ totalPages() }})
         </span>
 
         <c-pagination align="end" class="mb-0">
+          <!-- First Page -->
           <c-page-item [disabled]="page() === 0">
-            <a cPageLink (click)="goToPage(page() - 1)">&laquo; Trước</a>
+            <a cPageLink (click)="goToPage(0)" aria-label="First">&laquo;</a>
           </c-page-item>
-          <c-page-item [active]="true">
-            <a cPageLink>{{ page() + 1 }} / {{ totalPages() }}</a>
+          <!-- Previous Page -->
+          <c-page-item [disabled]="page() === 0">
+            <a cPageLink (click)="goToPage(page() - 1)" aria-label="Previous">&lsaquo;</a>
           </c-page-item>
+
+          <!-- Numbered Pages -->
+          @for (p of getPageNumbers(); track p) {
+          <c-page-item [active]="p === page()">
+            <a cPageLink (click)="goToPage(p)">{{ p + 1 }}</a>
+          </c-page-item>
+          }
+
+          <!-- Next Page -->
           <c-page-item [disabled]="page() >= totalPages() - 1">
-            <a cPageLink (click)="goToPage(page() + 1)">Sau &raquo;</a>
+            <a cPageLink (click)="goToPage(page() + 1)" aria-label="Next">&rsaquo;</a>
+          </c-page-item>
+          <!-- Last Page -->
+          <c-page-item [disabled]="page() >= totalPages() - 1">
+            <a cPageLink (click)="goToPage(totalPages() - 1)" aria-label="Last">&raquo;</a>
           </c-page-item>
         </c-pagination>
       </div>

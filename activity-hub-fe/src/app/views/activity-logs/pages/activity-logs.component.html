@@ -26,7 +26,7 @@
       <!-- Filter Toolbar -->
       <c-row class="g-2 align-items-center">
         <!-- Search Keyword -->
-        <c-col lg="5" md="6" xs="12">
+        <c-col lg="4" md="5" xs="12">
           <c-input-group>
             <span cInputGroupText>
               <svg cIcon name="cilMagnifyingGlass"></svg>
@@ -41,7 +41,7 @@
         </c-col>
 
         <!-- Filter Event Type -->
-        <c-col lg="4" md="3" xs="6">
+        <c-col lg="3" md="3" xs="6">
           <select
             cSelect
             class="form-select"
@@ -61,7 +61,7 @@
         </c-col>
 
         <!-- Filter Target Type -->
-        <c-col lg="3" md="3" xs="6">
+        <c-col lg="3" md="2" xs="6">
           <select
             cSelect
             class="form-select"
@@ -73,6 +73,22 @@
             <option value="USER">Người dùng (USER)</option>
             <option value="ROLE">Vai trò (ROLE)</option>
             <option value="AUTH">Xác thực (AUTH)</option>
+          </select>
+        </c-col>
+
+        <!-- Page Size Selector -->
+        <c-col lg="2" md="2" xs="12" class="d-flex justify-content-md-end align-items-center gap-1">
+          <span class="text-body-secondary small text-nowrap d-none d-lg-inline">Hiển thị:</span>
+          <select
+            cSelect
+            class="form-select w-auto"
+            [ngModel]="pageSize()"
+            (ngModelChange)="onPageSizeChange($event)"
+          >
+            <option [value]="5">5 dòng</option>
+            <option [value]="10">10 dòng</option>
+            <option [value]="20">20 dòng</option>
+            <option [value]="50">50 dòng</option>
           </select>
         </c-col>
       </c-row>
@@ -189,22 +205,38 @@
         </table>
       </div>
 
-      <!-- Pagination -->
-      @if (!loading() && filteredLogs().length > 0 && totalPages() > 1) {
-      <div class="d-flex justify-content-between align-items-center mt-3 pt-2">
+      <!-- Pagination Footer (Sticky Bottom) -->
+      @if (!loading() && filteredLogs().length > 0) {
+      <div class="sticky-pagination-footer d-flex flex-wrap justify-content-between align-items-center gap-2">
         <span class="text-body-secondary small">
           Hiển thị <strong>{{ paginatedLogs().length }}</strong> trên tổng số <strong>{{ filteredLogs().length }}</strong> bản ghi
+          (Trang {{ page() + 1 }} / {{ totalPages() }})
         </span>
 
         <c-pagination align="end" class="mb-0">
+          <!-- First Page -->
           <c-page-item [disabled]="page() === 0">
-            <a cPageLink (click)="goToPage(page() - 1)">&laquo;</a>
+            <a cPageLink (click)="goToPage(0)" aria-label="First">&laquo;</a>
           </c-page-item>
-          <c-page-item [active]="true">
-            <a cPageLink>{{ page() + 1 }} / {{ totalPages() }}</a>
+          <!-- Previous Page -->
+          <c-page-item [disabled]="page() === 0">
+            <a cPageLink (click)="goToPage(page() - 1)" aria-label="Previous">&lsaquo;</a>
           </c-page-item>
+
+          <!-- Numbered Pages -->
+          @for (p of getPageNumbers(); track p) {
+          <c-page-item [active]="p === page()">
+            <a cPageLink (click)="goToPage(p)">{{ p + 1 }}</a>
+          </c-page-item>
+          }
+
+          <!-- Next Page -->
           <c-page-item [disabled]="page() >= totalPages() - 1">
-            <a cPageLink (click)="goToPage(page() + 1)">&raquo;</a>
+            <a cPageLink (click)="goToPage(page() + 1)" aria-label="Next">&rsaquo;</a>
+          </c-page-item>
+          <!-- Last Page -->
+          <c-page-item [disabled]="page() >= totalPages() - 1">
+            <a cPageLink (click)="goToPage(totalPages() - 1)" aria-label="Last">&raquo;</a>
           </c-page-item>
         </c-pagination>
       </div>

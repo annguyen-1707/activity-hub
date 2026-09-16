@@ -56,13 +56,15 @@ export class AuthService {
     localStorage.removeItem(this.USER_KEY);
   }
 
-  login(request : LoginRequest): Observable<UserResponse> {
+  login(request: LoginRequest): Observable<UserResponse> {
     return this.http
-      .post<ApiResponse<LoginResponse>>(`${this.baseUrl}/auth/token`, request)
+      .post<ApiResponse<LoginResponse>>(`${this.baseUrl}/auth/token`, request, {
+        withCredentials: true,
+      })
       .pipe(
         map((response) => response.result),
         tap((result) => {
-          const token = result.token || result.accessToken;
+          const token = result.accessToken;
           if (token) {
             this.setToken(token);
           }
@@ -74,14 +76,48 @@ export class AuthService {
       );
   }
 
+  refreshToken(): Observable<string> {
+    return this.http
+      .post<ApiResponse<LoginResponse>>(
+        `${this.baseUrl}/auth/refresh`,
+        {},
+        { withCredentials: true }
+      )
+      .pipe(
+        map((response) => response.result),
+        map((result) => {
+          const token = result.accessToken;
+          if (!token) {
+            throw new Error('No access token returned from refresh API');
+          }
+          this.setToken(token);
+          return token;
+        })
+      );
+  }
+
   logout(): void {
+    const token = this.getToken();
+    this.http
+      .post(
+        `${this.baseUrl}/auth/logout`,
+        { token },
+        { withCredentials: true }
+      )
+      .subscribe({
+        next: () => {},
+        error: () => {},
+      });
+
     this.removeToken();
     this.clearUser();
   }
 
   getUserProfile(): Observable<UserResponse> {
     return this.http
-      .get<ApiResponse<UserResponse>>(`${this.baseUrl}/users/my-info`)
+      .get<ApiResponse<UserResponse>>(`${this.baseUrl}/users/my-info`, {
+        withCredentials: true,
+      })
       .pipe(map((response) => response.result));
   }
 }

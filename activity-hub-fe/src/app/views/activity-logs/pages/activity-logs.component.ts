@@ -138,6 +138,25 @@ export class ActivityLogsComponent implements OnInit {
     }
   }
 
+  onPageSizeChange(newSize: number): void {
+    this.pageSize.set(Number(newSize));
+    this.page.set(0);
+  }
+
+  getPageNumbers(): number[] {
+    const total = this.totalPages();
+    const current = this.page();
+    const pages: number[] = [];
+
+    const start = Math.max(0, current - 2);
+    const end = Math.min(total - 1, current + 2);
+
+    for (let i = start; i <= end; i++) {
+      pages.push(i);
+    }
+    return pages;
+  }
+
   openDetailModal(log: ActivityLog): void {
     this.selectedLog.set(log);
     this.detailModalVisible.set(true);

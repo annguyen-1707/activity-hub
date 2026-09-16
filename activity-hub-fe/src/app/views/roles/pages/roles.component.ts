@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import {
@@ -11,6 +11,7 @@ import {
   ColComponent,
   FormControlDirective,
   FormLabelDirective,
+  FormSelectDirective,
   InputGroupComponent,
   InputGroupTextDirective,
   ModalBodyComponent,
@@ -18,6 +19,9 @@ import {
   ModalFooterComponent,
   ModalHeaderComponent,
   ModalTitleDirective,
+  PageItemComponent,
+  PageLinkDirective,
+  PaginationComponent,
   RowComponent,
   SpinnerComponent,
   TableDirective,
@@ -50,8 +54,12 @@ import { RoleService } from '../../../core/services/role.service';
     AlertComponent,
     FormControlDirective,
     FormLabelDirective,
+    FormSelectDirective,
     InputGroupComponent,
     InputGroupTextDirective,
+    PaginationComponent,
+    PageItemComponent,
+    PageLinkDirective,
     ModalComponent,
     ModalHeaderComponent,
     ModalTitleDirective,
@@ -114,12 +122,59 @@ export class RolesComponent implements OnInit {
     });
   }
 
+  page = signal<number>(0);
+  pageSize = signal<number>(5);
+
   filteredRoles(): RoleResponse[] {
     const kw = this.keyword().trim().toLowerCase();
     if (!kw) return this.roles();
     return this.roles().filter(
       (r) => r.name.toLowerCase().includes(kw) || (r.description && r.description.toLowerCase().includes(kw))
     );
+  }
+
+  paginatedRoles = computed(() => {
+    const list = this.filteredRoles();
+    const start = this.page() * this.pageSize();
+    return list.slice(start, start + this.pageSize());
+  });
+
+  filteredRolesCount = computed(() => {
+    return this.filteredRoles().length;
+  });
+
+  totalPages = computed(() => {
+    return Math.ceil(this.filteredRolesCount() / this.pageSize()) || 1;
+  });
+
+  onPageSizeChange(newSize: number): void {
+    this.pageSize.set(Number(newSize));
+    this.page.set(0);
+  }
+
+  goToPage(pageNum: number): void {
+    if (pageNum >= 0 && pageNum < this.totalPages()) {
+      this.page.set(pageNum);
+    }
+  }
+
+  getPageNumbers(): number[] {
+    const total = this.totalPages();
+    const current = this.page();
+    const pages: number[] = [];
+
+    const start = Math.max(0, current - 2);
+    const end = Math.min(total - 1, current + 2);
+
+    for (let i = start; i <= end; i++) {
+      pages.push(i);
+    }
+    return pages;
+  }
+
+  onKeywordChange(value: string): void {
+    this.keyword.set(value);
+    this.page.set(0);
   }
 
   openCreateModal(): void {

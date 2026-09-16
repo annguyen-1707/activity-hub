@@ -15,3 +15,23 @@
 .select-week .calendar-row.current {
   cursor: pointer;
 }
+
+// Cố định thanh phân trang ở đáy (Sticky Bottom Pagination Footer)
+.sticky-pagination-footer {
+  position: sticky;
+  bottom: 0;
+  z-index: 100;
+  background-color: var(--cui-card-bg, var(--cui-body-bg, #ffffff));
+  border-top: 1px solid var(--cui-border-color, #d8dbe0);
+  box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.08);
+  padding: 0.75rem 1.25rem;
+}
+
+c-card-body:not(.p-0) > .sticky-pagination-footer {
+  margin-left: calc(-1 * var(--cui-card-spacer-x, 1rem));
+  margin-right: calc(-1 * var(--cui-card-spacer-x, 1rem));
+  margin-bottom: calc(-1 * var(--cui-card-spacer-y, 1rem));
+  margin-top: 1rem;
+  border-bottom-left-radius: inherit;
+  border-bottom-right-radius: inherit;
+}
