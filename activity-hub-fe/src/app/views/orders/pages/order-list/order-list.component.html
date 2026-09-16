@@ -1,9 +1,9 @@
 <div class="order-list-page">
 
   <!-- FILTERS & TABLE CARD -->
-  <c-card class="border-0 shadow-sm rounded-4 mb-4">
+  <c-card class="border-0 shadow-sm rounded-4 overflow-hidden mb-4">
     <!-- Toolbar Header -->
-    <c-card-header class="bg-body py-3 px-4 border-bottom rounded-top-4">
+    <c-card-header class="bg-body py-3 px-4 border-bottom">
       <c-row class="g-3 align-items-center justify-content-between">
         <!-- Search Input -->
         <c-col md="5" xs="12">
@@ -232,9 +232,9 @@
         </table>
       </div>
 
-      <!-- Pagination Footer (Sticky Bottom) -->
+      <!-- Pagination Footer -->
       @if (!loading() && filteredOrders().length > 0) {
-      <div class="sticky-pagination-footer d-flex flex-wrap justify-content-between align-items-center gap-2 rounded-bottom-4">
+      <div class="d-flex flex-wrap justify-content-between align-items-center p-3 border-top gap-2">
         <span class="text-body-secondary small">
           Hiển thị <strong>{{ filteredOrders().length }}</strong> trên tổng số <strong>{{ totalElements() }}</strong> đơn hàng
           (Trang {{ page() + 1 }} / {{ totalPages() }})
