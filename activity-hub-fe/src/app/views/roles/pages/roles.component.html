@@ -1,0 +1,240 @@
+<div class="roles-management-page">
+  <!-- Alerts -->
+  @if (alertMessage()) {
+  <c-alert [color]="alertType()" [dismissible]="true" class="mb-3 d-flex align-items-center shadow-sm">
+    <svg cIcon [name]="alertType() === 'success' ? 'cilCheck' : 'cilBug'" class="me-2" size="lg"></svg>
+    <div>{{ alertMessage() }}</div>
+  </c-alert>
+  }
+
+  <!-- Header Banner -->
+  <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 pb-2 border-bottom">
+    <div>
+      <h3 class="fw-bold text-primary mb-1 d-flex align-items-center">
+        <svg cIcon name="cilLockLocked" class="me-2"></svg>
+        Quản Lý Vai Trò & Phân Quyền
+      </h3>
+      <p class="text-body-secondary mb-0 small">
+        Quản lý các vai trò (Role) trong hệ thống Activity Hub để gán quyền cho người dùng.
+      </p>
+    </div>
+    <div class="mt-2 mt-md-0">
+      <button cButton color="primary" class="d-flex align-items-center shadow-sm" (click)="openCreateModal()">
+        <svg cIcon name="cilPlus" class="me-1"></svg>
+        Thêm vai trò mới
+      </button>
+    </div>
+  </div>
+
+  <c-card class="border-0 shadow-sm mb-4">
+    <c-card-header class="bg-body d-flex flex-wrap justify-content-between align-items-center py-3 border-bottom">
+      <div class="fw-bold text-body">
+        Danh sách vai trò ({{ filteredRoles().length }} vai trò)
+      </div>
+
+      <button cButton color="secondary" variant="outline" size="sm" (click)="loadRoles()" title="Làm mới">
+        <svg cIcon name="cilSpeedometer" class="me-1"></svg>
+        Làm mới
+      </button>
+    </c-card-header>
+
+    <c-card-body>
+      <!-- Search Filter -->
+      <c-row class="mb-3">
+        <c-col md="6" xs="12">
+          <c-input-group>
+            <span cInputGroupText>
+              <svg cIcon name="cilMagnifyingGlass"></svg>
+            </span>
+            <input
+              cFormControl
+              placeholder="Tìm kiếm theo tên vai trò, mô tả..."
+              [ngModel]="keyword()"
+              (ngModelChange)="keyword.set($event)"
+            />
+          </c-input-group>
+        </c-col>
+      </c-row>
+
+      <!-- Roles Table -->
+      <div class="table-responsive border rounded">
+        <table cTable hover class="align-middle mb-0">
+          <thead class="table-light">
+            <tr>
+              <th scope="col" class="text-center" style="width: 60px;">#</th>
+              <th scope="col" style="width: 220px;">Tên vai trò</th>
+              <th scope="col">Mô tả chi tiết</th>
+              <th scope="col" class="text-center" style="width: 120px;">Thao tác</th>
+            </tr>
+          </thead>
+          <tbody>
+            @if (loading()) {
+            <tr>
+              <td colspan="4" class="text-center py-5">
+                <c-spinner color="primary" class="me-2"></c-spinner>
+                <span class="text-body-secondary">Đang tải danh sách vai trò...</span>
+              </td>
+            </tr>
+            } @else if (filteredRoles().length === 0) {
+            <tr>
+              <td colspan="4" class="text-center py-5">
+                <svg cIcon name="cilLockLocked" size="3xl" class="text-secondary opacity-50 mb-2"></svg>
+                <h6>Không tìm thấy vai trò nào</h6>
+                <p class="text-body-secondary small mb-0">Thử tìm kiếm với từ khóa khác hoặc bấm nút "Thêm vai trò mới".</p>
+              </td>
+            </tr>
+            } @else {
+            @for (role of filteredRoles(); track role.name; let i = $index) {
+            <tr>
+              <td class="text-center text-body-secondary small fw-semibold">
+                {{ i + 1 }}
+              </td>
+
+              <!-- Role Name & Badge -->
+              <td>
+                <c-badge [color]="getBadgeColor(role.name)" class="fs-6 px-3 py-1 font-monospace">
+                  {{ role.name }}
+                </c-badge>
+              </td>
+
+              <!-- Description -->
+              <td>
+                <span class="text-body">{{ role.description || 'Chưa có mô tả' }}</span>
+              </td>
+
+              <!-- Actions -->
+              <td class="text-center">
+                @if (role.name === 'ADMIN' || role.name === 'USER') {
+                <span class="badge bg-light text-body-secondary border" title="Vai trò mặc định của hệ thống không thể xóa">
+                  Mặc định
+                </span>
+                } @else {
+                <button
+                  cButton
+                  color="danger"
+                  variant="outline"
+                  size="sm"
+                  (click)="openDeleteModal(role)"
+                  title="Xóa vai trò"
+                >
+                  <svg cIcon name="cilTrash"></svg>
+                </button>
+                }
+              </td>
+            </tr>
+            }
+            }
+          </tbody>
+        </table>
+      </div>
+    </c-card-body>
+  </c-card>
+</div>
+
+<!-- CREATE ROLE MODAL -->
+<c-modal [visible]="createModalVisible()" (visibleChange)="createModalVisible.set($event)" backdrop="static" id="createRoleModal">
+  <c-modal-header class="bg-primary text-white">
+    <h5 cModalTitle class="d-flex align-items-center">
+      <svg cIcon name="cilPlus" class="me-2"></svg>
+      Thêm Mới Vai Trò (Role)
+    </h5>
+    <button (click)="closeCreateModal()" class="btn-close btn-close-white"></button>
+  </c-modal-header>
+  <c-modal-body class="p-4">
+    <form [formGroup]="roleForm" (ngSubmit)="saveRole()">
+      <!-- Role Name -->
+      <div class="mb-3">
+        <label cLabel for="roleName" class="fw-semibold">
+          Tên vai trò (Mã Role) <span class="text-danger">*</span>
+        </label>
+        <input
+          cFormControl
+          id="roleName"
+          formControlName="name"
+          placeholder="Ví dụ: MANAGER, STAFF, ACCOUNTANT..."
+          style="text-transform: uppercase;"
+          [valid]="roleForm.get('name')?.touched ? roleForm.get('name')?.valid : undefined"
+        />
+        <div class="form-text small text-body-secondary">
+          Tên vai trò viết hoa, không dấu, chỉ gồm chữ cái, số và dấu gạch dưới (_).
+        </div>
+        @if (roleForm.get('name')?.touched && roleForm.get('name')?.invalid) {
+        <div class="text-danger small mt-1">
+          @if (roleForm.get('name')?.hasError('required')) {
+          Vui lòng nhập tên vai trò!
+          } @else if (roleForm.get('name')?.hasError('pattern')) {
+          Tên vai trò chỉ được gồm chữ cái in hoa (A-Z), số (0-9) và dấu _!
+          }
+        </div>
+        }
+      </div>
+
+      <!-- Description -->
+      <div class="mb-3">
+        <label cLabel for="roleDesc" class="fw-semibold">
+          Mô tả vai trò <span class="text-danger">*</span>
+        </label>
+        <textarea
+          cFormControl
+          id="roleDesc"
+          rows="3"
+          formControlName="description"
+          placeholder="Mô tả quyền hạn, trách nhiệm của vai trò này trong hệ thống..."
+          [valid]="roleForm.get('description')?.touched ? roleForm.get('description')?.valid : undefined"
+        ></textarea>
+        @if (roleForm.get('description')?.touched && roleForm.get('description')?.invalid) {
+        <div class="text-danger small mt-1">
+          Vui lòng nhập mô tả cho vai trò!
+        </div>
+        }
+      </div>
+    </form>
+  </c-modal-body>
+  <c-modal-footer>
+    <button cButton color="secondary" variant="outline" (click)="closeCreateModal()" [disabled]="saving()">
+      Hủy bỏ
+    </button>
+    <button cButton color="primary" (click)="saveRole()" [disabled]="saving() || roleForm.invalid">
+      @if (saving()) {
+      <c-spinner size="sm" class="me-1"></c-spinner>
+      Đang lưu...
+      } @else {
+      <svg cIcon name="cilCheck" class="me-1"></svg>
+      Tạo vai trò
+      }
+    </button>
+  </c-modal-footer>
+</c-modal>
+
+<!-- DELETE CONFIRMATION MODAL -->
+<c-modal [visible]="deleteModalVisible()" (visibleChange)="deleteModalVisible.set($event)" backdrop="static" id="deleteRoleModal">
+  <c-modal-header class="bg-danger text-white">
+    <h5 cModalTitle class="d-flex align-items-center">
+      <svg cIcon name="cilTrash" class="me-2"></svg>
+      Xác Nhận Xóa Vai Trò
+    </h5>
+    <button (click)="closeDeleteModal()" class="btn-close btn-close-white"></button>
+  </c-modal-header>
+  <c-modal-body class="p-4">
+    <p class="mb-2">
+      Bạn có chắc chắn muốn xóa vai trò <strong>{{ selectedRole()?.name }}</strong> không?
+    </p>
+    <p class="text-danger small mb-0">
+      * Cảnh báo: Các người dùng đang được gán vai trò này sẽ không còn quyền hạn tương ứng.
+    </p>
+  </c-modal-body>
+  <c-modal-footer>
+    <button cButton color="secondary" variant="outline" (click)="closeDeleteModal()" [disabled]="deleting()">
+      Hủy
+    </button>
+    <button cButton color="danger" (click)="confirmDelete()" [disabled]="deleting()">
+      @if (deleting()) {
+      <c-spinner size="sm" class="me-1"></c-spinner>
+      Đang xóa...
+      } @else {
+      Xác nhận xóa
+      }
+    </button>
+  </c-modal-footer>
+</c-modal>
+

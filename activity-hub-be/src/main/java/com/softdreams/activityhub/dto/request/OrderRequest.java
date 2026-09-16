@@ -1,6 +1,7 @@
 package com.softdreams.activityhub.dto.request;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 import com.softdreams.activityhub.enums.PaymentMethodEnum;
 import jakarta.persistence.Column;
@@ -13,9 +14,9 @@ import lombok.experimental.FieldDefaults;
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class OrderRequest {
-    BigDecimal totalAmount;
-    String status;
+
     PaymentMethodEnum paymentMethod;
     String shippingAddress;
     String note;
+    List<OrderLineRequest> items;
 }

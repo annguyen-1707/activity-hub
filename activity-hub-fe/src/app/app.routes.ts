@@ -22,6 +22,8 @@ export const routes: Routes = [
       {
         path: 'users',
         loadChildren: () => import('./views/users/routes').then((m) => m.routes),
+        path: 'orders',
+        loadChildren: () => import('./views/orders/routes').then((m) => m.routes),
         canActivate : [authGuard],
       },
       {
@@ -31,16 +33,22 @@ export const routes: Routes = [
       {
         path: 'forms',
         loadChildren: () => import('./views/forms/routes').then((m) => m.routes),
+        path: 'users',
+        loadChildren: () => import('./views/users/routes').then((m) => m.routes),
         canActivate : [authGuard],
       },
       {
         path: 'icons',
         loadChildren: () => import('./views/icons/routes').then((m) => m.routes),
+        path: 'roles',
+        loadChildren: () => import('./views/roles/routes').then((m) => m.routes),
         canActivate : [authGuard],
       },
       {
         path: 'widgets',
         loadChildren: () => import('./views/widgets/routes').then((m) => m.routes),
+        path: 'activity-logs',
+        loadChildren: () => import('./views/activity-logs/routes').then((m) => m.routes),
         canActivate : [authGuard],
       },
       {

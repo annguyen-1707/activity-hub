@@ -1,0 +1,259 @@
+import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { Router, RouterLink } from '@angular/router';
+import {
+  AlertComponent,
+  BadgeComponent,
+  ButtonDirective,
+  CardBodyComponent,
+  CardComponent,
+  CardHeaderComponent,
+  ColComponent,
+  FormControlDirective,
+  FormDirective,
+  FormLabelDirective,
+  FormSelectDirective,
+  InputGroupComponent,
+  InputGroupTextDirective,
+  ModalBodyComponent,
+  ModalComponent,
+  ModalFooterComponent,
+  ModalHeaderComponent,
+  ModalTitleDirective,
+  RowComponent,
+  SpinnerComponent,
+} from '@coreui/angular';
+import { IconDirective } from '@coreui/icons-angular';
+import { CartItem, OrderRequest, PaymentMethod, Product } from '../../../../core/models/order.model';
+import { OrderService } from '../../../../core/services/order.service';
+import { AuthService } from '../../../../core/services/auth.service';
+import { ActivityLogService } from '../../../../core/services/activity-log.service';
+
+@Component({
+  selector: 'app-order-create',
+  standalone: true,
+  templateUrl: './order-create.component.html',
+  styleUrls: ['./order-create.component.scss'],
+  imports: [
+    CommonModule,
+    FormsModule,
+    RouterLink,
+    RowComponent,
+    ColComponent,
+    CardComponent,
+    CardHeaderComponent,
+    CardBodyComponent,
+    ButtonDirective,
+    BadgeComponent,
+    SpinnerComponent,
+    AlertComponent,
+    FormControlDirective,
+    FormLabelDirective,
+    FormSelectDirective,
+    FormDirective,
+    InputGroupComponent,
+    InputGroupTextDirective,
+    ModalComponent,
+    ModalHeaderComponent,
+    ModalTitleDirective,
+    ModalBodyComponent,
+    ModalFooterComponent,
+    IconDirective,
+  ],
+})
+export class OrderCreateComponent implements OnInit {
+  private readonly orderService = inject(OrderService);
+  private readonly authService = inject(AuthService);
+  private readonly activityLogService = inject(ActivityLogService);
+  private readonly router = inject(Router);
+
+  // Data signals
+  products = signal<Product[]>([]);
+  cart = signal<CartItem[]>([]);
+  selectedCategory = signal<string>('Tất cả');
+  searchKeyword = signal<string>('');
+
+  // Checkout Form signals
+  shippingAddress = signal<string>('Tòa nhà Softdreams, Cầu Giấy, Hà Nội');
+  paymentMethod = signal<PaymentMethod>('BANK');
+  note = signal<string>('');
+
+  // State signals
+  submitting = signal<boolean>(false);
+  alertMessage = signal<string>('');
+  alertType = signal<'success' | 'danger'>('success');
+  successModalVisible = signal<boolean>(false);
+  createdOrderId = signal<string>('');
+
+  // Computed properties
+  categories = computed(() => {
+    const all = this.products().map((p) => p.category);
+    return ['Tất cả', ...Array.from(new Set(all))];
+  });
+
+  filteredProducts = computed(() => {
+    const cat = this.selectedCategory();
+    const kw = this.searchKeyword().trim().toLowerCase();
+
+    return this.products().filter((p) => {
+      const matchCat = cat === 'Tất cả' || p.category === cat;
+      const matchKw = !kw || p.name.toLowerCase().includes(kw) || p.description.toLowerCase().includes(kw);
+      return matchCat && matchKw;
+    });
+  });
+
+  totalCartQuantity = computed(() => {
+    return this.cart().reduce((sum, item) => sum + item.quantity, 0);
+  });
+
+  totalCartAmount = computed(() => {
+    return this.cart().reduce((sum, item) => sum + item.subtotal, 0);
+  });
+
+  ngOnInit(): void {
+    this.loadProducts();
+  }
+
+  loadProducts(): void {
+    this.products.set(this.orderService.getMockProducts());
+  }
+
+  selectCategory(category: string): void {
+    this.selectedCategory.set(category);
+  }
+
+  addToCart(product: Product): void {
+    const currentCart = [...this.cart()];
+    const index = currentCart.findIndex((item) => item.product.id === product.id);
+
+    if (index > -1) {
+      const item = currentCart[index];
+      if (item.quantity < product.stock) {
+        item.quantity += 1;
+        item.subtotal = item.quantity * item.product.price;
+        this.cart.set(currentCart);
+        this.showAlert(`Đã tăng số lượng ${product.name} trong giỏ hàng!`, 'success');
+      } else {
+        this.showAlert(`Sản phẩm ${product.name} chỉ còn ${product.stock} sản phẩm trong kho!`, 'danger');
+      }
+    } else {
+      currentCart.push({
+        product,
+        quantity: 1,
+        subtotal: product.price,
+      });
+      this.cart.set(currentCart);
+      this.showAlert(`Đã thêm ${product.name} vào giỏ hàng!`, 'success');
+    }
+  }
+
+  updateQuantity(item: CartItem, delta: number): void {
+    const currentCart = [...this.cart()];
+    const index = currentCart.findIndex((i) => i.product.id === item.product.id);
+
+    if (index > -1) {
+      const newQty = item.quantity + delta;
+      if (newQty <= 0) {
+        currentCart.splice(index, 1);
+      } else if (newQty > item.product.stock) {
+        this.showAlert(`Số lượng vượt quá tồn kho (${item.product.stock})!`, 'danger');
+        return;
+      } else {
+        currentCart[index].quantity = newQty;
+        currentCart[index].subtotal = newQty * item.product.price;
+      }
+      this.cart.set(currentCart);
+    }
+  }
+
+  removeFromCart(item: CartItem): void {
+    const updated = this.cart().filter((i) => i.product.id !== item.product.id);
+    this.cart.set(updated);
+    this.showAlert(`Đã xóa ${item.product.name} khỏi giỏ hàng!`, 'success');
+  }
+
+  clearCart(): void {
+    this.cart.set([]);
+  }
+
+  submitOrder(): void {
+    if (this.cart().length === 0) {
+      this.showAlert('Vui lòng chọn ít nhất 1 sản phẩm vào giỏ hàng trước khi đặt hàng!', 'danger');
+      return;
+    }
+
+    if (!this.shippingAddress().trim()) {
+      this.showAlert('Vui lòng nhập địa chỉ giao hàng!', 'danger');
+      return;
+    }
+
+    const payload: OrderRequest = {
+      paymentMethod: this.paymentMethod(),
+      shippingAddress: this.shippingAddress().trim(),
+      note: this.note().trim() || undefined,
+      items: this.cart().map((item) => ({
+        productName: item.product.name,
+        quantity: item.quantity,
+        unitPrice: item.product.price,
+        subtotal: item.subtotal,
+      })),
+    };
+
+    this.submitting.set(true);
+
+    this.orderService.createOrder(payload).subscribe({
+      next: (order) => {
+        this.submitting.set(false);
+        this.createdOrderId.set(order?.id || 'Mới');
+
+        // Ghi log hoạt động
+        const currentUser = this.authService.getCurrentUser()();
+        this.activityLogService.recordLog({
+          username: currentUser?.username || 'Khách hàng',
+          fullName: currentUser ? `${currentUser.lastName} ${currentUser.firstName}` : undefined,
+          eventType: 'ORDER_CREATED',
+          targetType: 'ORDER',
+          targetId: order?.id,
+          description: `Tạo đơn hàng mới (${payload.items.length} món) trị giá ${this.formatCurrency(order.totalAmount || this.totalCartAmount())}.`,
+          details: {
+            orderId: order?.id,
+            totalAmount: order.totalAmount,
+            paymentMethod: payload.paymentMethod,
+            itemsCount: payload.items.length,
+          },
+        });
+
+        this.clearCart();
+        this.successModalVisible.set(true);
+      },
+      error: (err) => {
+        this.submitting.set(false);
+        const msg = err?.error?.message || 'Có lỗi xảy ra khi tạo đơn hàng. Vui lòng kiểm tra lại kết nối backend!';
+        this.showAlert(msg, 'danger');
+      },
+    });
+  }
+
+  goToOrderList(): void {
+    this.successModalVisible.set(false);
+    this.router.navigate(['/orders']);
+  }
+
+  closeSuccessModal(): void {
+    this.successModalVisible.set(false);
+  }
+
+  formatCurrency(value: number): string {
+    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value);
+  }
+
+  showAlert(message: string, type: 'success' | 'danger'): void {
+    this.alertMessage.set(message);
+    this.alertType.set(type);
+    setTimeout(() => {
+      this.alertMessage.set('');
+    }, 3500);
+  }
+}
+

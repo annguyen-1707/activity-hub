@@ -3,6 +3,15 @@
   <c-container [fluid]="true" class="border-bottom px-4">
     <button [cSidebarToggle]="sidebarId()" aria-label="Toggle sidebar navigation" cHeaderToggler class="btn"
       style="margin-inline-start: -14px" toggle="visible">
+    <!-- Sidebar Toggle Button -->
+    <button
+      [cSidebarToggle]="sidebarId()"
+      aria-label="Toggle sidebar navigation"
+      cHeaderToggler
+      class="btn"
+      style="margin-inline-start: -14px"
+      toggle="visible"
+    >
       <svg cIcon name="cilMenu" size="lg"></svg>
     </button>
     <!-- <c-search-button
@@ -28,6 +37,9 @@
       <div class="nav-item py-1">
         <div class="vr h-100 mx-2 text-body text-opacity-75"></div>
       </div>
+    <!-- Right-aligned Header Navigation: Theme & Profile -->
+    <c-header-nav class="ms-auto d-flex align-items-center gap-2">
+      <!-- Theme Switcher -->
       <ng-container *ngTemplateOutlet="themeDropdown" />
       <div class="nav-item py-1">
         <div class="vr h-100 mx-2 text-body text-opacity-75"></div>
@@ -35,9 +47,14 @@
     </c-header-nav>
 
     <c-header-nav class="mx-0">
+      <div class="vr h-50 mx-1 text-body text-opacity-50"></div>
+
+      <!-- User Profile Dropdown -->
       <ng-container *ngTemplateOutlet="userDropdown" />
     </c-header-nav>
   </c-container>
+
+  <!-- Breadcrumbs -->
   <c-container [fluid]="true" class="px-4">
     <c-breadcrumb-router />
   </c-container>
@@ -53,6 +70,21 @@
         cFormControl
         placeholder="Search"
         type="search"
+<!-- USER PROFILE DROPDOWN TEMPLATE -->
+<ng-template #userDropdown>
+  <c-dropdown [popperOptions]="{ placement: 'bottom-end' }" variant="nav-item">
+    <button [caret]="false" aria-label="Open user menu" cDropdownToggle class="btn py-0 pe-0 d-flex align-items-center gap-2 border-0 bg-transparent">
+      <div class="text-end d-none d-md-block lh-sm">
+        <div class="fw-bold small text-body">{{ getUserDisplayName() }}</div>
+        <div class="text-body-secondary" style="font-size: 0.72rem;">{{ getUserRole() }}</div>
+      </div>
+      <c-avatar
+        alt="User avatar"
+        shape="rounded-circle"
+        size="md"
+        src="./assets/images/avatars/8.jpg"
+        status="success"
+        textColor="primary"
       />
     </h5> -->
   </c-modal-header>
@@ -74,6 +106,7 @@
     </div>
   </c-modal-body>
 </c-modal>
+    </button>
 
 <ng-template #userDropdown>
   <c-dropdown [popperOptions]="{ placement: 'bottom-start' }" variant="nav-item">
@@ -82,16 +115,28 @@
         textColor="primary" />
     </button>
     <ul cDropdownMenu class="pt-0 w-auto">
+    <ul cDropdownMenu class="pt-0 w-auto shadow border-0 mt-2">
       <li>
         <h6 cDropdownHeader class="bg-body-secondary text-body-secondary fw-semibold py-2 rounded-top">
           Account
         </h6>
+        <div class="bg-body-secondary p-3 rounded-top">
+          <div class="fw-bold text-body">{{ getUserDisplayName() }}</div>
+          <div class="small text-body-secondary font-monospace">&#64;{{ currentUser()?.username || 'user' }}</div>
+          <div class="mt-1">
+            <c-badge color="primary" class="font-monospace">{{ getUserRole() }}</c-badge>
+          </div>
+        </div>
       </li>
+      <li><hr cDropdownDivider class="my-1" /></li>
       <li>
         <a cDropdownItem routerLink="">
           <svg cIcon class="me-2" name="cilBell"></svg>
           Updates
           <c-badge class="ms-2 float-end" color="info"> 42</c-badge>
+        <a cDropdownItem routerLink="/users" class="d-flex align-items-center py-2">
+          <svg cIcon class="me-2 text-primary" name="cilUser"></svg>
+          Thông tin tài khoản
         </a>
       </li>
       <li>
@@ -99,6 +144,9 @@
           <svg cIcon class="me-2" name="cilEnvelopeOpen"></svg>
           Messages
           <c-badge class="ms-2 float-end" color="success"> 42 </c-badge>
+        <a cDropdownItem routerLink="/orders/list" class="d-flex align-items-center py-2">
+          <svg cIcon class="me-2 text-info" name="cilNotes"></svg>
+          Đơn hàng của tôi
         </a>
       </li>
       <li>
@@ -106,8 +154,12 @@
           <svg cIcon class="me-2" name="cilTask"></svg>
           Tasks
           <c-badge class="ms-2 float-end" color="danger"> 42</c-badge>
+        <a cDropdownItem routerLink="/activity-logs" class="d-flex align-items-center py-2">
+          <svg cIcon class="me-2 text-warning" name="cilListNumbered"></svg>
+          Nhật ký hoạt động
         </a>
       </li>
+      <li><hr cDropdownDivider class="my-1" /></li>
       <li>
         <a cDropdownItem routerLink="">
           <svg cIcon class="me-2" name="cilCommentSquare"></svg>
@@ -158,23 +210,35 @@
       </li>
       <li>
         <a cDropdownItem routerLink="">
+        <button cDropdownItem class="d-flex align-items-center py-2 text-danger" (click)="logout()">
           <svg cIcon class="me-2" name="cilAccountLogout"></svg>
           Logout
         </a>
+          Đăng xuất
+        </button>
       </li>
     </ul>
   </c-dropdown>
 </ng-template>
 
+<!-- THEME DROPDOWN TEMPLATE -->
 <ng-template #themeDropdown>
   <c-dropdown alignment="end" variant="nav-item">
     <button [caret]="false" aria-label="Open theme picker" cDropdownToggle>
+    <button [caret]="false" aria-label="Open theme picker" cDropdownToggle class="btn p-1 border-0 bg-transparent">
       <svg [name]="icons()" cIcon size="lg"></svg>
     </button>
     <div cDropdownMenu>
+    <div cDropdownMenu class="shadow border-0 mt-2">
       @for (mode of colorModes; track mode.name) {
       <button (click)="colorMode.set(mode.name)" [active]="colorMode() === mode.name" cDropdownItem
         class="d-flex align-items-center">
+      <button
+        (click)="colorMode.set(mode.name)"
+        [active]="colorMode() === mode.name"
+        cDropdownItem
+        class="d-flex align-items-center py-2"
+      >
         <svg [name]="mode.icon" cIcon class="me-2" size="lg"></svg>
         {{ mode.text }}
       </button>

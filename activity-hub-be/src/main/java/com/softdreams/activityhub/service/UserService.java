@@ -66,7 +66,7 @@ public class UserService {
         return userMapper.toUserResponse(user);
     }
 
-//    @PostAuthorize("returnObject.username == authentication.name")
+    @PreAuthorize("hasRole('ADMIN') or @security.isUserOwner(#userId, authentication)")
     public UserResponse updateUser(String userId, UserUpdateRequest request) {
         User user = userRepository.findById(userId).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
@@ -75,8 +75,12 @@ public class UserService {
         if (request.getPassword() != null && !request.getPassword().isBlank()) {
             user.setPassword(passwordEncoder.encode(request.getPassword()));
         }
-
         if (request.getRoles() != null && !request.getRoles().isEmpty()) {
+            boolean isAdmin = SecurityContextHolder.getContext().getAuthentication().getAuthorities().stream()
+                    .anyMatch(auth -> auth.getAuthority().equals("ROLE_ADMIN") || auth.getAuthority().equals("ADMIN"));
+            if (!isAdmin) {
+                throw new AppException(ErrorCode.UNAUTHORIZED);
+            }
             var roles = roleRepository.findAllById(request.getRoles());
             user.setRoles(new HashSet<>(roles));
         }
@@ -84,20 +88,20 @@ public class UserService {
         return userMapper.toUserResponse(userRepository.save(user));
     }
 
-//    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') or @security.isUserOwner(#userId, authentication)")
     public void deleteUser(String userId) {
         userRepository.deleteById(userId);
     }
 
-//    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public Page<UserResponse> getUsers(Pageable pageable, String keyword) {
         log.info("In method get Users");
         return userRepository.searchUserByKeyword(pageable, keyword)
                 .map(userMapper::toUserResponse);    }
 
-//    @PreAuthorize("hasRole('ADMIN')")
-    public UserResponse getUser(String id) {
+    @PreAuthorize("hasRole('ADMIN') or @security.isUserOwner(#userId, authentication)")
+    public UserResponse getUser(String userId) {
         return userMapper.toUserResponse(
-                userRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED)));
+                userRepository.findById(userId).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED)));
     }
 }

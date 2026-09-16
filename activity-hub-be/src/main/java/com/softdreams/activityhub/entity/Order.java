@@ -2,12 +2,15 @@ package com.softdreams.activityhub.entity;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
+import com.softdreams.activityhub.enums.OrderStatus;
 import com.softdreams.activityhub.enums.PaymentMethodEnum;
 import jakarta.persistence.*;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import org.hibernate.annotations.BatchSize;
 
 @Getter
 @Setter
@@ -31,7 +34,7 @@ public class Order {
     private BigDecimal totalAmount;
 
     @Column(nullable = false, length = 30)
-    private String status;
+    private OrderStatus status;
 
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
@@ -39,11 +42,20 @@ public class Order {
     @Column(name = "payment_method", length = 30)
     PaymentMethodEnum paymentMethod;
 
-    @Column(name = "shipping_address", length = 500)
+    @Column(name = "shipping_address", length = 500, columnDefinition = "NVARCHAR(255)")
     String shippingAddress;
 
-    @Column(name = "note", length = 500)
+    @Column(name = "note", length = 500, columnDefinition = "NVARCHAR(255)")
     String note;
+
+    @OneToMany(
+            mappedBy = "order",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true,
+            fetch = FetchType.LAZY
+    )
+    @BatchSize(size = 50)
+    private List<OrderLine> orderLines;
 
     @PrePersist
     protected void onCreate() {

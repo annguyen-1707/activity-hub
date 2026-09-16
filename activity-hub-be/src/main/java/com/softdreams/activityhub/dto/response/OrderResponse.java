@@ -2,6 +2,7 @@ package com.softdreams.activityhub.dto.response;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 import com.softdreams.activityhub.enums.PaymentMethodEnum;
 import lombok.*;
@@ -21,4 +22,6 @@ public class OrderResponse {
     PaymentMethodEnum paymentMethod;
     String shippingAddress;
     String note;
+
+    List<OrderLineResponse> items;
 }

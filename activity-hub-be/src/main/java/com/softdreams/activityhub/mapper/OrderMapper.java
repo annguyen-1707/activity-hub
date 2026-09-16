@@ -16,6 +16,7 @@ public interface OrderMapper {
     Order toOrder(OrderRequest request);
 
     @Mapping(target = "userId", source = "user.id")
+    @Mapping(target = "items", source = "orderLines")
     OrderResponse toOrderResponse(Order order);
 
     @Mapping(target = "user", ignore = true)

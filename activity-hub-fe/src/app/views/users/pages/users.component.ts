@@ -39,6 +39,8 @@ import {
 import { IconDirective } from '@coreui/icons-angular';
 import { Role, User } from '../../../core/models/user.model';
 import { UserService } from '../../../core/services/user.service';
+import { AuthService } from '../../../core/services/auth.service';
+import { ActivityLogService } from '../../../core/services/activity-log.service';
 
 @Component({
   selector: 'app-users',
@@ -81,6 +83,8 @@ import { UserService } from '../../../core/services/user.service';
 })
 export class UsersComponent implements OnInit {
   private readonly userService = inject(UserService);
+  private readonly authService = inject(AuthService);
+  private readonly activityLogService = inject(ActivityLogService);
   private readonly fb = inject(FormBuilder);
 
   // State signals
@@ -291,9 +295,21 @@ export class UsersComponent implements OnInit {
 
       this.userService.updateUser(userId, updatePayload).subscribe({
         next: () => {
+        next: (updated) => {
           this.saving.set(false);
           this.closeModal();
           this.showAlert('Cập nhật người dùng thành công!', 'success');
+
+          const cur = this.authService.getCurrentUser()();
+          this.activityLogService.recordLog({
+            username: cur?.username || 'admin',
+            fullName: cur ? `${cur.lastName} ${cur.firstName}` : undefined,
+            eventType: 'USER_UPDATED',
+            targetType: 'USER',
+            targetId: userId,
+            description: `Cập nhật thông tin người dùng: ${formVal.lastName} ${formVal.firstName}.`,
+          });
+
           this.loadUsers();
         },
         error: (err) => {
@@ -313,9 +329,21 @@ export class UsersComponent implements OnInit {
 
       this.userService.createUser(createPayload).subscribe({
         next: () => {
+        next: (created) => {
           this.saving.set(false);
           this.closeModal();
           this.showAlert('Tạo mới người dùng thành công!', 'success');
+
+          const cur = this.authService.getCurrentUser()();
+          this.activityLogService.recordLog({
+            username: cur?.username || 'admin',
+            fullName: cur ? `${cur.lastName} ${cur.firstName}` : undefined,
+            eventType: 'USER_CREATED',
+            targetType: 'USER',
+            targetId: created?.id || createPayload.username,
+            description: `Tạo mới tài khoản người dùng: @${createPayload.username} (${createPayload.lastName} ${createPayload.firstName}).`,
+          });
+
           this.loadUsers();
         },
         error: (err) => {
@@ -356,6 +384,17 @@ export class UsersComponent implements OnInit {
         this.deleting.set(false);
         this.closeDeleteModal();
         this.showAlert(`Đã xóa người dùng "${user.username}" thành công!`, 'success');
+
+        const cur = this.authService.getCurrentUser()();
+        this.activityLogService.recordLog({
+          username: cur?.username || 'admin',
+          fullName: cur ? `${cur.lastName} ${cur.firstName}` : undefined,
+          eventType: 'USER_DELETED',
+          targetType: 'USER',
+          targetId: user.id,
+          description: `Xóa tài khoản người dùng: @${user.username}.`,
+        });
+
         this.loadUsers();
       },
       error: (err) => {

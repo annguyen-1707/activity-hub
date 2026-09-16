@@ -2,6 +2,8 @@ package com.softdreams.activityhub.repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -13,7 +15,8 @@ import com.softdreams.activityhub.entity.Order;
 
 @Repository
 public interface OrderRepository extends JpaRepository<Order, String> {
-    List<Order> findByUserId(String userId);
+    @Query("SELECT o FROM Order o LEFT JOIN FETCH o.orderLines WHERE o.id = :orderId")
+    Optional<Order> findByIdWithLines(@Param("orderId") String orderId);
 
     boolean existsByIdAndUserId(String orderId, String userId);
 

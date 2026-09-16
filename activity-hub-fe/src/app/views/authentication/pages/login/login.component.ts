@@ -1,5 +1,3 @@
-import {Component, inject} from '@angular/core';
-import { RouterLink } from '@angular/router';
 import {Component, inject, signal} from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import {
@@ -23,7 +21,6 @@ import {
   TooltipDirective
 } from '@coreui/angular';
 import { IconDirective } from '@coreui/icons-angular';
-import {FormBuilder, FormGroup, NgForm, ReactiveFormsModule} from '@angular/forms';
 import {FormBuilder, FormGroup, NgForm, ReactiveFormsModule, Validators} from '@angular/forms';
 import {LoginRequest} from '../../../../core/models/auth.model';
 import {HttpClient} from '@angular/common/http';
@@ -68,8 +65,6 @@ export class LoginComponent {
   errorMessage = signal<string>('');
 
   loginForm = this.fb.nonNullable.group({
-    username: [''],
-    password: ['']
     username: ['', [Validators.required]],
     password: ['', [Validators.required]]
   });

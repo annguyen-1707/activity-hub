@@ -18,11 +18,19 @@ export const navItems: INavData[] = [
   {
     title: true,
     name: 'UI Elements'
+    name: 'Bán Hàng & Đơn Hàng',
   },
   {
     name: 'Charts',
     iconComponent: { name: 'cil-chart-pie' },
     url: '/charts'
+    name: 'Bán hàng (Tạo đơn)',
+    url: '/orders/create',
+    iconComponent: { name: 'cil-basket' },
+    badge: {
+      color: 'danger',
+      text: 'HOT',
+    },
   },
   {
     name: 'Components',
@@ -193,6 +201,8 @@ export const navItems: INavData[] = [
   {
     name: 'Forms',
     url: '/forms',
+    name: 'Danh sách đơn hàng',
+    url: '/orders/list',
     iconComponent: { name: 'cil-notes' },
     children: [
       {
@@ -362,6 +372,8 @@ export const navItems: INavData[] = [
         icon: 'nav-icon-bullet'
       }
     ]
+    title: true,
+    name: 'Quản Trị Hệ Thống',
   },
   {
     name: 'Widgets',
@@ -371,6 +383,9 @@ export const navItems: INavData[] = [
       color: 'info',
       text: 'NEW'
     }
+    name: 'Quản lý người dùng',
+    url: '/users',
+    iconComponent: { name: 'cil-people' },
   },
   {
     title: true,
@@ -379,6 +394,8 @@ export const navItems: INavData[] = [
   {
     name: 'Authentication',
     url: '/authentication',
+    name: 'Quản lý vai trò (Roles)',
+    url: '/roles',
     iconComponent: { name: 'cil-lock-locked' },
     children: [
       {
@@ -435,6 +452,9 @@ export const navItems: INavData[] = [
         icon: 'nav-icon-bullet'
       }
     ]
+    name: 'Nhật ký hoạt động',
+    url: '/activity-logs',
+    iconComponent: { name: 'cil-list-numbered' },
   },
   {
     name: 'Docs',
