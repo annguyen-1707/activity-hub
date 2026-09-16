@@ -1,23 +1,4 @@
-/**
- * AppDefaultHeader Component
- *
- * Main application header with navigation, theme switcher, and user menu.
- * Features include:
- * - Sidebar toggle button
- * - Search button with keyboard shortcut and recent searches modal
- * - Primary navigation links
- * - Notification and action icons
- * - Theme switcher (light/dark/auto)
- * - User dropdown menu
- * - Breadcrumb navigation
- * - Sticky positioning with scroll shadow effect
- *
- * @component
- */
-
 import { NgTemplateOutlet } from '@angular/common';
-import { Component, computed, inject, input, signal } from '@angular/core';
-import { RouterLink } from '@angular/router';
 import { Component, computed, inject, input } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 
@@ -29,23 +10,12 @@ import {
   ContainerComponent,
   DropdownComponent,
   DropdownDividerDirective,
-  DropdownHeaderDirective,
   DropdownItemDirective,
   DropdownMenuDirective,
   DropdownToggleDirective,
-  FormControlDirective,
   HeaderComponent,
   HeaderNavComponent,
   HeaderTogglerDirective,
-  ListGroupDirective,
-  ListGroupItemDirective,
-  ModalBodyComponent,
-  ModalComponent,
-  ModalHeaderComponent,
-  ModalTitleDirective,
-  NavLinkDirective,
-  SearchButtonComponent,
-  SidebarToggleDirective
   SidebarToggleDirective,
 } from '@coreui/angular';
 
@@ -63,23 +33,14 @@ import { AuthService } from '../../../core/services/auth.service';
     ContainerComponent,
     DropdownComponent,
     DropdownDividerDirective,
-    DropdownHeaderDirective,
     DropdownItemDirective,
     DropdownMenuDirective,
     DropdownToggleDirective,
     HeaderNavComponent,
     HeaderTogglerDirective,
     IconDirective,
-    ListGroupDirective,
-    ListGroupItemDirective,
-    ModalBodyComponent,
-    ModalComponent,
-    ModalHeaderComponent,
-    NavLinkDirective,
     NgTemplateOutlet,
     RouterLink,
-    SidebarToggleDirective
-  ]
     SidebarToggleDirective,
   ],
 })
@@ -93,9 +54,6 @@ export class DefaultHeaderComponent extends HeaderComponent {
   readonly currentUser = this.authService.getCurrentUser();
 
   readonly colorModes = [
-    { name: 'light', text: 'Light', icon: 'cilSun' },
-    { name: 'dark', text: 'Dark', icon: 'cilMoon' },
-    { name: 'auto', text: 'Auto', icon: 'cilContrast' }
     { name: 'light', text: 'Sáng', icon: 'cilSun' },
     { name: 'dark', text: 'Tối', icon: 'cilMoon' },
     { name: 'auto', text: 'Hệ thống', icon: 'cilContrast' },
@@ -103,7 +61,6 @@ export class DefaultHeaderComponent extends HeaderComponent {
 
   readonly icons = computed(() => {
     const currentMode = this.colorMode();
-    return this.colorModes.find(mode => mode.name === currentMode)?.icon ?? 'cilSun';
     return this.colorModes.find((mode) => mode.name === currentMode)?.icon ?? 'cilSun';
   });
 
@@ -113,7 +70,6 @@ export class DefaultHeaderComponent extends HeaderComponent {
     super();
   }
 
-  readonly sidebarId = input('sidebar1');
   getUserDisplayName(): string {
     const user = this.currentUser();
     if (user?.lastName && user?.firstName) {
@@ -122,7 +78,6 @@ export class DefaultHeaderComponent extends HeaderComponent {
     return user?.username || 'Tài khoản';
   }
 
-  readonly searchVisible = signal(false);
   getUserRole(): string {
     const user = this.currentUser();
     if (user?.roles && user.roles.length > 0) {

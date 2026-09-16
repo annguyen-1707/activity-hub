@@ -200,7 +200,7 @@
           <c-page-item [disabled]="page() === 0">
             <a cPageLink (click)="goToPage(page() - 1)">&laquo;</a>
           </c-page-item>
-          <c-page-item active>
+          <c-page-item [active]="true">
             <a cPageLink>{{ page() + 1 }} / {{ totalPages() }}</a>
           </c-page-item>
           <c-page-item [disabled]="page() >= totalPages() - 1">

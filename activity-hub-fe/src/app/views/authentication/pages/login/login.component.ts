@@ -70,7 +70,6 @@ export class LoginComponent {
   });
 
   protected handleLogin(): void {
-     this.authService.login(this.loginForm.getRawValue());
     if (this.loginForm.invalid) {
       this.loginForm.markAllAsTouched();
       return;
@@ -82,7 +81,7 @@ export class LoginComponent {
     this.authService.login(this.loginForm.getRawValue()).subscribe({
       next: () => {
         this.loading.set(false);
-        this.router.navigate(['/dashboard']);
+        this.router.navigate(['/orders']);
       },
       error: (err) => {
         this.loading.set(false);

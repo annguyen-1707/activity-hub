@@ -25,8 +25,8 @@ import {
   TableDirective,
 } from '@coreui/angular';
 import { IconDirective } from '@coreui/icons-angular';
-import { ActivityEventType, ActivityLog, ActivityTargetType } from '../../../../core/models/activity-log.model';
-import { ActivityLogService } from '../../../../core/services/activity-log.service';
+import { ActivityEventType, ActivityLog, ActivityTargetType } from '../../../core/models/activity-log.model';
+import { ActivityLogService } from '../../../core/services/activity-log.service';
 
 @Component({
   selector: 'app-activity-logs',

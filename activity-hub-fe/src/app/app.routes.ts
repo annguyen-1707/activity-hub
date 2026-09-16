@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import {authGuard} from './core/guards/auth.guard';
+import {authGuard, roleGuard} from './core/guards/auth.guard';
 
 export const routes: Routes = [
   {
@@ -17,44 +17,27 @@ export const routes: Routes = [
       {
         path: 'dashboard',
         loadChildren: () => import('./views/dashboard/routes').then((m) => m.routes),
-        canActivate : [authGuard],
+        canActivate: [roleGuard(['ADMIN'])],
       },
       {
-        path: 'users',
-        loadChildren: () => import('./views/users/routes').then((m) => m.routes),
         path: 'orders',
         loadChildren: () => import('./views/orders/routes').then((m) => m.routes),
-        canActivate : [authGuard],
+        canActivate: [authGuard],
       },
       {
-        path: 'components',
-        loadChildren: () => import('./views/components/routes').then((m) => m.routes),
-      },
-      {
-        path: 'forms',
-        loadChildren: () => import('./views/forms/routes').then((m) => m.routes),
         path: 'users',
         loadChildren: () => import('./views/users/routes').then((m) => m.routes),
-        canActivate : [authGuard],
+        canActivate: [authGuard],
       },
       {
-        path: 'icons',
-        loadChildren: () => import('./views/icons/routes').then((m) => m.routes),
         path: 'roles',
         loadChildren: () => import('./views/roles/routes').then((m) => m.routes),
-        canActivate : [authGuard],
+        canActivate: [authGuard],
       },
       {
-        path: 'widgets',
-        loadChildren: () => import('./views/widgets/routes').then((m) => m.routes),
         path: 'activity-logs',
         loadChildren: () => import('./views/activity-logs/routes').then((m) => m.routes),
-        canActivate : [authGuard],
-      },
-      {
-        path: 'charts',
-        loadChildren: () => import('./views/charts/routes').then((m) => m.routes),
-        canActivate : [authGuard],
+        canActivate: [authGuard],
       }
     ]
   },

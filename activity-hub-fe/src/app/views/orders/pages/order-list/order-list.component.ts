@@ -3,7 +3,6 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import {
-  AlertComponent,
   BadgeComponent,
   ButtonDirective,
   CardBodyComponent,
@@ -47,7 +46,6 @@ import { OrderService } from '../../../../core/services/order.service';
     ButtonDirective,
     BadgeComponent,
     SpinnerComponent,
-    AlertComponent,
     FormControlDirective,
     InputGroupComponent,
     InputGroupTextDirective,

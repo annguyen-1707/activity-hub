@@ -1,96 +1,234 @@
 <c-container>
   <c-row class="justify-content-center">
-    <c-col lg="6" md="8" xl="5">
-      <div class="d-flex flex-column gap-4">
+    <c-col lg="7" md="9" xl="6">
+      <div class="d-flex flex-column gap-3">
+        <!-- Logo -->
         <div class="text-center">
           <svg [class]="{ icon: false }" cIcon height="48" name="logo" title="CoreUI Logo"></svg>
         </div>
-        <c-card class="p-4">
-          <c-card-body class="d-flex flex-column gap-4">
-            <h2 class="h5 text-center mb-0">Create new account</h2>
-            <form #f="ngForm" (ngSubmit)="handleSubmit(f)" cForm cRow class="gy-3">
-              <c-col xs="12">
-                <label cLabel for="name">Name</label>
-                <input
-                  autocomplete="name"
-                  cFormControl
-                  id="name"
-                  name="name"
-                  ngModel
-                  placeholder="Your name"
-                  type="username"
-                />
-              </c-col>
-              <c-col xs="12">
-                <label cLabel for="email">Email address</label>
-                <input
-                  autocomplete="email"
-                  cFormControl
-                  id="email"
-                  name="email"
-                  ngModel
-                  placeholder="your@email.com"
-                  type="email"
-                />
-              </c-col>
-              <c-col xs="12">
-                <label cLabel for="password">Password</label>
-                <c-input-group>
-                  <input autocomplete="new-password" cFormControl id="password" name="password" ngModel placeholder="Your password" type="password" />
-                  <span cInputGroupText>
-                    <button
-                      aria-label="Show password"
-                      cButton
-                      cTooltip="Show password"
-                      class="p-0 link-secondary"
-                      color="link"
-                      type="button"
-                    >
-                      <svg cIcon name="eye" size="sm"></svg>
-                     </button>
-                    </span>
-                </c-input-group>
-              </c-col>
-              <c-col xs="12">
-                <c-form-check>
-                  <input cFormCheckInput id="acceptTerms" type="checkbox" />
-                  <label cFormCheckLabel for="acceptTerms">I accept the <a routerLink="./">terms and conditions</a>
-                  </label>
-                </c-form-check>
-              </c-col>
-              <c-col xs="12">
-                <button cButton class="w-100" color="primary" type="submit">
-                  Create new account
-                </button>
-              </c-col>
-            </form>
-            <div class="position-relative">
-              <hr />
-              <div class="position-absolute top-50 start-50 translate-middle bg-body px-2 text-body-tertiary text-uppercase small">
-                or
-              </div>
+
+        <c-card class="p-4 shadow-sm border-0">
+          <c-card-body class="d-flex flex-column gap-3">
+            <div class="text-center mb-1">
+              <h2 class="h4 fw-bold text-body mb-1">Tạo tài khoản mới</h2>
+              <p class="text-body-secondary small mb-0">Đăng ký thông tin người dùng trên hệ thống Activity Hub</p>
             </div>
-            <c-row>
-              <c-col>
-                <button cButton class="w-100" color="" variant="outline">
-                  <svg cIcon class="me-1" name="google"></svg>
-                  Login with Google
+
+            <!-- Error Alert -->
+            @if (errorMessage()) {
+            <c-alert color="danger" class="py-2 mb-0 d-flex align-items-center">
+              <svg cIcon name="cilWarning" class="me-2 flex-shrink-0" size="lg"></svg>
+              <div class="small">{{ errorMessage() }}</div>
+            </c-alert>
+            }
+
+            <!-- Success Alert -->
+            @if (successMessage()) {
+            <c-alert color="success" class="py-2 mb-0 d-flex align-items-center">
+              <svg cIcon name="cilCheckCircle" class="me-2 flex-shrink-0" size="lg"></svg>
+              <div class="small">{{ successMessage() }}</div>
+            </c-alert>
+            }
+
+            <form cForm [formGroup]="registerForm" (ngSubmit)="handleRegister()" class="d-flex flex-column gap-3">
+              <!-- Username -->
+              <div>
+                <label cLabel for="username" class="fw-semibold">
+                  Tên đăng nhập <span class="text-danger">*</span>
+                </label>
+                <c-input-group>
+                  <span cInputGroupText>
+                    <svg cIcon name="cilUser" size="sm"></svg>
+                  </span>
+                  <input
+                    formControlName="username"
+                    autocomplete="username"
+                    cFormControl
+                    id="username"
+                    placeholder="Nhập tên đăng nhập (tối thiểu 4 ký tự)"
+                    type="text"
+                    [class.is-invalid]="registerForm.get('username')?.invalid && registerForm.get('username')?.touched"
+                  />
+                </c-input-group>
+                @if (registerForm.get('username')?.invalid && registerForm.get('username')?.touched) {
+                <div class="text-danger small mt-1">
+                  @if (registerForm.get('username')?.errors?.['required']) {
+                    Tên đăng nhập không được để trống.
+                  } @else if (registerForm.get('username')?.errors?.['minlength']) {
+                    Tên đăng nhập phải có ít nhất 4 ký tự.
+                  }
+                </div>
+                }
+              </div>
+
+              <!-- Full Name (Họ và Tên) -->
+              <c-row class="g-3">
+                <c-col sm="6">
+                  <label cLabel for="lastName" class="fw-semibold">
+                    Họ và tên đệm <span class="text-danger">*</span>
+                  </label>
+                  <input
+                    formControlName="lastName"
+                    autocomplete="family-name"
+                    cFormControl
+                    id="lastName"
+                    placeholder="VD: Nguyễn Văn"
+                    type="text"
+                    [class.is-invalid]="registerForm.get('lastName')?.invalid && registerForm.get('lastName')?.touched"
+                  />
+                  @if (registerForm.get('lastName')?.invalid && registerForm.get('lastName')?.touched) {
+                  <div class="text-danger small mt-1">Họ và tên đệm là bắt buộc.</div>
+                  }
+                </c-col>
+
+                <c-col sm="6">
+                  <label cLabel for="firstName" class="fw-semibold">
+                    Tên <span class="text-danger">*</span>
+                  </label>
+                  <input
+                    formControlName="firstName"
+                    autocomplete="given-name"
+                    cFormControl
+                    id="firstName"
+                    placeholder="VD: An"
+                    type="text"
+                    [class.is-invalid]="registerForm.get('firstName')?.invalid && registerForm.get('firstName')?.touched"
+                  />
+                  @if (registerForm.get('firstName')?.invalid && registerForm.get('firstName')?.touched) {
+                  <div class="text-danger small mt-1">Tên là bắt buộc.</div>
+                  }
+                </c-col>
+              </c-row>
+
+              <!-- Date of Birth -->
+              <div>
+                <label cLabel for="dob" class="fw-semibold">
+                  Ngày sinh <span class="text-danger">*</span>
+                </label>
+                <c-input-group>
+                  <span cInputGroupText>
+                    <svg cIcon name="cilCalendar" size="sm"></svg>
+                  </span>
+                  <input
+                    formControlName="dob"
+                    cFormControl
+                    id="dob"
+                    type="date"
+                    [class.is-invalid]="registerForm.get('dob')?.invalid && registerForm.get('dob')?.touched"
+                  />
+                </c-input-group>
+                <div class="text-body-secondary small mt-1">
+                  Yêu cầu độ tuổi tối thiểu từ 10 tuổi trở lên.
+                </div>
+                @if (registerForm.get('dob')?.invalid && registerForm.get('dob')?.touched) {
+                <div class="text-danger small mt-1">Vui lòng chọn ngày sinh.</div>
+                }
+              </div>
+
+              <!-- Password & Confirm Password -->
+              <c-row class="g-3">
+                <c-col sm="6">
+                  <label cLabel for="password" class="fw-semibold">
+                    Mật khẩu <span class="text-danger">*</span>
+                  </label>
+                  <c-input-group>
+                    <span cInputGroupText>
+                      <svg cIcon name="cilLockLocked" size="sm"></svg>
+                    </span>
+                    <input
+                      formControlName="password"
+                      autocomplete="new-password"
+                      cFormControl
+                      id="password"
+                      placeholder="Tối thiểu 6 ký tự"
+                      [type]="showPassword() ? 'text' : 'password'"
+                      [class.is-invalid]="registerForm.get('password')?.invalid && registerForm.get('password')?.touched"
+                    />
+                    <span cInputGroupText class="p-0">
+                      <button
+                        (click)="toggleShowPassword()"
+                        class="btn btn-link text-secondary p-2 border-0"
+                        type="button"
+                        [title]="showPassword() ? 'Ẩn mật khẩu' : 'Xem mật khẩu'"
+                      >
+                        <svg cIcon [name]="showPassword() ? 'cilWarning' : 'eye'" size="sm"></svg>
+                      </button>
+                    </span>
+                  </c-input-group>
+                  @if (registerForm.get('password')?.invalid && registerForm.get('password')?.touched) {
+                  <div class="text-danger small mt-1">
+                    @if (registerForm.get('password')?.errors?.['required']) {
+                      Mật khẩu không được để trống.
+                    } @else if (registerForm.get('password')?.errors?.['minlength']) {
+                      Mật khẩu phải có ít nhất 6 ký tự.
+                    }
+                  </div>
+                  }
+                </c-col>
+
+                <c-col sm="6">
+                  <label cLabel for="confirmPassword" class="fw-semibold">
+                    Xác nhận mật khẩu <span class="text-danger">*</span>
+                  </label>
+                  <c-input-group>
+                    <span cInputGroupText>
+                      <svg cIcon name="cilCheckCircle" size="sm"></svg>
+                    </span>
+                    <input
+                      formControlName="confirmPassword"
+                      autocomplete="new-password"
+                      cFormControl
+                      id="confirmPassword"
+                      placeholder="Nhập lại mật khẩu"
+                      [type]="showConfirmPassword() ? 'text' : 'password'"
+                      [class.is-invalid]="(registerForm.get('confirmPassword')?.invalid && registerForm.get('confirmPassword')?.touched) || (registerForm.errors?.['passwordMismatch'] && registerForm.get('confirmPassword')?.touched)"
+                    />
+                    <span cInputGroupText class="p-0">
+                      <button
+                        (click)="toggleShowConfirmPassword()"
+                        class="btn btn-link text-secondary p-2 border-0"
+                        type="button"
+                        [title]="showConfirmPassword() ? 'Ẩn mật khẩu' : 'Xem mật khẩu'"
+                      >
+                        <svg cIcon [name]="showConfirmPassword() ? 'cilWarning' : 'eye'" size="sm"></svg>
+                      </button>
+                    </span>
+                  </c-input-group>
+                  @if (registerForm.get('confirmPassword')?.touched && registerForm.errors?.['passwordMismatch']) {
+                  <div class="text-danger small mt-1">Mật khẩu xác nhận không khớp.</div>
+                  }
+                </c-col>
+              </c-row>
+
+              <!-- Submit Button -->
+              <div class="mt-2">
+                <button
+                  cButton
+                  class="w-100 py-2 fw-semibold"
+                  color="primary"
+                  type="submit"
+                  [disabled]="loading() || !!successMessage()"
+                >
+                  @if (loading()) {
+                    <c-spinner size="sm" class="me-2"></c-spinner>
+                    Đang đăng ký tài khoản...
+                  } @else {
+                    Đăng Ký Tài Khoản
+                  }
                 </button>
-              </c-col>
-              <c-col>
-                <button cButton class="w-100" color="" variant="outline">
-                  <svg cIcon class="me-1" name="apple"></svg>
-                  Login with Apple
-                </button>
-              </c-col>
-            </c-row>
+              </div>
+            </form>
           </c-card-body>
         </c-card>
-        <div class="text-center text-body-secondary">
-          Already have an account? <a routerLink="/authentication/login">Sign in</a>
+
+        <!-- Link to Login -->
+        <div class="text-center text-body-secondary small">
+          Đã có tài khoản?
+          <a routerLink="/authentication/login" class="text-primary text-decoration-none fw-semibold ms-1">
+            Đăng nhập ngay
+          </a>
         </div>
       </div>
     </c-col>
   </c-row>
 </c-container>
-

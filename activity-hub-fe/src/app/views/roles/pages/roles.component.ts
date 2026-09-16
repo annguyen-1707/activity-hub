@@ -23,10 +23,11 @@ import {
   TableDirective,
 } from '@coreui/angular';
 import { IconDirective } from '@coreui/icons-angular';
-import { RoleResponse } from '../../../../core/models/user.model';
-import { RoleService } from '../../../../core/services/role.service';
-import { AuthService } from '../../../../core/services/auth.service';
-import { ActivityLogService } from '../../../../core/services/activity-log.service';
+import { RoleResponse } from '../../../core/models/user.model';
+import { AuthService } from '../../../core/services/auth.service';
+import { ActivityLogService } from '../../../core/services/activity-log.service';
+import { RoleService } from '../../../core/services/role.service';
+
 
 @Component({
   selector: 'app-roles',

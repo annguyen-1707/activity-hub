@@ -294,7 +294,6 @@ export class UsersComponent implements OnInit {
       };
 
       this.userService.updateUser(userId, updatePayload).subscribe({
-        next: () => {
         next: (updated) => {
           this.saving.set(false);
           this.closeModal();
@@ -328,7 +327,6 @@ export class UsersComponent implements OnInit {
       };
 
       this.userService.createUser(createPayload).subscribe({
-        next: () => {
         next: (created) => {
           this.saving.set(false);
           this.closeModal();
