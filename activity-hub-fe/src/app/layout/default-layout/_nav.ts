@@ -10,7 +10,7 @@ export const navItems: AppNavItem[] = [
     name: 'Bán Hàng & Đơn Hàng'
   },
   {
-    name: 'Bán hàng (Tạo đơn)',
+    name: 'Cửa hàng',
     url: '/orders/create',
     iconComponent: {name: 'cil-basket'},
     badge: {
