@@ -2,13 +2,16 @@ package com.softdreams.activityhub.service;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import com.softdreams.activityhub.dto.response.OrderLineResponse;
 import com.softdreams.activityhub.entity.OrderLine;
+import com.softdreams.activityhub.entity.Product;
 import com.softdreams.activityhub.enums.OrderStatus;
 import com.softdreams.activityhub.repository.OrderLineRepository;
+import com.softdreams.activityhub.repository.ProductRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -42,6 +45,8 @@ public class OrderService {
     UserRepository userRepository;
     OrderMapper orderMapper;
     OrderLineRepository orderLineRepository;
+    ProductRepository productRepository;
+    StockTransactionService stockTransactionService;
 
     private User getMyUser() {
         User user;
@@ -61,21 +66,28 @@ public class OrderService {
         order.setUser(user);
         order.setStatus(OrderStatus.CREATED);
 
-        List<OrderLine> orderLines = request.getItems().stream()
-                .map(item -> {
-                    BigDecimal subtotal =
-                            item.getUnitPrice()
-                                    .multiply(BigDecimal.valueOf(item.getQuantity()));
+        List<OrderLine> orderLines = new ArrayList<>();
+        List<StockTransactionService.StockLine> stockLines = new ArrayList<>();
 
-                    return OrderLine.builder()
-                            .order(order)
-                            .productName(item.getProductName())
-                            .quantity(item.getQuantity())
-                            .unitPrice(item.getUnitPrice())
-                            .subtotal(subtotal)
-                            .build();
-                })
-                .toList();
+        for (var item : request.getItems()) {
+            // Locked here so two concurrent checkouts can't both oversell the same product.
+            Product product = productRepository
+                    .findByIdForUpdate(item.getProductId())
+                    .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_EXISTED));
+
+            BigDecimal unitPrice = product.getPrice();
+            BigDecimal subtotal = unitPrice.multiply(BigDecimal.valueOf(item.getQuantity()));
+
+            orderLines.add(OrderLine.builder()
+                    .order(order)
+                    .product(product)
+                    .quantity(item.getQuantity())
+                    .unitPrice(unitPrice)
+                    .subtotal(subtotal)
+                    .build());
+
+            stockLines.add(new StockTransactionService.StockLine(product, item.getQuantity()));
+        }
 
         order.setOrderLines(orderLines);
 
@@ -85,7 +97,9 @@ public class OrderService {
 
         order.setTotalAmount(total);
 
+        // Deducts stock for every line; rolls back the whole order if any product is short.
         Order saved = orderRepository.save(order);
+        stockTransactionService.postSale(saved.getId(), stockLines);
 
         return orderMapper.toOrderResponse(saved);
     }

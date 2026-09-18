@@ -7,11 +7,14 @@ import { AuthService } from '../services/auth.service';
 let isRefreshing = false;
 const refreshTokenSubject = new BehaviorSubject<string | null>(null);
 
+const PUBLIC_AUTH_ENDPOINTS = ['/auth/token', '/auth/introspect', '/auth/refresh', '/auth/logout'];
+
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const authService = inject(AuthService);
   const router = inject(Router);
 
-  const token = authService.getToken();
+  const isPublicAuthRequest = PUBLIC_AUTH_ENDPOINTS.some((path) => req.url.includes(path));
+  const token = isPublicAuthRequest ? null : authService.getToken();
 
   // Đính kèm withCredentials: true để trình duyệt tự động gửi và nhận HttpOnly Cookie
   let authReq = req.clone({

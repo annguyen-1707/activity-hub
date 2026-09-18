@@ -26,6 +26,7 @@ import {
 import { IconDirective } from '@coreui/icons-angular';
 import { CartItem, OrderRequest, PaymentMethod, Product } from '../../../../core/models/order.model';
 import { OrderService } from '../../services/order.service';
+import { ProductService } from '../../../../core/services/product.service';
 
 @Component({
   selector: 'app-order-create',
@@ -50,6 +51,7 @@ import { OrderService } from '../../services/order.service';
 })
 export class OrderCreateComponent implements OnInit {
   private readonly orderService = inject(OrderService);
+  private readonly productService = inject(ProductService);
   private readonly router = inject(Router);
 
   // Data signals
@@ -100,7 +102,10 @@ export class OrderCreateComponent implements OnInit {
   }
 
   loadProducts(): void {
-    this.products.set(this.orderService.getMockProducts());
+    this.productService.getProducts().subscribe({
+      next: (products) => this.products.set(products),
+      error: () => this.showAlert('Không thể tải danh sách sản phẩm. Vui lòng kiểm tra lại backend!', 'danger'),
+    });
   }
 
   selectCategory(category: string): void {
@@ -200,10 +205,8 @@ export class OrderCreateComponent implements OnInit {
       shippingAddress: this.shippingAddress().trim(),
       note: this.note().trim() || undefined,
       items: cartSnapshot.map((item) => ({
-        productName: item.product.name,
+        productId: item.product.id,
         quantity: item.quantity,
-        unitPrice: item.product.price,
-        subtotal: item.subtotal,
       })),
     };
 

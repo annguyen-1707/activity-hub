@@ -1,0 +1,28 @@
+package com.softdreams.activityhub.mapper;
+
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
+
+import com.softdreams.activityhub.dto.request.ProductRequest;
+import com.softdreams.activityhub.dto.request.ProductUpdateRequest;
+import com.softdreams.activityhub.dto.response.ProductResponse;
+import com.softdreams.activityhub.entity.Product;
+
+@Mapper(componentModel = "spring")
+public interface ProductMapper {
+
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
+    Product toProduct(ProductRequest request);
+
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "quantity", ignore = true)
+    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
+    void updateProduct(@MappingTarget Product product, ProductUpdateRequest request);
+
+    @Mapping(target = "categoryLabel", source = "category.label")
+    ProductResponse toProductResponse(Product product);
+}

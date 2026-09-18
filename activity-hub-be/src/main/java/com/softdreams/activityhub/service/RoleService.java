@@ -6,8 +6,11 @@ import org.springframework.stereotype.Service;
 
 import com.softdreams.activityhub.dto.request.RoleRequest;
 import com.softdreams.activityhub.dto.response.RoleResponse;
+import com.softdreams.activityhub.exception.AppException;
+import com.softdreams.activityhub.exception.ErrorCode;
 import com.softdreams.activityhub.mapper.RoleMapper;
 import com.softdreams.activityhub.repository.RoleRepository;
+import com.softdreams.activityhub.repository.UserRepository;
 
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 public class RoleService {
     RoleRepository roleRepository;
     RoleMapper roleMapper;
+    UserRepository userRepository;
 
     public RoleResponse create(RoleRequest request) {
         var role = roleMapper.toRole(request);
@@ -34,6 +38,14 @@ public class RoleService {
     }
 
     public void delete(String role) {
+        if (!roleRepository.existsById(role)) {
+            throw new AppException(ErrorCode.ROLE_NOT_EXISTED);
+        }
+
+        if (userRepository.existsByRoles_Name(role)) {
+            throw new AppException(ErrorCode.ROLE_IN_USE);
+        }
+
         roleRepository.deleteById(role);
     }
 }

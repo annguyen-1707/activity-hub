@@ -20,10 +20,8 @@ export interface CartItem {
 }
 
 export interface OrderLineRequest {
-  productName: string;
+  productId: string;
   quantity: number;
-  unitPrice: number;
-  subtotal: number;
 }
 
 export interface OrderRequest {
@@ -35,6 +33,7 @@ export interface OrderRequest {
 
 export interface OrderLineResponse {
   id: string;
+  productId: string;
   productName: string;
   quantity: number;
   unitPrice: number;

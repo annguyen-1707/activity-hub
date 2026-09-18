@@ -2,7 +2,6 @@ package com.softdreams.activityhub.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -12,12 +11,15 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class OrderLineRequest {
+public class StockTransactionLineRequest {
 
     @NotBlank
-    private String productId;
+    String productId;
 
+    /**
+     * IMPORT requires a positive quantity; ADJUSTMENT accepts a signed value
+     * (negative to write stock down, positive to write it up).
+     */
     @NotNull
-    @Positive
-    private Integer quantity;
+    Integer quantity;
 }

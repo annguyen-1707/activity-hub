@@ -2,9 +2,12 @@ package com.softdreams.activityhub.dto.request;
 
 import java.util.List;
 
-import com.softdreams.activityhub.enums.PaymentMethodEnum;
+import com.softdreams.activityhub.enums.StockTransactionType;
+
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
+
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -13,13 +16,14 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class OrderRequest {
+public class StockTransactionRequest {
 
-    PaymentMethodEnum paymentMethod;
-    String shippingAddress;
+    @NotNull
+    StockTransactionType type;
+
     String note;
 
     @NotEmpty
     @Valid
-    List<OrderLineRequest> items;
+    List<StockTransactionLineRequest> lines;
 }

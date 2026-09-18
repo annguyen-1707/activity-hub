@@ -136,10 +136,8 @@ export class OrderCheckoutComponent implements OnInit {
       shippingAddress: this.shippingAddress().trim(),
       note: this.note().trim() || undefined,
       items: cartSnapshot.map((item) => ({
-        productName: item.product.name,
+        productId: item.product.id,
         quantity: item.quantity,
-        unitPrice: item.product.price,
-        subtotal: item.subtotal,
       })),
     };
 

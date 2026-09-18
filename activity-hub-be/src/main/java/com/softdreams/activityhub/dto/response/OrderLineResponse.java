@@ -14,6 +14,8 @@ import java.util.List;
 public class OrderLineResponse {
     String id;
 
+    private String productId;
+
     private String productName;
 
     private Integer quantity;

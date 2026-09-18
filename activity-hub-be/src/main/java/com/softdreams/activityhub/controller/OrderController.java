@@ -3,6 +3,8 @@ package com.softdreams.activityhub.controller;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import jakarta.validation.Valid;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
@@ -30,7 +32,7 @@ public class OrderController {
 
     @PostMapping
     @ActivityLog(eventType = EventType.CREATED, targetType = TargetType.ORDER, targetId = "#result.result.id")
-    ApiResponse<OrderResponse> create(@RequestBody OrderRequest request) {
+    ApiResponse<OrderResponse> create(@RequestBody @Valid OrderRequest request) {
         return ApiResponse.<OrderResponse>builder()
                 .result(orderService.create(request))
                 .build();

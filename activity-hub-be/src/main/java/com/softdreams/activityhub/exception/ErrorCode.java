@@ -21,6 +21,10 @@ public enum ErrorCode {
     INVALID_ENUM_VALUE(1010, "Invalid value enum for field", HttpStatus.BAD_REQUEST),
     ROLE_NOT_EXISTED(1011, "Role not existed", HttpStatus.NOT_FOUND),
     ROLE_IN_USE(1012, "Role is assigned to users and cannot be deleted", HttpStatus.BAD_REQUEST),
+    PRODUCT_NOT_EXISTED(1013, "Product not existed", HttpStatus.NOT_FOUND),
+    PRODUCT_IN_USE(1014, "Product has existing orders or stock history and cannot be deleted", HttpStatus.BAD_REQUEST),
+    INSUFFICIENT_STOCK(1015, "Insufficient stock for product", HttpStatus.BAD_REQUEST),
+    INVALID_STOCK_TRANSACTION_TYPE(1016, "This transaction type cannot be created manually", HttpStatus.BAD_REQUEST),
     ;
 
     ErrorCode(int code, String message, HttpStatusCode statusCode) {
