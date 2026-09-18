@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {
@@ -26,7 +26,7 @@ import {
 } from '@coreui/angular';
 import { IconDirective } from '@coreui/icons-angular';
 import { ActivityEventType, ActivityLog, ActivityTargetType } from '../../../core/models/activity-log.model';
-import { ActivityLogService } from '../../../core/services/activity-log.service';
+import { ActivityLogService } from '../services/activity-log.service';
 
 @Component({
   selector: 'app-activity-logs',
@@ -63,53 +63,23 @@ import { ActivityLogService } from '../../../core/services/activity-log.service'
 export class ActivityLogsComponent implements OnInit {
   private readonly activityLogService = inject(ActivityLogService);
 
-  allLogs = signal<ActivityLog[]>([]);
+  logs = signal<ActivityLog[]>([]);
   loading = signal<boolean>(false);
 
   // Filters
   keyword = signal<string>('');
-  selectedEventType = signal<string>('ALL');
-  selectedTargetType = signal<string>('ALL');
+  selectedEventType = signal<ActivityEventType | 'ALL'>('ALL');
+  selectedTargetType = signal<ActivityTargetType | 'ALL'>('ALL');
 
-  // Pagination
+  // Server-driven pagination
   page = signal<number>(0);
   pageSize = signal<number>(10);
+  totalElements = signal<number>(0);
+  totalPages = signal<number>(1);
 
   // Modal
   selectedLog = signal<ActivityLog | null>(null);
   detailModalVisible = signal<boolean>(false);
-
-  filteredLogs = computed(() => {
-    const logs = this.allLogs();
-    const kw = this.keyword().trim().toLowerCase();
-    const evt = this.selectedEventType();
-    const tgt = this.selectedTargetType();
-
-    return logs.filter((log) => {
-      const matchKw =
-        !kw ||
-        log.username.toLowerCase().includes(kw) ||
-        (log.fullName && log.fullName.toLowerCase().includes(kw)) ||
-        log.eventId.toLowerCase().includes(kw) ||
-        log.description.toLowerCase().includes(kw) ||
-        (log.targetId && log.targetId.toString().toLowerCase().includes(kw));
-
-      const matchEvt = evt === 'ALL' || log.eventType === evt;
-      const matchTgt = tgt === 'ALL' || log.targetType === tgt;
-
-      return matchKw && matchEvt && matchTgt;
-    });
-  });
-
-  paginatedLogs = computed(() => {
-    const list = this.filteredLogs();
-    const start = this.page() * this.pageSize();
-    return list.slice(start, start + this.pageSize());
-  });
-
-  totalPages = computed(() => {
-    return Math.ceil(this.filteredLogs().length / this.pageSize()) || 1;
-  });
 
   ngOnInit(): void {
     this.loadLogs();
@@ -117,30 +87,49 @@ export class ActivityLogsComponent implements OnInit {
 
   loadLogs(): void {
     this.loading.set(true);
-    this.activityLogService.getLogs().subscribe({
-      next: (logs) => {
-        this.loading.set(false);
-        this.allLogs.set(logs);
-      },
-      error: () => {
-        this.loading.set(false);
-      },
-    });
+    this.activityLogService
+      .getLogs(this.page(), this.pageSize(), this.keyword(), this.selectedEventType(), this.selectedTargetType())
+      .subscribe({
+        next: (res) => {
+          this.loading.set(false);
+          this.logs.set(res.content);
+          this.totalElements.set(res.totalElements);
+          this.totalPages.set(res.totalPages || 1);
+        },
+        error: () => {
+          this.loading.set(false);
+          this.logs.set([]);
+          this.totalElements.set(0);
+          this.totalPages.set(1);
+        },
+      });
+  }
+
+  onKeywordChange(value: string): void {
+    this.keyword.set(value);
+  }
+
+  onSearch(): void {
+    this.page.set(0);
+    this.loadLogs();
   }
 
   onFilterChange(): void {
     this.page.set(0);
+    this.loadLogs();
   }
 
   goToPage(p: number): void {
     if (p >= 0 && p < this.totalPages()) {
       this.page.set(p);
+      this.loadLogs();
     }
   }
 
   onPageSizeChange(newSize: number): void {
     this.pageSize.set(Number(newSize));
     this.page.set(0);
+    this.loadLogs();
   }
 
   getPageNumbers(): number[] {
@@ -167,57 +156,22 @@ export class ActivityLogsComponent implements OnInit {
     this.selectedLog.set(null);
   }
 
-  resetDefaultLogs(): void {
-    this.activityLogService.clearLogs();
-    this.loadLogs();
-  }
-
   getEventBadgeColor(type: ActivityEventType): string {
     switch (type) {
-      case 'USER_LOGIN':
+      case 'LOGIN':
         return 'info';
-      case 'USER_LOGOUT':
+      case 'LOGOUT':
         return 'secondary';
-      case 'ORDER_CREATED':
-      case 'USER_CREATED':
-      case 'ROLE_CREATED':
+      case 'CREATED':
+      case 'APPROVED':
         return 'success';
-      case 'ORDER_UPDATED':
-      case 'USER_UPDATED':
+      case 'UPDATED':
         return 'warning';
-      case 'ORDER_DELETED':
-      case 'USER_DELETED':
-      case 'ROLE_DELETED':
+      case 'DELETED':
+      case 'REJECTED':
         return 'danger';
       default:
         return 'primary';
-    }
-  }
-
-  getEventLabel(type: ActivityEventType): string {
-    switch (type) {
-      case 'USER_LOGIN':
-        return 'Đăng nhập';
-      case 'USER_LOGOUT':
-        return 'Đăng xuất';
-      case 'ORDER_CREATED':
-        return 'Tạo đơn hàng';
-      case 'ORDER_UPDATED':
-        return 'Sửa đơn hàng';
-      case 'ORDER_DELETED':
-        return 'Xóa đơn hàng';
-      case 'USER_CREATED':
-        return 'Tạo người dùng';
-      case 'USER_UPDATED':
-        return 'Sửa người dùng';
-      case 'USER_DELETED':
-        return 'Xóa người dùng';
-      case 'ROLE_CREATED':
-        return 'Tạo vai trò';
-      case 'ROLE_DELETED':
-        return 'Xóa vai trò';
-      default:
-        return type;
     }
   }
 
@@ -229,8 +183,6 @@ export class ActivityLogsComponent implements OnInit {
         return 'primary';
       case 'ROLE':
         return 'warning';
-      case 'AUTH':
-        return 'info';
       default:
         return 'secondary';
     }
@@ -245,4 +197,3 @@ export class ActivityLogsComponent implements OnInit {
     }
   }
 }
-

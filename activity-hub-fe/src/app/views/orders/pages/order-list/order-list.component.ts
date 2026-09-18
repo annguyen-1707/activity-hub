@@ -27,7 +27,7 @@ import {
 } from '@coreui/angular';
 import { IconDirective } from '@coreui/icons-angular';
 import { OrderResponse, OrderStatus, PaymentMethod } from '../../../../core/models/order.model';
-import { OrderService } from '../../../../core/services/order.service';
+import { OrderService } from '../../services/order.service';
 
 @Component({
   selector: 'app-order-list',

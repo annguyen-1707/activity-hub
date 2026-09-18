@@ -28,9 +28,7 @@ import {
 } from '@coreui/angular';
 import { IconDirective } from '@coreui/icons-angular';
 import { RoleResponse } from '../../../core/models/user.model';
-import { AuthService } from '../../../core/services/auth.service';
-import { ActivityLogService } from '../../../core/services/activity-log.service';
-import { RoleService } from '../../../core/services/role.service';
+import { RoleService } from '../services/role.service';
 
 
 @Component({
@@ -70,8 +68,6 @@ import { RoleService } from '../../../core/services/role.service';
 })
 export class RolesComponent implements OnInit {
   private readonly roleService = inject(RoleService);
-  private readonly authService = inject(AuthService);
-  private readonly activityLogService = inject(ActivityLogService);
   private readonly fb = inject(FormBuilder);
 
   roles = signal<RoleResponse[]>([]);
@@ -88,6 +84,8 @@ export class RolesComponent implements OnInit {
   // Alerts
   alertMessage = signal<string>('');
   alertType = signal<'success' | 'danger'>('success');
+
+  isDelete = signal<boolean>(false);
 
   roleForm!: FormGroup;
 
@@ -209,17 +207,6 @@ export class RolesComponent implements OnInit {
         this.closeCreateModal();
         this.showAlert(`Đã tạo vai trò "${payload.name}" thành công!`, 'success');
 
-        // Record activity log
-        const currentUser = this.authService.getCurrentUser()();
-        this.activityLogService.recordLog({
-          username: currentUser?.username || 'admin',
-          fullName: currentUser ? `${currentUser.lastName} ${currentUser.firstName}` : undefined,
-          eventType: 'ROLE_CREATED',
-          targetType: 'ROLE',
-          targetId: payload.name,
-          description: `Tạo vai trò mới: ${payload.name} (${payload.description}).`,
-        });
-
         this.loadRoles();
       },
       error: (err) => {
@@ -250,17 +237,6 @@ export class RolesComponent implements OnInit {
         this.deleting.set(false);
         this.closeDeleteModal();
         this.showAlert(`Đã xóa vai trò "${role.name}" thành công!`, 'success');
-
-        // Record activity log
-        const currentUser = this.authService.getCurrentUser()();
-        this.activityLogService.recordLog({
-          username: currentUser?.username || 'admin',
-          fullName: currentUser ? `${currentUser.lastName} ${currentUser.firstName}` : undefined,
-          eventType: 'ROLE_DELETED',
-          targetType: 'ROLE',
-          targetId: role.name,
-          description: `Xóa vai trò: ${role.name}.`,
-        });
 
         this.loadRoles();
       },

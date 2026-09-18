@@ -19,9 +19,8 @@ import {
 } from '@coreui/angular';
 import { IconDirective } from '@coreui/icons-angular';
 import { CartItem, OrderRequest, PaymentMethod } from '../../../../core/models/order.model';
-import { OrderService } from '../../../../core/services/order.service';
+import { OrderService } from '../../services/order.service';
 import { AuthService } from '../../../../core/services/auth.service';
-import { ActivityLogService } from '../../../../core/services/activity-log.service';
 
 @Component({
   selector: 'app-order-checkout',
@@ -51,7 +50,6 @@ import { ActivityLogService } from '../../../../core/services/activity-log.servi
 export class OrderCheckoutComponent implements OnInit {
   private readonly orderService = inject(OrderService);
   private readonly authService = inject(AuthService);
-  private readonly activityLogService = inject(ActivityLogService);
   private readonly router = inject(Router);
 
   // Cart from global OrderService
@@ -153,23 +151,6 @@ export class OrderCheckoutComponent implements OnInit {
         this.createdOrderId.set(order?.id || 'Mới');
         this.createdOrderAmount.set(order?.totalAmount || totalAmount);
         this.createdOrderItemsCount.set(itemsCount);
-
-        // Ghi log hoạt động
-        const currentUser = this.authService.getCurrentUser()();
-        this.activityLogService.recordLog({
-          username: currentUser?.username || 'Khách hàng',
-          fullName: currentUser ? `${currentUser.lastName} ${currentUser.firstName}` : undefined,
-          eventType: 'ORDER_CREATED',
-          targetType: 'ORDER',
-          targetId: order?.id,
-          description: `Tạo đơn hàng mới (${payload.items.length} mặt hàng) trị giá ${this.formatCurrency(order?.totalAmount || totalAmount)}.`,
-          details: {
-            orderId: order?.id,
-            totalAmount: order?.totalAmount || totalAmount,
-            paymentMethod: payload.paymentMethod,
-            itemsCount: payload.items.length,
-          },
-        });
 
         this.orderService.clearCart();
         this.successModalVisible.set(true);

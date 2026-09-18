@@ -2,9 +2,9 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { environment } from '../../../environments/environment';
-import { ApiResponse } from '../models/api-response.model';
-import { RoleResponse } from '../models/user.model';
+import { environment } from '../../../../environments/environment';
+import { ApiResponse } from '../../../core/models/api-response.model';
+import { RoleResponse } from '../../../core/models/user.model';
 
 export interface RoleCreationRequest {
   name: string;

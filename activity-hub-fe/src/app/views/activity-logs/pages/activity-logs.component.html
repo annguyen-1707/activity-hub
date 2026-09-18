@@ -4,20 +4,11 @@
     <div>
       <h3 class="fw-bold text-primary mb-1 d-flex align-items-center">
         <svg cIcon name="cilListNumbered" class="me-2"></svg>
-        Nhật Ký Hoạt Động (Activity Logs)
+        Nhật Ký Hoạt Động
       </h3>
       <p class="text-body-secondary mb-0 small">
         Theo dõi và kiểm toán toàn bộ thao tác của người dùng trong hệ thống (Đăng nhập, Tạo đơn, Sửa thông tin, Thêm vai trò).
       </p>
-    </div>
-    <div class="mt-2 mt-md-0 d-flex gap-2">
-      <button cButton color="secondary" variant="outline" size="sm" (click)="resetDefaultLogs()" title="Khôi phục dữ liệu mẫu">
-        Khôi phục mẫu
-      </button>
-      <button cButton color="primary" size="sm" (click)="loadLogs()" title="Tải lại">
-        <svg cIcon name="cilSpeedometer" class="me-1"></svg>
-        Làm mới
-      </button>
     </div>
   </div>
 
@@ -33,9 +24,10 @@
             </span>
             <input
               cFormControl
-              placeholder="Tìm theo Username, Event ID, mô tả..."
+              placeholder="Tìm theo Username, Event ID, Target ID..."
               [ngModel]="keyword()"
-              (ngModelChange)="keyword.set($event); onFilterChange()"
+              (ngModelChange)="onKeywordChange($event)"
+              (keyup.enter)="onSearch()"
             />
           </c-input-group>
         </c-col>
@@ -49,14 +41,13 @@
             (ngModelChange)="selectedEventType.set($event); onFilterChange()"
           >
             <option value="ALL">Tất cả loại sự kiện</option>
-            <option value="USER_LOGIN">Đăng nhập (USER_LOGIN)</option>
-            <option value="USER_LOGOUT">Đăng xuất (USER_LOGOUT)</option>
-            <option value="ORDER_CREATED">Tạo đơn hàng (ORDER_CREATED)</option>
-            <option value="USER_CREATED">Tạo người dùng (USER_CREATED)</option>
-            <option value="USER_UPDATED">Sửa người dùng (USER_UPDATED)</option>
-            <option value="USER_DELETED">Xóa người dùng (USER_DELETED)</option>
-            <option value="ROLE_CREATED">Tạo vai trò (ROLE_CREATED)</option>
-            <option value="ROLE_DELETED">Xóa vai trò (ROLE_DELETED)</option>
+            <option value="LOGIN">Đăng nhập</option>
+            <option value="LOGOUT">Đăng xuất</option>
+            <option value="CREATED">Tạo mới</option>
+            <option value="UPDATED">Cập nhật</option>
+            <option value="DELETED">Xóa</option>
+            <option value="APPROVED">Phê duyệt</option>
+            <option value="REJECTED">Từ chối</option>
           </select>
         </c-col>
 
@@ -69,10 +60,9 @@
             (ngModelChange)="selectedTargetType.set($event); onFilterChange()"
           >
             <option value="ALL">Tất cả đối tượng</option>
-            <option value="ORDER">Đơn hàng (ORDER)</option>
-            <option value="USER">Người dùng (USER)</option>
-            <option value="ROLE">Vai trò (ROLE)</option>
-            <option value="AUTH">Xác thực (AUTH)</option>
+            <option value="USER">Người dùng</option>
+            <option value="ORDER">Đơn hàng</option>
+            <option value="ROLE">Vai trò</option>
           </select>
         </c-col>
 
@@ -104,8 +94,7 @@
               <th scope="col" style="width: 170px;">Mã sự kiện</th>
               <th scope="col" style="width: 170px;">Người thực hiện</th>
               <th scope="col" style="width: 150px;">Loại hành động</th>
-              <th scope="col" style="width: 130px;">Đối tượng</th>
-              <th scope="col">Mô tả chi tiết</th>
+              <th scope="col" style="width: 160px;">Đối tượng</th>
               <th scope="col" style="width: 160px;">Thời gian</th>
               <th scope="col" class="text-center" style="width: 80px;">Chi tiết</th>
             </tr>
@@ -113,21 +102,21 @@
           <tbody>
             @if (loading()) {
             <tr>
-              <td colspan="8" class="text-center py-5">
+              <td colspan="7" class="text-center py-5">
                 <c-spinner color="primary" class="me-2"></c-spinner>
                 <span class="text-body-secondary">Đang tải dữ liệu nhật ký...</span>
               </td>
             </tr>
-            } @else if (paginatedLogs().length === 0) {
+            } @else if (logs().length === 0) {
             <tr>
-              <td colspan="8" class="text-center py-5">
+              <td colspan="7" class="text-center py-5">
                 <svg cIcon name="cilListNumbered" size="3xl" class="text-secondary opacity-50 mb-2"></svg>
                 <h6>Không có nhật ký hoạt động nào phù hợp</h6>
                 <p class="text-body-secondary small mb-0">Thử thay đổi từ khóa hoặc bộ lọc tìm kiếm.</p>
               </td>
             </tr>
             } @else {
-            @for (log of paginatedLogs(); track log.id; let i = $index) {
+            @for (log of logs(); track log.id; let i = $index) {
             <tr>
               <td class="text-center text-body-secondary small fw-semibold">
                 {{ page() * pageSize() + i + 1 }}
@@ -144,7 +133,7 @@
               <td>
                 <div class="d-flex align-items-center">
                   <div>
-                    <div class="fw-semibold small">&#64;{{ log.username }}</div>
+                    <div class="fw-semibold small">&#64;{{ log.username || '—' }}</div>
                     @if (log.fullName) {
                     <div class="text-body-secondary text-truncate" style="max-width: 120px; font-size: 0.75rem;">
                       {{ log.fullName }}
@@ -157,27 +146,20 @@
               <!-- Action / Event Type -->
               <td>
                 <c-badge [color]="getEventBadgeColor(log.eventType)">
-                  {{ getEventLabel(log.eventType) }}
+                  {{ log.eventTypeLabel }}
                 </c-badge>
               </td>
 
               <!-- Target Type -->
               <td>
                 <c-badge [color]="getTargetBadgeColor(log.targetType)" variant="outline">
-                  {{ log.targetType }}
+                  {{ log.targetTypeLabel }}
                 </c-badge>
                 @if (log.targetId) {
-                <div class="small text-body-secondary font-monospace text-truncate" style="max-width: 110px;">
+                <div class="small text-body-secondary font-monospace text-truncate" style="max-width: 140px;">
                   #{{ log.targetId }}
                 </div>
                 }
-              </td>
-
-              <!-- Description -->
-              <td>
-                <div class="small text-truncate" style="max-width: 320px;" [title]="log.description">
-                  {{ log.description }}
-                </div>
               </td>
 
               <!-- Timestamp -->
@@ -193,7 +175,7 @@
                   variant="outline"
                   size="sm"
                   (click)="openDetailModal(log)"
-                  title="Xem JSON Payload"
+                  title="Xem chi tiết"
                 >
                   <svg cIcon name="cilMagnifyingGlass"></svg>
                 </button>
@@ -206,10 +188,10 @@
       </div>
 
       <!-- Pagination Footer (Sticky Bottom) -->
-      @if (!loading() && filteredLogs().length > 0) {
+      @if (!loading() && logs().length > 0) {
       <div class="sticky-pagination-footer d-flex flex-wrap justify-content-between align-items-center gap-2">
         <span class="text-body-secondary small">
-          Hiển thị <strong>{{ paginatedLogs().length }}</strong> trên tổng số <strong>{{ filteredLogs().length }}</strong> bản ghi
+          Hiển thị <strong>{{ logs().length }}</strong> trên tổng số <strong>{{ totalElements() }}</strong> bản ghi
           (Trang {{ page() + 1 }} / {{ totalPages() }})
         </span>
 
@@ -261,7 +243,7 @@
         <div class="p-3 bg-body-tertiary rounded border">
           <div class="text-body-secondary small mb-1">Thông tin sự kiện</div>
           <div>Mã sự kiện: <strong class="font-monospace text-primary">{{ log.eventId }}</strong></div>
-          <div>Hành động: <c-badge class="ms-1" [color]="getEventBadgeColor(log.eventType)">{{ log.eventType }}</c-badge></div>
+          <div>Hành động: <c-badge class="ms-1" [color]="getEventBadgeColor(log.eventType)">{{ log.eventTypeLabel }}</c-badge></div>
           <div>Thời gian: <strong>{{ formatDate(log.createdAt) }}</strong></div>
         </div>
       </c-col>
@@ -269,24 +251,12 @@
       <c-col md="6" xs="12">
         <div class="p-3 bg-body-tertiary rounded border">
           <div class="text-body-secondary small mb-1">Người thực hiện & Đối tượng</div>
-          <div>Tài khoản: <strong>&#64;{{ log.username }}</strong></div>
-          <div>Đối tượng: <c-badge class="ms-1" [color]="getTargetBadgeColor(log.targetType)">{{ log.targetType }}</c-badge> #{{ log.targetId || 'N/A' }}</div>
-          <div>Địa chỉ IP: <strong>{{ log.ipAddress || '127.0.0.1' }}</strong></div>
+          <div>Tài khoản: <strong>&#64;{{ log.username || '—' }}</strong></div>
+          <div>Đối tượng: <c-badge class="ms-1" [color]="getTargetBadgeColor(log.targetType)">{{ log.targetTypeLabel }}</c-badge> #{{ log.targetId || 'N/A' }}</div>
+          <div>Địa chỉ IP: <strong>{{ log.ipAddress || '—' }}</strong></div>
         </div>
       </c-col>
     </c-row>
-
-    <div class="mb-3">
-      <label class="fw-bold small mb-1">Mô tả sự kiện:</label>
-      <div class="p-2 bg-body-tertiary rounded border small">{{ log.description }}</div>
-    </div>
-
-    @if (log.details) {
-    <div>
-      <label class="fw-bold small mb-1">Metadata / JSON Payload:</label>
-      <pre class="bg-dark text-light p-3 rounded small font-monospace mb-0" style="max-height: 200px; overflow: auto;">{{ log.details | json }}</pre>
-    </div>
-    }
     }
   </c-modal-body>
   <c-modal-footer>
@@ -295,4 +265,3 @@
     </button>
   </c-modal-footer>
 </c-modal>
-

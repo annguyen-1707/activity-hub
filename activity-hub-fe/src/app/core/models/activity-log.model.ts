@@ -1,28 +1,18 @@
-export type ActivityEventType =
-  | 'USER_LOGIN'
-  | 'USER_LOGOUT'
-  | 'ORDER_CREATED'
-  | 'ORDER_UPDATED'
-  | 'ORDER_DELETED'
-  | 'USER_CREATED'
-  | 'USER_UPDATED'
-  | 'USER_DELETED'
-  | 'ROLE_CREATED'
-  | 'ROLE_DELETED';
+export type ActivityEventType = 'CREATED' | 'UPDATED' | 'DELETED' | 'APPROVED' | 'REJECTED' | 'LOGIN' | 'LOGOUT';
 
-export type ActivityTargetType = 'ORDER' | 'USER' | 'ROLE' | 'AUTH';
+export type ActivityTargetType = 'USER' | 'ORDER' | 'ROLE';
 
 export interface ActivityLog {
   id: string;
   eventId: string;
-  username: string;
+  userId?: string;
+  username?: string;
   fullName?: string;
   eventType: ActivityEventType;
+  eventTypeLabel: string;
   targetType: ActivityTargetType;
-  targetId?: string | number;
-  description: string;
+  targetTypeLabel: string;
+  targetId?: string;
   ipAddress?: string;
   createdAt: string;
-  details?: Record<string, any>;
 }
-

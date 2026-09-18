@@ -24,8 +24,7 @@ import {
   SpinnerComponent,
 } from '@coreui/angular';
 import { IconDirective } from '@coreui/icons-angular';
-import { UserService } from '../../../../core/services/user.service';
-import { ActivityLogService } from '../../../../core/services/activity-log.service';
+import { UserService } from '../../../users/services/user.service';
 
 @Component({
   selector: 'app-register',
@@ -57,7 +56,6 @@ import { ActivityLogService } from '../../../../core/services/activity-log.servi
 export class RegisterComponent {
   private readonly fb = inject(FormBuilder);
   private readonly userService = inject(UserService);
-  private readonly activityLogService = inject(ActivityLogService);
   private readonly router = inject(Router);
 
   loading = signal<boolean>(false);
@@ -128,15 +126,6 @@ export class RegisterComponent {
         this.successMessage.set(
           `Đăng ký tài khoản "${created.username}" thành công! Đang chuyển hướng đến trang đăng nhập...`
         );
-
-        this.activityLogService.recordLog({
-          username: created.username,
-          fullName: `${created.lastName} ${created.firstName}`,
-          eventType: 'USER_CREATED',
-          targetType: 'USER',
-          targetId: created.id,
-          description: `Người dùng tự đăng ký tài khoản: ${created.username} (${created.lastName} ${created.firstName}).`,
-        });
 
         setTimeout(() => {
           this.router.navigate(['/authentication/login']);

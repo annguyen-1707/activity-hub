@@ -21,7 +21,7 @@ import {
 
 import { IconDirective } from '@coreui/icons-angular';
 import { AuthService } from '../../../core/services/auth.service';
-import { OrderService } from '../../../core/services/order.service';
+import { OrderService } from '../../../views/orders/services/order.service';
 
 @Component({
   selector: 'app-default-header',

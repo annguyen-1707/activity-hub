@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="ShopHub">
+  <rect width="32" height="32" rx="8" fill="#321fdb"/>
+  <path d="M11 12.5V10a5 5 0 0 1 10 0v2.5" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round"/>
+  <path d="M8.6 12.5h14.8l-1.28 12.1a2 2 0 0 1-1.99 1.79H11.87a2 2 0 0 1-1.99-1.79L8.6 12.5Z" fill="#ffffff"/>
+  <circle cx="13.1" cy="17" r="1.3" fill="#321fdb"/>
+  <circle cx="18.9" cy="17" r="1.3" fill="#321fdb"/>
+</svg>

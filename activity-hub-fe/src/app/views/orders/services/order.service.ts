@@ -2,9 +2,9 @@ import { Injectable, inject, signal, computed } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { environment } from '../../../environments/environment';
-import { ApiResponse, PageResponse } from '../models/api-response.model';
-import { CartItem, OrderRequest, OrderResponse, Product } from '../models/order.model';
+import { environment } from '../../../../environments/environment';
+import { ApiResponse, PageResponse } from '../../../core/models/api-response.model';
+import { CartItem, OrderRequest, OrderResponse, Product } from '../../../core/models/order.model';
 
 const MOCK_PRODUCTS: Product[] = [
   {

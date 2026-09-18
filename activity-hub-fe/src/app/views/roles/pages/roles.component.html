@@ -1,10 +1,10 @@
 <div class="roles-management-page">
   <!-- Alerts -->
   @if (alertMessage()) {
-  <c-alert [color]="alertType()" [dismissible]="true" class="mb-3 d-flex align-items-center shadow-sm">
-    <svg cIcon [name]="alertType() === 'success' ? 'cilCheck' : 'cilBug'" class="me-2" size="lg"></svg>
-    <div>{{ alertMessage() }}</div>
-  </c-alert>
+    <c-alert [color]="alertType()" [dismissible]="true" class="mb-3 d-flex align-items-center shadow-sm">
+      <svg cIcon [name]="alertType() === 'success' ? 'cilCheck' : 'cilBug'" class="me-2" size="lg"></svg>
+      <div>{{ alertMessage() }}</div>
+    </c-alert>
   }
 
   <!-- Header Banner -->
@@ -15,7 +15,7 @@
         Quản Lý Vai Trò & Phân Quyền
       </h3>
       <p class="text-body-secondary mb-0 small">
-        Quản lý các vai trò (Role) trong hệ thống Activity Hub để gán quyền cho người dùng.
+        Quản lý các vai trò (Role) trong hệ thống ShopHub để gán quyền cho người dùng.
       </p>
     </div>
     <div class="mt-2 mt-md-0">
@@ -74,69 +74,64 @@
       <div class="table-responsive border rounded">
         <table cTable hover class="align-middle mb-0">
           <thead class="table-light">
-            <tr>
-              <th scope="col" class="text-center" style="width: 60px;">#</th>
-              <th scope="col" style="width: 220px;">Tên vai trò</th>
-              <th scope="col">Mô tả chi tiết</th>
-              <th scope="col" class="text-center" style="width: 120px;">Thao tác</th>
-            </tr>
+          <tr>
+            <th scope="col" class="text-center" style="width: 60px;">#</th>
+            <th scope="col" style="width: 220px;">Tên vai trò</th>
+            <th scope="col">Mô tả chi tiết</th>
+            <th scope="col" class="text-center" style="width: 120px;">Thao tác</th>
+          </tr>
           </thead>
           <tbody>
             @if (loading()) {
-            <tr>
-              <td colspan="4" class="text-center py-5">
-                <c-spinner color="primary" class="me-2"></c-spinner>
-                <span class="text-body-secondary">Đang tải danh sách vai trò...</span>
-              </td>
-            </tr>
+              <tr>
+                <td colspan="4" class="text-center py-5">
+                  <c-spinner color="primary" class="me-2"></c-spinner>
+                  <span class="text-body-secondary">Đang tải danh sách vai trò...</span>
+                </td>
+              </tr>
             } @else if (filteredRolesCount() === 0) {
-            <tr>
-              <td colspan="4" class="text-center py-5">
-                <svg cIcon name="cilLockLocked" size="3xl" class="text-secondary opacity-50 mb-2"></svg>
-                <h6>Không tìm thấy vai trò nào</h6>
-                <p class="text-body-secondary small mb-0">Thử tìm kiếm với từ khóa khác hoặc bấm nút "Thêm vai trò mới".</p>
-              </td>
-            </tr>
+              <tr>
+                <td colspan="4" class="text-center py-5">
+                  <svg cIcon name="cilLockLocked" size="3xl" class="text-secondary opacity-50 mb-2"></svg>
+                  <h6>Không tìm thấy vai trò nào</h6>
+                  <p class="text-body-secondary small mb-0">Thử tìm kiếm với từ khóa khác hoặc bấm nút "Thêm vai trò
+                    mới".</p>
+                </td>
+              </tr>
             } @else {
-            @for (role of paginatedRoles(); track role.name; let i = $index) {
-            <tr>
-              <td class="text-center text-body-secondary small fw-semibold">
-                {{ page() * pageSize() + i + 1 }}
-              </td>
+              @for (role of paginatedRoles(); track role.name; let i = $index) {
+                <tr>
+                  <td class="text-center text-body-secondary small fw-semibold">
+                    {{ page() * pageSize() + i + 1 }}
+                  </td>
 
-              <!-- Role Name & Badge -->
-              <td>
-                <c-badge [color]="getBadgeColor(role.name)" class="fs-6 px-3 py-1 font-monospace">
-                  {{ role.name }}
-                </c-badge>
-              </td>
+                  <!-- Role Name & Badge -->
+                  <td>
+                    <c-badge [color]="getBadgeColor(role.name)" class="fs-6 px-3 py-1 font-monospace">
+                      {{ role.name }}
+                    </c-badge>
+                  </td>
 
-              <!-- Description -->
-              <td>
-                <span class="text-body">{{ role.description || 'Chưa có mô tả' }}</span>
-              </td>
+                  <!-- Description -->
+                  <td>
+                    <span class="text-body">{{ role.description || 'Chưa có mô tả' }}</span>
+                  </td>
 
-              <!-- Actions -->
-              <td class="text-center">
-                @if (role.name === 'ADMIN' || role.name === 'USER') {
-                <span class="badge bg-light text-body-secondary border" title="Vai trò mặc định của hệ thống không thể xóa">
-                  Mặc định
-                </span>
-                } @else {
-                <button
-                  cButton
-                  color="danger"
-                  variant="outline"
-                  size="sm"
-                  (click)="openDeleteModal(role)"
-                  title="Xóa vai trò"
-                >
-                  <svg cIcon name="cilTrash"></svg>
-                </button>
-                }
-              </td>
-            </tr>
-            }
+                  <!-- Actions -->
+                  <td class="text-center">
+                    <button
+                      cButton
+                      color="danger"
+                      variant="outline"
+                      size="sm"
+                      (click)="openDeleteModal(role)"
+                      title="Xóa vai trò"
+                    >
+                      <svg cIcon name="cilTrash"></svg>
+                    </button>
+                  </td>
+                </tr>
+              }
             }
           </tbody>
         </table>
@@ -144,46 +139,48 @@
 
       <!-- Pagination Footer -->
       @if (!loading() && filteredRolesCount() > 0) {
-      <div class="d-flex flex-wrap justify-content-between align-items-center mt-3 pt-2 gap-2">
-        <div class="text-body-secondary small mb-2 mb-md-0">
-          Hiển thị <strong>{{ paginatedRoles().length }}</strong> trên tổng số <strong>{{ filteredRolesCount() }}</strong> vai trò
-          (Trang {{ page() + 1 }} / {{ totalPages() }})
+        <div class="d-flex flex-wrap justify-content-between align-items-center mt-3 pt-2 gap-2">
+          <div class="text-body-secondary small mb-2 mb-md-0">
+            Hiển thị <strong>{{ paginatedRoles().length }}</strong> trên tổng số
+            <strong>{{ filteredRolesCount() }}</strong> vai trò
+            (Trang {{ page() + 1 }} / {{ totalPages() }})
+          </div>
+
+          <c-pagination align="end" class="mb-0">
+            <!-- First Page -->
+            <c-page-item [disabled]="page() === 0">
+              <a cPageLink (click)="goToPage(0)" aria-label="First">&laquo;</a>
+            </c-page-item>
+            <!-- Previous -->
+            <c-page-item [disabled]="page() === 0">
+              <a cPageLink (click)="goToPage(page() - 1)" aria-label="Previous">&lsaquo;</a>
+            </c-page-item>
+
+            <!-- Page numbers -->
+            @for (p of getPageNumbers(); track p) {
+              <c-page-item [active]="p === page()">
+                <a cPageLink (click)="goToPage(p)">{{ p + 1 }}</a>
+              </c-page-item>
+            }
+
+            <!-- Next -->
+            <c-page-item [disabled]="page() >= totalPages() - 1">
+              <a cPageLink (click)="goToPage(page() + 1)" aria-label="Next">&rsaquo;</a>
+            </c-page-item>
+            <!-- Last Page -->
+            <c-page-item [disabled]="page() >= totalPages() - 1">
+              <a cPageLink (click)="goToPage(totalPages() - 1)" aria-label="Last">&raquo;</a>
+            </c-page-item>
+          </c-pagination>
         </div>
-
-        <c-pagination align="end" class="mb-0">
-          <!-- First Page -->
-          <c-page-item [disabled]="page() === 0">
-            <a cPageLink (click)="goToPage(0)" aria-label="First">&laquo;</a>
-          </c-page-item>
-          <!-- Previous -->
-          <c-page-item [disabled]="page() === 0">
-            <a cPageLink (click)="goToPage(page() - 1)" aria-label="Previous">&lsaquo;</a>
-          </c-page-item>
-
-          <!-- Page numbers -->
-          @for (p of getPageNumbers(); track p) {
-          <c-page-item [active]="p === page()">
-            <a cPageLink (click)="goToPage(p)">{{ p + 1 }}</a>
-          </c-page-item>
-          }
-
-          <!-- Next -->
-          <c-page-item [disabled]="page() >= totalPages() - 1">
-            <a cPageLink (click)="goToPage(page() + 1)" aria-label="Next">&rsaquo;</a>
-          </c-page-item>
-          <!-- Last Page -->
-          <c-page-item [disabled]="page() >= totalPages() - 1">
-            <a cPageLink (click)="goToPage(totalPages() - 1)" aria-label="Last">&raquo;</a>
-          </c-page-item>
-        </c-pagination>
-      </div>
       }
     </c-card-body>
   </c-card>
 </div>
 
 <!-- CREATE ROLE MODAL -->
-<c-modal [visible]="createModalVisible()" (visibleChange)="createModalVisible.set($event)" backdrop="static" id="createRoleModal">
+<c-modal [visible]="createModalVisible()" (visibleChange)="createModalVisible.set($event)" backdrop="static"
+         id="createRoleModal">
   <c-modal-header class="bg-primary text-white">
     <h5 cModalTitle class="d-flex align-items-center">
       <svg cIcon name="cilPlus" class="me-2"></svg>
@@ -210,13 +207,13 @@
           Tên vai trò viết hoa, không dấu, chỉ gồm chữ cái, số và dấu gạch dưới (_).
         </div>
         @if (roleForm.get('name')?.touched && roleForm.get('name')?.invalid) {
-        <div class="text-danger small mt-1">
-          @if (roleForm.get('name')?.hasError('required')) {
-          Vui lòng nhập tên vai trò!
-          } @else if (roleForm.get('name')?.hasError('pattern')) {
-          Tên vai trò chỉ được gồm chữ cái in hoa (A-Z), số (0-9) và dấu _!
-          }
-        </div>
+          <div class="text-danger small mt-1">
+            @if (roleForm.get('name')?.hasError('required')) {
+              Vui lòng nhập tên vai trò!
+            } @else if (roleForm.get('name')?.hasError('pattern')) {
+              Tên vai trò chỉ được gồm chữ cái in hoa (A-Z), số (0-9) và dấu _!
+            }
+          </div>
         }
       </div>
 
@@ -234,9 +231,9 @@
           [valid]="roleForm.get('description')?.touched ? roleForm.get('description')?.valid : undefined"
         ></textarea>
         @if (roleForm.get('description')?.touched && roleForm.get('description')?.invalid) {
-        <div class="text-danger small mt-1">
-          Vui lòng nhập mô tả cho vai trò!
-        </div>
+          <div class="text-danger small mt-1">
+            Vui lòng nhập mô tả cho vai trò!
+          </div>
         }
       </div>
     </form>
@@ -247,18 +244,19 @@
     </button>
     <button cButton color="primary" (click)="saveRole()" [disabled]="saving() || roleForm.invalid">
       @if (saving()) {
-      <c-spinner size="sm" class="me-1"></c-spinner>
-      Đang lưu...
+        <c-spinner size="sm" class="me-1"></c-spinner>
+        Đang lưu...
       } @else {
-      <svg cIcon name="cilCheck" class="me-1"></svg>
-      Tạo vai trò
+        <svg cIcon name="cilCheck" class="me-1"></svg>
+        Tạo vai trò
       }
     </button>
   </c-modal-footer>
 </c-modal>
 
 <!-- DELETE CONFIRMATION MODAL -->
-<c-modal [visible]="deleteModalVisible()" (visibleChange)="deleteModalVisible.set($event)" backdrop="static" id="deleteRoleModal">
+<c-modal [visible]="deleteModalVisible()" (visibleChange)="deleteModalVisible.set($event)" backdrop="static"
+         id="deleteRoleModal">
   <c-modal-header class="bg-danger text-white">
     <h5 cModalTitle class="d-flex align-items-center">
       <svg cIcon name="cilTrash" class="me-2"></svg>
@@ -280,10 +278,10 @@
     </button>
     <button cButton color="danger" (click)="confirmDelete()" [disabled]="deleting()">
       @if (deleting()) {
-      <c-spinner size="sm" class="me-1"></c-spinner>
-      Đang xóa...
+        <c-spinner size="sm" class="me-1"></c-spinner>
+        Đang xóa...
       } @else {
-      Xác nhận xóa
+        Xác nhận xóa
       }
     </button>
   </c-modal-footer>
