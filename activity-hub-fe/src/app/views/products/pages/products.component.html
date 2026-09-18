@@ -1,0 +1,694 @@
+<div class="products-page">
+  <!-- PAGE HEADER -->
+  <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+    <div>
+      <h3 class="fw-bold mb-1 d-flex align-items-center gap-2">
+        <svg cIcon name="cilTags" class="text-primary"></svg>
+        Quản Lý Sản Phẩm & Kho Hàng
+      </h3>
+      <div class="text-body-secondary small">
+        Quản lý danh mục hàng hóa, giá cả, và theo dõi lịch sử luân chuyển nhập / xuất / điều chỉnh kho.
+      </div>
+    </div>
+    <div class="d-flex gap-2">
+      @if (activeTab() === 0) {
+        <button cButton color="primary" class="d-flex align-items-center gap-1 shadow-sm rounded-3" (click)="openCreateProductModal()">
+          <svg cIcon name="cilPlus"></svg>
+          <span>Thêm Sản Phẩm</span>
+        </button>
+      } @else {
+        <button cButton color="success" class="text-white d-flex align-items-center gap-1 shadow-sm rounded-3" (click)="openStockModal()">
+          <svg cIcon name="cilPlus"></svg>
+          <span>Nhập Kho / Điều Chỉnh</span>
+        </button>
+      }
+    </div>
+  </div>
+
+  <!-- ALERT NOTIFICATION -->
+  @if (alertMessage()) {
+    <c-alert [color]="alertType()" dismissible class="d-flex align-items-center gap-2 mb-4 shadow-sm">
+      <svg cIcon [name]="alertType() === 'success' ? 'cilCheck' : 'cilBug'"></svg>
+      <span>{{ alertMessage() }}</span>
+    </c-alert>
+  }
+
+  <!-- TAB NAVIGATION -->
+  <ul class="nav nav-tabs mb-4 fw-semibold border-bottom">
+    <li class="nav-item">
+      <button
+        type="button"
+        class="nav-link d-flex align-items-center gap-2 px-4 py-2 cursor-pointer"
+        [class.active]="activeTab() === 0"
+        (click)="activeTab.set(0)"
+      >
+        <svg cIcon name="cilTags"></svg>
+        <span>Danh Sách Sản Phẩm ({{ productTotalElements() }})</span>
+      </button>
+    </li>
+    <li class="nav-item">
+      <button
+        type="button"
+        class="nav-link d-flex align-items-center gap-2 px-4 py-2 cursor-pointer"
+        [class.active]="activeTab() === 1"
+        (click)="activeTab.set(1)"
+      >
+        <svg cIcon name="cilNotes"></svg>
+        <span>Lịch Sử Biến Động Kho ({{ stockTotalElements() }})</span>
+      </button>
+    </li>
+  </ul>
+
+  <!-- TAB CONTENT -->
+  <div class="tab-content">
+    <!-- TAB 1: PRODUCT LIST -->
+    @if (activeTab() === 0) {
+      <c-card class="border-0 shadow-sm rounded-4 overflow-hidden mb-4">
+        <!-- Filter Toolbar -->
+        <c-card-header class="bg-body py-3 px-4 border-bottom">
+          <c-row class="g-3 align-items-center justify-content-between">
+            <c-col md="5" xs="12">
+              <c-input-group size="sm">
+                <span cInputGroupText class="bg-body-secondary border-end-0">
+                  <svg cIcon name="cilMagnifyingGlass" class="text-body-secondary" size="sm"></svg>
+                </span>
+                <input
+                  cFormControl
+                  placeholder="Tìm kiếm sản phẩm theo tên..."
+                  class="border-start-0"
+                  [ngModel]="productKeyword()"
+                  (ngModelChange)="productKeyword.set($event)"
+                  (keyup.enter)="onProductSearch()"
+                />
+                @if (productKeyword()) {
+                  <button class="btn btn-outline-secondary border-start-0 bg-transparent" (click)="productKeyword.set(''); onProductSearch()">
+                    <svg cIcon name="cilX" size="sm"></svg>
+                  </button>
+                }
+              </c-input-group>
+            </c-col>
+
+            <c-col md="7" xs="12">
+              <div class="d-flex flex-wrap gap-2 justify-content-md-end align-items-center">
+                <!-- Category Filter -->
+                <select
+                  cSelect
+                  size="sm"
+                  class="form-select-sm w-auto rounded-3"
+                  [ngModel]="productCategory()"
+                  (ngModelChange)="onProductCategoryChange($event)"
+                >
+                  <option value="">Tất cả danh mục</option>
+                  @for (cat of categories; track cat) {
+                    <option [value]="cat">{{ categoryLabels[cat] }}</option>
+                  }
+                </select>
+
+                <!-- Page Size Selector -->
+                <div class="d-flex align-items-center gap-1 ms-auto ms-md-0">
+                  <span class="text-body-secondary small text-nowrap d-none d-sm-inline">Hiển thị:</span>
+                  <select
+                    cSelect
+                    size="sm"
+                    class="form-select-sm w-auto rounded-3"
+                    [ngModel]="productPageSize()"
+                    (ngModelChange)="onProductPageSizeChange($event)"
+                  >
+                    <option [value]="5">5 dòng</option>
+                    <option [value]="10">10 dòng</option>
+                    <option [value]="20">20 dòng</option>
+                    <option [value]="50">50 dòng</option>
+                  </select>
+                </div>
+
+                <!-- Refresh Button -->
+                <button
+                  cButton
+                  color="secondary"
+                  variant="outline"
+                  size="sm"
+                  class="rounded-3 d-flex align-items-center gap-1"
+                  (click)="loadProducts()"
+                  [disabled]="productLoading()"
+                >
+                  <svg cIcon name="cilSpeedometer" size="sm"></svg>
+                  <span>Làm mới</span>
+                </button>
+              </div>
+            </c-col>
+          </c-row>
+        </c-card-header>
+
+        <!-- Product Table -->
+        <c-card-body class="p-0">
+          <div class="table-responsive">
+            <table cTable hover class="align-middle mb-0 product-table">
+              <thead class="table-light">
+                <tr>
+                  <th scope="col" style="width: 80px;" class="text-center">Hình ảnh</th>
+                  <th scope="col">Tên sản phẩm</th>
+                  <th scope="col">Danh mục</th>
+                  <th scope="col" class="text-end">Đơn giá</th>
+                  <th scope="col" class="text-center">Tồn kho</th>
+                  <th scope="col" class="text-center">Đánh giá</th>
+                  <th scope="col" class="text-center" style="width: 130px;">Thao tác</th>
+                </tr>
+              </thead>
+              <tbody>
+                @if (productLoading()) {
+                  <tr>
+                    <td colspan="7" class="text-center py-5">
+                      <c-spinner color="primary"></c-spinner>
+                      <div class="text-body-secondary mt-2 small">Đang tải sản phẩm...</div>
+                    </td>
+                  </tr>
+                } @else if (products().length === 0) {
+                  <tr>
+                    <td colspan="7" class="text-center py-5">
+                      <div class="text-body-secondary">
+                        <svg cIcon name="cilTags" size="xl" class="mb-2 opacity-50"></svg>
+                        <p class="mb-0">Không tìm thấy sản phẩm nào phù hợp.</p>
+                      </div>
+                    </td>
+                  </tr>
+                } @else {
+                  @for (prod of products(); track prod.id) {
+                    <tr>
+                      <!-- Thumbnail -->
+                      <td class="text-center py-2">
+                        <div class="product-thumb-container mx-auto">
+                          @if (prod.image) {
+                            <img [src]="prod.image" [alt]="prod.name" class="product-thumb rounded-3" />
+                          } @else {
+                            <div class="product-thumb-placeholder rounded-3 d-flex align-items-center justify-content-center bg-body-secondary text-body-secondary">
+                              <svg cIcon name="cilTags"></svg>
+                            </div>
+                          }
+                        </div>
+                      </td>
+
+                      <!-- Name & SKU -->
+                      <td>
+                        <div class="fw-semibold text-truncate" style="max-width: 280px;" [title]="prod.name">
+                          {{ prod.name }}
+                        </div>
+                        <div class="d-flex align-items-center gap-1 text-body-secondary small">
+                          <code>{{ prod.id.substring(0, 8) }}...</code>
+                          <button class="btn btn-sm btn-link p-0 text-body-secondary" (click)="copyId(prod.id)" title="Copy mã ID">
+                            <svg cIcon name="cilPaperclip" size="sm"></svg>
+                          </button>
+                        </div>
+                      </td>
+
+                      <!-- Category -->
+                      <td>
+                        <c-badge color="light" class="text-body border px-2 py-1">
+                          {{ prod.categoryLabel || categoryLabels[prod.category] || prod.category }}
+                        </c-badge>
+                      </td>
+
+                      <!-- Price -->
+                      <td class="text-end fw-bold text-primary">
+                        {{ formatCurrency(prod.price) }}
+                      </td>
+
+                      <!-- Stock Quantity -->
+                      <td class="text-center">
+                        @if (prod.quantity > 10) {
+                          <c-badge color="success" class="px-2 py-1">Còn {{ prod.quantity }}</c-badge>
+                        } @else if (prod.quantity > 0) {
+                          <c-badge color="warning" class="px-2 py-1">Sắp hết ({{ prod.quantity }})</c-badge>
+                        } @else {
+                          <c-badge color="danger" class="px-2 py-1">Hết hàng (0)</c-badge>
+                        }
+                      </td>
+
+                      <!-- Rating -->
+                      <td class="text-center">
+                        <div class="d-flex align-items-center justify-content-center gap-1 text-warning small">
+                          <svg cIcon name="cilStar"></svg>
+                          <span class="fw-bold text-body">{{ prod.rate }}</span>
+                        </div>
+                      </td>
+
+                      <!-- Actions -->
+                      <td class="text-center">
+                        <div class="btn-group btn-group-sm">
+                          <button cButton color="primary" variant="outline" class="btn-sm rounded-2 me-1" (click)="openEditProductModal(prod)" title="Sửa thông tin">
+                            <svg cIcon name="cilPencil"></svg>
+                          </button>
+                          <button cButton color="danger" variant="outline" class="btn-sm rounded-2" (click)="openDeleteProductModal(prod)" title="Xóa sản phẩm">
+                            <svg cIcon name="cilTrash"></svg>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  }
+                }
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Sticky Pagination Footer -->
+          @if (!productLoading() && productTotalElements() > 0) {
+            <div class="sticky-pagination-footer d-flex flex-wrap justify-content-between align-items-center gap-2">
+              <div class="text-body-secondary small">
+                Hiển thị <strong>{{ products().length }}</strong> trên tổng số <strong>{{ productTotalElements() }}</strong> sản phẩm
+                (Trang {{ productPage() + 1 }} / {{ productTotalPages() }})
+              </div>
+
+              <c-pagination align="end" class="mb-0">
+                <c-page-item [disabled]="productPage() === 0">
+                  <a cPageLink (click)="goToProductPage(0)">&laquo;</a>
+                </c-page-item>
+                <c-page-item [disabled]="productPage() === 0">
+                  <a cPageLink (click)="goToProductPage(productPage() - 1)">&lsaquo;</a>
+                </c-page-item>
+
+                @for (p of getProductPageNumbers(); track p) {
+                  <c-page-item [active]="p === productPage()">
+                    <a cPageLink (click)="goToProductPage(p)">{{ p + 1 }}</a>
+                  </c-page-item>
+                }
+
+                <c-page-item [disabled]="productPage() >= productTotalPages() - 1">
+                  <a cPageLink (click)="goToProductPage(productPage() + 1)">&rsaquo;</a>
+                </c-page-item>
+                <c-page-item [disabled]="productPage() >= productTotalPages() - 1">
+                  <a cPageLink (click)="goToProductPage(productTotalPages() - 1)">&raquo;</a>
+                </c-page-item>
+              </c-pagination>
+            </div>
+          }
+        </c-card-body>
+      </c-card>
+    }
+
+    <!-- TAB 2: STOCK TRANSACTIONS -->
+    @if (activeTab() === 1) {
+      <c-card class="border-0 shadow-sm rounded-4 overflow-hidden mb-4">
+        <!-- Stock Filter Toolbar -->
+        <c-card-header class="bg-body py-3 px-4 border-bottom">
+          <c-row class="g-3 align-items-center justify-content-between">
+            <c-col md="6" xs="12">
+              <div class="d-flex flex-wrap gap-2 align-items-center">
+                <!-- Stock Type Filter -->
+                <select
+                  cSelect
+                  size="sm"
+                  class="form-select-sm w-auto rounded-3"
+                  [ngModel]="stockType()"
+                  (ngModelChange)="onStockTypeChange($event)"
+                >
+                  <option value="">Tất cả loại giao dịch</option>
+                  <option value="IMPORT">Nhập hàng (IMPORT)</option>
+                  <option value="SALE">Bán hàng (SALE)</option>
+                  <option value="ADJUSTMENT">Điều chỉnh tồn (ADJUSTMENT)</option>
+                  <option value="CANCEL">Hủy đơn hoàn kho (CANCEL)</option>
+                </select>
+
+                <!-- Stock Page Size -->
+                <div class="d-flex align-items-center gap-1">
+                  <span class="text-body-secondary small text-nowrap d-none d-sm-inline">Hiển thị:</span>
+                  <select
+                    cSelect
+                    size="sm"
+                    class="form-select-sm w-auto rounded-3"
+                    [ngModel]="stockPageSize()"
+                    (ngModelChange)="onStockPageSizeChange($event)"
+                  >
+                    <option [value]="5">5 dòng</option>
+                    <option [value]="10">10 dòng</option>
+                    <option [value]="20">20 dòng</option>
+                    <option [value]="50">50 dòng</option>
+                  </select>
+                </div>
+              </div>
+            </c-col>
+
+            <c-col md="6" xs="12" class="text-md-end">
+              <button
+                cButton
+                color="secondary"
+                variant="outline"
+                size="sm"
+                class="rounded-3 d-inline-flex align-items-center gap-1"
+                (click)="loadStockTransactions()"
+                [disabled]="stockLoading()"
+              >
+                <svg cIcon name="cilSpeedometer" size="sm"></svg>
+                <span>Làm mới</span>
+              </button>
+            </c-col>
+          </c-row>
+        </c-card-header>
+
+        <!-- Stock Table -->
+        <c-card-body class="p-0">
+          <div class="table-responsive">
+            <table cTable hover class="align-middle mb-0 stock-table">
+              <thead class="table-light">
+                <tr>
+                  <th scope="col" style="width: 140px;">Mã Giao Dịch</th>
+                  <th scope="col">Loại Giao Dịch</th>
+                  <th scope="col">Mã Tham Chiếu</th>
+                  <th scope="col">Chi Tiết Biến Động</th>
+                  <th scope="col">Người Thực Hiện</th>
+                  <th scope="col">Ghi Chú</th>
+                  <th scope="col">Thời Gian</th>
+                </tr>
+              </thead>
+              <tbody>
+                @if (stockLoading()) {
+                  <tr>
+                    <td colspan="7" class="text-center py-5">
+                      <c-spinner color="primary"></c-spinner>
+                      <div class="text-body-secondary mt-2 small">Đang tải lịch sử biến động kho...</div>
+                    </td>
+                  </tr>
+                } @else if (stockTransactions().length === 0) {
+                  <tr>
+                    <td colspan="7" class="text-center py-5">
+                      <div class="text-body-secondary">
+                        <svg cIcon name="cilNotes" size="xl" class="mb-2 opacity-50"></svg>
+                        <p class="mb-0">Chưa có giao dịch kho nào được ghi nhận.</p>
+                      </div>
+                    </td>
+                  </tr>
+                } @else {
+                  @for (tx of stockTransactions(); track tx.id) {
+                    <tr>
+                      <!-- ID -->
+                      <td>
+                        <div class="d-flex align-items-center gap-1">
+                          <code>{{ tx.id.substring(0, 8) }}...</code>
+                          <button class="btn btn-sm btn-link p-0 text-body-secondary" (click)="copyId(tx.id)" title="Copy ID">
+                            <svg cIcon name="cilPaperclip" size="sm"></svg>
+                          </button>
+                        </div>
+                      </td>
+
+                      <!-- Type Badge -->
+                      <td>
+                        <c-badge [color]="stockTypeColors[tx.type]" class="px-2 py-1">
+                          {{ tx.typeLabel || stockTypeLabels[tx.type] || tx.type }}
+                        </c-badge>
+                      </td>
+
+                      <!-- Reference ID -->
+                      <td>
+                        @if (tx.referenceId) {
+                          <span class="badge bg-light text-dark border">Đơn: {{ tx.referenceId.substring(0, 8) }}...</span>
+                        } @else {
+                          <span class="text-body-secondary">—</span>
+                        }
+                      </td>
+
+                      <!-- Lines breakdown -->
+                      <td>
+                        <div class="d-flex flex-column gap-1">
+                          @for (line of tx.lines; track line.id || line.productId) {
+                            <div class="small d-flex align-items-center gap-2">
+                              <span class="fw-semibold text-truncate" style="max-width: 220px;" [title]="line.productName">
+                                {{ line.productName || 'Sản phẩm ' + line.productId.substring(0, 6) }}
+                              </span>
+                              @if (line.quantity > 0) {
+                                <span class="badge bg-success-subtle text-success border border-success-subtle">
+                                  +{{ line.quantity }}
+                                </span>
+                              } @else {
+                                <span class="badge bg-danger-subtle text-danger border border-danger-subtle">
+                                  {{ line.quantity }}
+                                </span>
+                              }
+                            </div>
+                          }
+                        </div>
+                      </td>
+
+                      <!-- Created By -->
+                      <td>
+                        <span class="fw-semibold">{{ tx.createdByUsername || 'Hệ thống' }}</span>
+                      </td>
+
+                      <!-- Note -->
+                      <td>
+                        <span class="text-body-secondary small">{{ tx.note || '—' }}</span>
+                      </td>
+
+                      <!-- Created At -->
+                      <td class="text-body-secondary small text-nowrap">
+                        {{ formatDate(tx.createdAt) }}
+                      </td>
+                    </tr>
+                  }
+                }
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Sticky Pagination Footer -->
+          @if (!stockLoading() && stockTotalElements() > 0) {
+            <div class="sticky-pagination-footer d-flex flex-wrap justify-content-between align-items-center gap-2">
+              <div class="text-body-secondary small">
+                Hiển thị <strong>{{ stockTransactions().length }}</strong> trên tổng số <strong>{{ stockTotalElements() }}</strong> giao dịch
+                (Trang {{ stockPage() + 1 }} / {{ stockTotalPages() }})
+              </div>
+
+              <c-pagination align="end" class="mb-0">
+                <c-page-item [disabled]="stockPage() === 0">
+                  <a cPageLink (click)="goToStockPage(0)">&laquo;</a>
+                </c-page-item>
+                <c-page-item [disabled]="stockPage() === 0">
+                  <a cPageLink (click)="goToStockPage(stockPage() - 1)">&lsaquo;</a>
+                </c-page-item>
+
+                @for (p of getStockPageNumbers(); track p) {
+                  <c-page-item [active]="p === stockPage()">
+                    <a cPageLink (click)="goToStockPage(p)">{{ p + 1 }}</a>
+                  </c-page-item>
+                }
+
+                <c-page-item [disabled]="stockPage() >= stockTotalPages() - 1">
+                  <a cPageLink (click)="goToStockPage(stockPage() + 1)">&rsaquo;</a>
+                </c-page-item>
+                <c-page-item [disabled]="stockPage() >= stockTotalPages() - 1">
+                  <a cPageLink (click)="goToStockPage(stockTotalPages() - 1)">&raquo;</a>
+                </c-page-item>
+              </c-pagination>
+            </div>
+          }
+        </c-card-body>
+      </c-card>
+    }
+  </div>
+</div>
+
+<!-- CREATE PRODUCT MODAL -->
+<c-modal [visible]="createProductModalVisible()" (visibleChange)="createProductModalVisible.set($event)" backdrop="static">
+  <c-modal-header class="bg-primary text-white">
+    <h5 cModalTitle class="d-flex align-items-center gap-2">
+      <svg cIcon name="cilPlus"></svg>
+      Thêm Mới Sản Phẩm
+    </h5>
+    <button (click)="createProductModalVisible.set(false)" class="btn-close btn-close-white"></button>
+  </c-modal-header>
+  <c-modal-body class="p-4">
+    <form [formGroup]="productForm" (ngSubmit)="saveNewProduct()">
+      <div class="mb-3">
+        <label cLabel class="fw-semibold">Tên sản phẩm <span class="text-danger">*</span></label>
+        <input cFormControl formControlName="name" placeholder="Ví dụ: iPhone 15 Pro Max 256GB" />
+      </div>
+
+      <c-row class="g-3 mb-3">
+        <c-col md="6">
+          <label cLabel class="fw-semibold">Giá bán (VND) <span class="text-danger">*</span></label>
+          <input cFormControl type="number" formControlName="price" placeholder="0" min="0" />
+        </c-col>
+        <c-col md="6">
+          <label cLabel class="fw-semibold">Danh mục <span class="text-danger">*</span></label>
+          <select cSelect formControlName="category">
+            @for (cat of categories; track cat) {
+              <option [value]="cat">{{ categoryLabels[cat] }}</option>
+            }
+          </select>
+        </c-col>
+      </c-row>
+
+      <div class="mb-3">
+        <label cLabel class="fw-semibold">Đánh giá (sao: 0 - 5)</label>
+        <input cFormControl type="number" step="0.1" formControlName="rate" min="0" max="5" placeholder="5.0" />
+      </div>
+
+      <div class="mb-3">
+        <label cLabel class="fw-semibold">Đường dẫn hình ảnh (URL)</label>
+        <input cFormControl formControlName="image" placeholder="https://example.com/product.jpg" />
+      </div>
+
+      <div class="mb-3">
+        <label cLabel class="fw-semibold">Mô tả sản phẩm</label>
+        <textarea cFormControl formControlName="description" rows="3" placeholder="Mô tả tóm tắt tính năng, cấu hình..."></textarea>
+      </div>
+    </form>
+  </c-modal-body>
+  <c-modal-footer>
+    <button cButton color="secondary" variant="outline" (click)="createProductModalVisible.set(false)" [disabled]="saving()">Hủy bỏ</button>
+    <button cButton color="primary" (click)="saveNewProduct()" [disabled]="saving() || productForm.invalid">
+      @if (saving()) {
+        <c-spinner size="sm" class="me-1"></c-spinner> Đang lưu...
+      } @else {
+        <svg cIcon name="cilCheck" class="me-1"></svg> Lưu Sản Phẩm
+      }
+    </button>
+  </c-modal-footer>
+</c-modal>
+
+<!-- EDIT PRODUCT MODAL -->
+<c-modal [visible]="editProductModalVisible()" (visibleChange)="editProductModalVisible.set($event)" backdrop="static">
+  <c-modal-header class="bg-primary text-white">
+    <h5 cModalTitle class="d-flex align-items-center gap-2">
+      <svg cIcon name="cilPencil"></svg>
+      Chỉnh Sửa Thông Tin Sản Phẩm
+    </h5>
+    <button (click)="editProductModalVisible.set(false)" class="btn-close btn-close-white"></button>
+  </c-modal-header>
+  <c-modal-body class="p-4">
+    <form [formGroup]="productForm" (ngSubmit)="saveEditProduct()">
+      <div class="mb-3">
+        <label cLabel class="fw-semibold">Tên sản phẩm <span class="text-danger">*</span></label>
+        <input cFormControl formControlName="name" />
+      </div>
+
+      <c-row class="g-3 mb-3">
+        <c-col md="6">
+          <label cLabel class="fw-semibold">Giá bán (VND) <span class="text-danger">*</span></label>
+          <input cFormControl type="number" formControlName="price" min="0" />
+        </c-col>
+        <c-col md="6">
+          <label cLabel class="fw-semibold">Danh mục <span class="text-danger">*</span></label>
+          <select cSelect formControlName="category">
+            @for (cat of categories; track cat) {
+              <option [value]="cat">{{ categoryLabels[cat] }}</option>
+            }
+          </select>
+        </c-col>
+      </c-row>
+
+      <div class="mb-3">
+        <label cLabel class="fw-semibold">Đánh giá (0 - 5)</label>
+        <input cFormControl type="number" step="0.1" formControlName="rate" min="0" max="5" />
+      </div>
+
+      <div class="mb-3">
+        <label cLabel class="fw-semibold">Đường dẫn hình ảnh (URL)</label>
+        <input cFormControl formControlName="image" />
+      </div>
+
+      <div class="mb-3">
+        <label cLabel class="fw-semibold">Mô tả sản phẩm</label>
+        <textarea cFormControl formControlName="description" rows="3"></textarea>
+      </div>
+    </form>
+  </c-modal-body>
+  <c-modal-footer>
+    <button cButton color="secondary" variant="outline" (click)="editProductModalVisible.set(false)" [disabled]="saving()">Hủy bỏ</button>
+    <button cButton color="primary" (click)="saveEditProduct()" [disabled]="saving() || productForm.invalid">
+      @if (saving()) {
+        <c-spinner size="sm" class="me-1"></c-spinner> Đang lưu...
+      } @else {
+        <svg cIcon name="cilCheck" class="me-1"></svg> Lưu Thay Đổi
+      }
+    </button>
+  </c-modal-footer>
+</c-modal>
+
+<!-- DELETE PRODUCT CONFIRM MODAL -->
+<c-modal [visible]="deleteProductModalVisible()" (visibleChange)="deleteProductModalVisible.set($event)">
+  <c-modal-header class="bg-danger text-white">
+    <h5 cModalTitle class="d-flex align-items-center gap-2">
+      <svg cIcon name="cilTrash"></svg>
+      Xác Nhận Xóa Sản Phẩm
+    </h5>
+    <button (click)="deleteProductModalVisible.set(false)" class="btn-close btn-close-white"></button>
+  </c-modal-header>
+  <c-modal-body class="p-4">
+    <p class="mb-2">Bạn có chắc chắn muốn xóa vĩnh viễn sản phẩm sau không?</p>
+    <div class="p-3 bg-body-secondary rounded-3">
+      <div class="fw-bold">{{ selectedProduct()?.name }}</div>
+      <div class="small text-body-secondary">Mã ID: <code>{{ selectedProduct()?.id }}</code></div>
+      <div class="small text-danger mt-1">Lưu ý: Thao tác này không thể hoàn tác!</div>
+    </div>
+  </c-modal-body>
+  <c-modal-footer>
+    <button cButton color="secondary" variant="outline" (click)="deleteProductModalVisible.set(false)" [disabled]="deleting()">Hủy</button>
+    <button cButton color="danger" (click)="confirmDeleteProduct()" [disabled]="deleting()">
+      @if (deleting()) {
+        <c-spinner size="sm" class="me-1"></c-spinner> Đang xóa...
+      } @else {
+        <svg cIcon name="cilTrash" class="me-1"></svg> Xóa Sản Phẩm
+      }
+    </button>
+  </c-modal-footer>
+</c-modal>
+
+<!-- MANUAL STOCK TRANSACTION MODAL -->
+<c-modal [visible]="stockModalVisible()" (visibleChange)="stockModalVisible.set($event)" backdrop="static">
+  <c-modal-header class="bg-success text-white">
+    <h5 cModalTitle class="d-flex align-items-center gap-2">
+      <svg cIcon name="cilPlus"></svg>
+      Giao Dịch Kho Thủ Công
+    </h5>
+    <button (click)="stockModalVisible.set(false)" class="btn-close btn-close-white"></button>
+  </c-modal-header>
+  <c-modal-body class="p-4">
+    <form [formGroup]="stockForm" (ngSubmit)="saveStockTransaction()">
+      <div class="mb-3">
+        <label cLabel class="fw-semibold">Loại giao dịch <span class="text-danger">*</span></label>
+        <select cSelect formControlName="type">
+          <option value="IMPORT">Nhập hàng vào kho (Cộng tồn kho)</option>
+          <option value="ADJUSTMENT">Điều chỉnh kiểm kê (Cộng hoặc trừ tồn kho)</option>
+        </select>
+      </div>
+
+      <div class="mb-3">
+        <label cLabel class="fw-semibold">Chọn sản phẩm <span class="text-danger">*</span></label>
+        <select cSelect formControlName="productId">
+          @for (p of allProductsList(); track p.id) {
+            <option [value]="p.id">
+              {{ p.name }} (Hiện có: {{ p.quantity }})
+            </option>
+          }
+        </select>
+      </div>
+
+      <div class="mb-3">
+        <label cLabel class="fw-semibold">
+          Số lượng biến động <span class="text-danger">*</span>
+        </label>
+        <input cFormControl type="number" formControlName="quantity" />
+        <div class="form-text small text-body-secondary">
+          @if (stockForm.get('type')?.value === 'IMPORT') {
+            Nhập số lượng dương (ví dụ: 10, 50, 100) để nhập thêm vào kho.
+          } @else {
+            Nhập số dương (ví dụ: +5) để tăng tồn, hoặc số âm (ví dụ: -2) để giảm tồn khi kiểm kê hao hụt.
+          }
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label cLabel class="fw-semibold">Ghi chú giao dịch</label>
+        <textarea cFormControl formControlName="note" rows="2" placeholder="Ví dụ: Nhập hàng đợt 1 / Kiểm kê cuối tháng..."></textarea>
+      </div>
+    </form>
+  </c-modal-body>
+  <c-modal-footer>
+    <button cButton color="secondary" variant="outline" (click)="stockModalVisible.set(false)" [disabled]="saving()">Hủy</button>
+    <button cButton color="success" class="text-white" (click)="saveStockTransaction()" [disabled]="saving() || stockForm.invalid">
+      @if (saving()) {
+        <c-spinner size="sm" class="me-1"></c-spinner> Đang xử lý...
+      } @else {
+        <svg cIcon name="cilCheck" class="me-1"></svg> Xác Nhận Giao Dịch
+      }
+    </button>
+  </c-modal-footer>
+</c-modal>

@@ -16,7 +16,6 @@ import com.softdreams.activityhub.anotation.ActivityLog;
 import com.softdreams.activityhub.dto.request.*;
 import com.softdreams.activityhub.dto.response.AuthenticationResponse;
 import com.softdreams.activityhub.dto.response.IntrospectResponse;
-import com.softdreams.activityhub.dto.response.AuthenticationResponse;
 import com.softdreams.activityhub.enums.EventType;
 import com.softdreams.activityhub.enums.TargetType;
 import com.softdreams.activityhub.exception.AppException;
@@ -48,13 +47,12 @@ public class AuthenticationController {
 
     @PostMapping("/token")
     @ActivityLog(eventType = EventType.LOGIN, targetType = TargetType.USER, targetId = "#request.username")
-    public ResponseEntity<ApiResponse<AuthenticationResponse>> authenticate(@RequestBody AuthenticationRequest request) {
+    public ResponseEntity<ApiResponse<AuthenticationResponse>> authenticate(
+            @RequestBody AuthenticationRequest request) {
         AuthenticationResponse authenticationResponse = authenticationService.authenticate(request);
 
         ResponseCookie cookie = createRefreshTokenCookie(
-                authenticationResponse.getRefreshToken(),
-                authenticationService.getRefreshableDuration()
-        );
+                authenticationResponse.getRefreshToken(), authenticationService.getRefreshableDuration());
 
         AuthenticationResponse response = AuthenticationResponse.builder()
                 .accessToken(authenticationResponse.getAccessToken())
@@ -64,7 +62,9 @@ public class AuthenticationController {
 
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, cookie.toString())
-                .body(ApiResponse.<AuthenticationResponse>builder().result(response).build());
+                .body(ApiResponse.<AuthenticationResponse>builder()
+                        .result(response)
+                        .build());
     }
 
     @PostMapping("/introspect")
@@ -93,9 +93,7 @@ public class AuthenticationController {
 
         // Xoay vòng refresh token: đặt cookie mới cho trình duyệt
         ResponseCookie newCookie = createRefreshTokenCookie(
-                authenticationResponse.getRefreshToken(),
-                authenticationService.getRefreshableDuration()
-        );
+                authenticationResponse.getRefreshToken(), authenticationService.getRefreshableDuration());
 
         AuthenticationResponse response = AuthenticationResponse.builder()
                 .accessToken(authenticationResponse.getAccessToken())
@@ -105,7 +103,9 @@ public class AuthenticationController {
 
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, newCookie.toString())
-                .body(ApiResponse.<AuthenticationResponse>builder().result(response).build());
+                .body(ApiResponse.<AuthenticationResponse>builder()
+                        .result(response)
+                        .build());
     }
 
     @PostMapping("/logout")
@@ -116,7 +116,8 @@ public class AuthenticationController {
                     "#jwtSubject(#refreshTokenFromCookie != null ? #refreshTokenFromCookie : (#request != null ? #request.token : null))")
     public ResponseEntity<ApiResponse<Void>> logout(
             @CookieValue(name = REFRESH_TOKEN_COOKIE_NAME, required = false) String refreshTokenFromCookie,
-            @RequestBody(required = false) LogoutRequest request) throws ParseException, JOSEException {
+            @RequestBody(required = false) LogoutRequest request)
+            throws ParseException, JOSEException {
 
         String accessToken = (request != null) ? request.getToken() : null;
         authenticationService.logout(accessToken, refreshTokenFromCookie);

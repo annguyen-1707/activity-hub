@@ -1,5 +1,16 @@
 package com.softdreams.activityhub.service;
 
+import java.time.LocalDateTime;
+import java.util.UUID;
+
+import jakarta.servlet.http.HttpServletRequest;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Service;
+
 import com.softdreams.activityhub.dto.ActivityLogEvent;
 import com.softdreams.activityhub.dto.response.ActivityLogResponse;
 import com.softdreams.activityhub.entity.ActivityLog;
@@ -12,19 +23,11 @@ import com.softdreams.activityhub.mapper.ActivityLogMapper;
 import com.softdreams.activityhub.producer.ActivityLogProducer;
 import com.softdreams.activityhub.repository.ActivityLogRepository;
 import com.softdreams.activityhub.repository.UserRepository;
-import jakarta.servlet.http.HttpServletRequest;
+
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.stereotype.Service;
-
-import java.time.LocalDateTime;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -50,7 +53,9 @@ public class ActivityLogService {
             return;
         }
 
-        User user = userRepository.findById(event.getUserId()).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+        User user = userRepository
+                .findById(event.getUserId())
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
         ActivityLog activityLog = ActivityLog.builder()
                 .eventId(event.getEventId())
                 .eventType(event.getEventType())
@@ -66,11 +71,7 @@ public class ActivityLogService {
 
     private final ActivityLogProducer producer;
 
-    public void log(
-            EventType eventType,
-            TargetType targetType,
-            String targetId
-    ) {
+    public void log(EventType eventType, TargetType targetType, String targetId) {
         String ipAddress = request.getRemoteAddr();
 
         User actor = resolveActor(targetType, targetId);
@@ -89,7 +90,8 @@ public class ActivityLogService {
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    public Page<ActivityLogResponse> search(Pageable pageable, String keyword, EventType eventType, TargetType targetType) {
+    public Page<ActivityLogResponse> search(
+            Pageable pageable, String keyword, EventType eventType, TargetType targetType) {
         return activityLogRepository
                 .search(keyword, eventType, targetType, pageable)
                 .map(activityLogMapper::toResponse);

@@ -6,7 +6,6 @@ import lombok.RequiredArgsConstructor;
 @Getter
 @RequiredArgsConstructor
 public enum StockTransactionType {
-
     IMPORT("Nhập hàng"),
     SALE("Bán hàng"),
     CANCEL("Hủy đơn"),

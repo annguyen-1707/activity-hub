@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import com.softdreams.activityhub.enums.PaymentMethodEnum;
+
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -16,6 +17,8 @@ import lombok.experimental.FieldDefaults;
 public class OrderResponse {
     String id;
     String userId;
+    String username;
+    String customerName;
     BigDecimal totalAmount;
     String status;
     LocalDateTime createdAt;

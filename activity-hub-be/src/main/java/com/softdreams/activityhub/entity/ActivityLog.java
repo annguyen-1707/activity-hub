@@ -2,9 +2,10 @@ package com.softdreams.activityhub.entity;
 
 import java.time.LocalDateTime;
 
+import jakarta.persistence.*;
+
 import com.softdreams.activityhub.enums.EventType;
 import com.softdreams.activityhub.enums.TargetType;
-import jakarta.persistence.*;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -53,5 +54,4 @@ public class ActivityLog {
     protected void onCreate() {
         createdAt = LocalDateTime.now();
     }
-
 }

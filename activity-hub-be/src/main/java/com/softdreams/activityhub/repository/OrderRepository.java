@@ -1,7 +1,6 @@
 package com.softdreams.activityhub.repository;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.domain.Page;
@@ -21,64 +20,65 @@ public interface OrderRepository extends JpaRepository<Order, String> {
     boolean existsByIdAndUserId(String orderId, String userId);
 
     @Query(
-            value = """
-        SELECT o.*
-        FROM orders o
-        INNER JOIN users u ON u.id = o.user_id
-        WHERE o.user_id = :userId
-        AND (
-            :keyword IS NULL
-            OR u.username LIKE CONCAT('%', :keyword, '%')
-            OR u.first_name LIKE CONCAT('%', :keyword, '%')
-            OR u.last_name LIKE CONCAT('%', :keyword, '%')
-        )
-        AND (
-            :status IS NULL
-            OR o.status = :status
-        )
-        AND (
-            :paymentMethod IS NULL
-            OR o.payment_method = :paymentMethod
-        )
-        AND (
-            :fromDate IS NULL
-            OR o.created_at >= :fromDate
-        )
-        AND (
-            :toDate IS NULL
-            OR o.created_at <= :toDate
-        )
-        """,
-            countQuery = """
-        SELECT COUNT(*)
-        FROM orders o
-        INNER JOIN users u ON u.id = o.user_id
-        WHERE o.user_id = :userId
-        AND (
-            :keyword IS NULL
-            OR u.username LIKE CONCAT('%', :keyword, '%')
-            OR u.first_name LIKE CONCAT('%', :keyword, '%')
-            OR u.last_name LIKE CONCAT('%', :keyword, '%')
-        )
-        AND (
-            :status IS NULL
-            OR o.status = :status
-        )
-        AND (
-            :paymentMethod IS NULL
-            OR o.payment_method = :paymentMethod
-        )
-        AND (
-            :fromDate IS NULL
-            OR o.created_at >= :fromDate
-        )
-        AND (
-            :toDate IS NULL
-            OR o.created_at <= :toDate
-        )
-        """,
-            nativeQuery = true
-    )
+            value =
+                    """
+		SELECT o.*
+		FROM orders o
+		INNER JOIN users u ON u.id = o.user_id
+		WHERE o.user_id = :userId
+		AND (
+			:keyword IS NULL
+			OR u.username LIKE CONCAT('%', :keyword, '%')
+			OR u.first_name LIKE CONCAT('%', :keyword, '%')
+			OR u.last_name LIKE CONCAT('%', :keyword, '%')
+		)
+		AND (
+			:status IS NULL
+			OR o.status = :status
+		)
+		AND (
+			:paymentMethod IS NULL
+			OR o.payment_method = :paymentMethod
+		)
+		AND (
+			:fromDate IS NULL
+			OR o.created_at >= :fromDate
+		)
+		AND (
+			:toDate IS NULL
+			OR o.created_at <= :toDate
+		)
+		""",
+            countQuery =
+                    """
+		SELECT COUNT(*)
+		FROM orders o
+		INNER JOIN users u ON u.id = o.user_id
+		WHERE o.user_id = :userId
+		AND (
+			:keyword IS NULL
+			OR u.username LIKE CONCAT('%', :keyword, '%')
+			OR u.first_name LIKE CONCAT('%', :keyword, '%')
+			OR u.last_name LIKE CONCAT('%', :keyword, '%')
+		)
+		AND (
+			:status IS NULL
+			OR o.status = :status
+		)
+		AND (
+			:paymentMethod IS NULL
+			OR o.payment_method = :paymentMethod
+		)
+		AND (
+			:fromDate IS NULL
+			OR o.created_at >= :fromDate
+		)
+		AND (
+			:toDate IS NULL
+			OR o.created_at <= :toDate
+		)
+		""",
+            nativeQuery = true)
     Page<Order> searchMyOrders(
             @Param("keyword") String keyword,
             @Param("status") String status,
@@ -86,6 +86,77 @@ public interface OrderRepository extends JpaRepository<Order, String> {
             @Param("fromDate") LocalDateTime fromDate,
             @Param("toDate") LocalDateTime toDate,
             @Param("userId") String userId,
-            Pageable pageable
-    );
+            Pageable pageable);
+
+    @Query(
+            value =
+                    """
+		SELECT o.*
+		FROM orders o
+		INNER JOIN users u ON u.id = o.user_id
+		WHERE (
+			:keyword IS NULL
+			OR o.id LIKE CONCAT('%', :keyword, '%')
+			OR u.username LIKE CONCAT('%', :keyword, '%')
+			OR u.first_name LIKE CONCAT('%', :keyword, '%')
+			OR u.last_name LIKE CONCAT('%', :keyword, '%')
+			OR o.shipping_address LIKE CONCAT('%', :keyword, '%')
+			OR o.note LIKE CONCAT('%', :keyword, '%')
+		)
+		AND (
+			:status IS NULL
+			OR o.status = :status
+		)
+		AND (
+			:paymentMethod IS NULL
+			OR o.payment_method = :paymentMethod
+		)
+		AND (
+			:fromDate IS NULL
+			OR o.created_at >= :fromDate
+		)
+		AND (
+			:toDate IS NULL
+			OR o.created_at <= :toDate
+		)
+		""",
+            countQuery =
+                    """
+		SELECT COUNT(*)
+		FROM orders o
+		INNER JOIN users u ON u.id = o.user_id
+		WHERE (
+			:keyword IS NULL
+			OR o.id LIKE CONCAT('%', :keyword, '%')
+			OR u.username LIKE CONCAT('%', :keyword, '%')
+			OR u.first_name LIKE CONCAT('%', :keyword, '%')
+			OR u.last_name LIKE CONCAT('%', :keyword, '%')
+			OR o.shipping_address LIKE CONCAT('%', :keyword, '%')
+			OR o.note LIKE CONCAT('%', :keyword, '%')
+		)
+		AND (
+			:status IS NULL
+			OR o.status = :status
+		)
+		AND (
+			:paymentMethod IS NULL
+			OR o.payment_method = :paymentMethod
+		)
+		AND (
+			:fromDate IS NULL
+			OR o.created_at >= :fromDate
+		)
+		AND (
+			:toDate IS NULL
+			OR o.created_at <= :toDate
+		)
+		""",
+            nativeQuery = true)
+    Page<Order> searchAllOrders(
+            @Param("keyword") String keyword,
+            @Param("status") String status,
+            @Param("paymentMethod") String paymentMethod,
+            @Param("fromDate") LocalDateTime fromDate,
+            @Param("toDate") LocalDateTime toDate,
+            Pageable pageable);
 }

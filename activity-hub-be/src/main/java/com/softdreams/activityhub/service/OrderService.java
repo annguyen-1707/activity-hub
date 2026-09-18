@@ -4,31 +4,28 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
-import com.softdreams.activityhub.dto.response.OrderLineResponse;
-import com.softdreams.activityhub.entity.OrderLine;
-import com.softdreams.activityhub.entity.Product;
-import com.softdreams.activityhub.enums.OrderStatus;
-import com.softdreams.activityhub.repository.OrderLineRepository;
-import com.softdreams.activityhub.repository.ProductRepository;
 import jakarta.transaction.Transactional;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.repository.query.Param;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import com.softdreams.activityhub.dto.request.OrderRequest;
 import com.softdreams.activityhub.dto.response.OrderResponse;
 import com.softdreams.activityhub.entity.Order;
+import com.softdreams.activityhub.entity.OrderLine;
+import com.softdreams.activityhub.entity.Product;
 import com.softdreams.activityhub.entity.User;
+import com.softdreams.activityhub.enums.OrderStatus;
 import com.softdreams.activityhub.exception.AppException;
 import com.softdreams.activityhub.exception.ErrorCode;
 import com.softdreams.activityhub.mapper.OrderMapper;
+import com.softdreams.activityhub.repository.OrderLineRepository;
 import com.softdreams.activityhub.repository.OrderRepository;
+import com.softdreams.activityhub.repository.ProductRepository;
 import com.softdreams.activityhub.repository.UserRepository;
 
 import lombok.AccessLevel;
@@ -50,11 +47,8 @@ public class OrderService {
 
     private User getMyUser() {
         User user;
-        String username =
-                SecurityContextHolder.getContext().getAuthentication().getName();
-        user = userRepository
-                .findByUsername(username)
-                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        user = userRepository.findByUsername(username).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
         return user;
     }
 
@@ -91,9 +85,7 @@ public class OrderService {
 
         order.setOrderLines(orderLines);
 
-        BigDecimal total = orderLines.stream()
-                .map(OrderLine::getSubtotal)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal total = orderLines.stream().map(OrderLine::getSubtotal).reduce(BigDecimal.ZERO, BigDecimal::add);
 
         order.setTotalAmount(total);
 
@@ -110,28 +102,75 @@ public class OrderService {
                 .map(orderMapper::toOrderResponse)
                 .toList();
     }
-    
-    @PreAuthorize("hasRole('ADMIN') or @security.isOrderOwner(#orderId, authentication)" )
+
+    @PreAuthorize("hasRole('ADMIN') or @security.isOrderOwner(#orderId, authentication)")
     public OrderResponse getById(String orderId) {
-        Order order = orderRepository.findByIdWithLines(orderId).orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_EXISTED));
+        Order order = orderRepository
+                .findByIdWithLines(orderId)
+                .orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_EXISTED));
         return orderMapper.toOrderResponse(order);
     }
 
-    @PreAuthorize("hasRole('ADMIN') or @security.isOrderOwner(#orderId, authentication)" )
+    @PreAuthorize("hasRole('ADMIN') or @security.isOrderOwner(#orderId, authentication)")
     public OrderResponse update(String orderId, OrderRequest request) {
-        Order order = orderRepository.findById(orderId).orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_EXISTED));
+        Order order =
+                orderRepository.findById(orderId).orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_EXISTED));
 
         orderMapper.updateOrder(order, request);
         return orderMapper.toOrderResponse(orderRepository.save(order));
     }
 
-    public Page<OrderResponse> searchMyOrders (String keyword,String status,String paymentMethod,
-                                                LocalDateTime fromDate,LocalDateTime toDate, Pageable pageable) {
+    public Page<OrderResponse> searchMyOrders(
+            String keyword,
+            String status,
+            String paymentMethod,
+            LocalDateTime fromDate,
+            LocalDateTime toDate,
+            Pageable pageable) {
         User user = getMyUser();
-        return orderRepository.searchMyOrders(keyword, status, paymentMethod, fromDate, toDate, user.getId(), pageable).map(orderMapper::toOrderResponse);
+        return orderRepository
+                .searchMyOrders(keyword, status, paymentMethod, fromDate, toDate, user.getId(), pageable)
+                .map(orderMapper::toOrderResponse);
     }
 
-    @PreAuthorize("hasRole('ADMIN') or @security.isOrderOwner(#orderId, authentication)" )
+    @PreAuthorize("hasRole('ADMIN')")
+    public Page<OrderResponse> searchAdminOrders(
+            String keyword,
+            String status,
+            String paymentMethod,
+            LocalDateTime fromDate,
+            LocalDateTime toDate,
+            Pageable pageable) {
+        return orderRepository
+                .searchAllOrders(keyword, status, paymentMethod, fromDate, toDate, pageable)
+                .map(orderMapper::toOrderResponse);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @Transactional
+    public OrderResponse updateStatus(String orderId, OrderStatus newStatus) {
+        Order order = orderRepository
+                .findByIdWithLines(orderId)
+                .orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_EXISTED));
+
+        OrderStatus oldStatus = order.getStatus();
+        if (oldStatus == newStatus) {
+            return orderMapper.toOrderResponse(order);
+        }
+
+        // If transitioning to CANCELLED, restore stock automatically
+        if (newStatus == OrderStatus.CANCELLED && oldStatus != OrderStatus.CANCELLED) {
+            List<StockTransactionService.StockLine> stockLines = order.getOrderLines().stream()
+                    .map(line -> new StockTransactionService.StockLine(line.getProduct(), line.getQuantity()))
+                    .toList();
+            stockTransactionService.postCancel(order.getId(), stockLines);
+        }
+
+        order.setStatus(newStatus);
+        return orderMapper.toOrderResponse(orderRepository.save(order));
+    }
+
+    @PreAuthorize("hasRole('ADMIN') or @security.isOrderOwner(#orderId, authentication)")
     public void delete(String id) {
         if (!orderRepository.existsById(id)) {
             throw new AppException(ErrorCode.ORDER_NOT_EXISTED);

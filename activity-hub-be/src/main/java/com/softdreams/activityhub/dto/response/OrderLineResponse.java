@@ -1,10 +1,9 @@
 package com.softdreams.activityhub.dto.response;
 
+import java.math.BigDecimal;
+
 import lombok.*;
 import lombok.experimental.FieldDefaults;
-
-import java.math.BigDecimal;
-import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -23,5 +22,4 @@ public class OrderLineResponse {
     private BigDecimal unitPrice;
 
     private BigDecimal subtotal;
-
 }

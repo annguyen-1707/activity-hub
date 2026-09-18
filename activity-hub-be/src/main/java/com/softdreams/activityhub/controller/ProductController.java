@@ -8,7 +8,6 @@ import org.springframework.web.bind.annotation.*;
 
 import com.softdreams.activityhub.dto.request.ApiResponse;
 import com.softdreams.activityhub.dto.request.ProductRequest;
-import com.softdreams.activityhub.dto.request.ProductUpdateRequest;
 import com.softdreams.activityhub.dto.response.ProductResponse;
 import com.softdreams.activityhub.enums.CategoryEnum;
 import com.softdreams.activityhub.service.ProductService;
@@ -49,7 +48,7 @@ public class ProductController {
     }
 
     @PatchMapping("/{productId}")
-    ApiResponse<ProductResponse> update(@PathVariable String productId, @RequestBody @Valid ProductUpdateRequest request) {
+    ApiResponse<ProductResponse> update(@PathVariable String productId, @RequestBody @Valid ProductRequest request) {
         return ApiResponse.<ProductResponse>builder()
                 .result(productService.update(productId, request))
                 .build();

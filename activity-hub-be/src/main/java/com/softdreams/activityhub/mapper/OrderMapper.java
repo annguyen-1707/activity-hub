@@ -18,6 +18,11 @@ public interface OrderMapper {
     Order toOrder(OrderRequest request);
 
     @Mapping(target = "userId", source = "user.id")
+    @Mapping(target = "username", source = "user.username")
+    @Mapping(
+            target = "customerName",
+            expression =
+                    "java(order.getUser() != null ? ((order.getUser().getFirstName() != null ? order.getUser().getFirstName() + \" \" : \"\") + (order.getUser().getLastName() != null ? order.getUser().getLastName() : \"\")).trim() : null)")
     @Mapping(target = "items", source = "orderLines")
     OrderResponse toOrderResponse(Order order);
 

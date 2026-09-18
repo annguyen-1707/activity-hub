@@ -1,12 +1,10 @@
 package com.softdreams.activityhub.service;
 
 import java.util.HashSet;
-import java.util.List;
 
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.access.prepost.PostAuthorize;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -71,13 +69,16 @@ public class UserService {
         User user = userRepository.findById(userId).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
         userMapper.updateUser(user, request);
-        log.info("Password is null ? {}", request.getPassword() != null && !request.getPassword().isBlank());
+        log.info(
+                "Password is null ? {}",
+                request.getPassword() != null && !request.getPassword().isBlank());
         if (request.getPassword() != null && !request.getPassword().isBlank()) {
             user.setPassword(passwordEncoder.encode(request.getPassword()));
         }
         if (request.getRoles() != null && !request.getRoles().isEmpty()) {
             boolean isAdmin = SecurityContextHolder.getContext().getAuthentication().getAuthorities().stream()
-                    .anyMatch(auth -> auth.getAuthority().equals("ROLE_ADMIN") || auth.getAuthority().equals("ADMIN"));
+                    .anyMatch(auth -> auth.getAuthority().equals("ROLE_ADMIN")
+                            || auth.getAuthority().equals("ADMIN"));
             if (!isAdmin) {
                 throw new AppException(ErrorCode.UNAUTHORIZED);
             }
@@ -96,8 +97,8 @@ public class UserService {
     @PreAuthorize("hasRole('ADMIN')")
     public Page<UserResponse> getUsers(Pageable pageable, String keyword) {
         log.info("In method get Users");
-        return userRepository.searchUserByKeyword(pageable, keyword)
-                .map(userMapper::toUserResponse);    }
+        return userRepository.searchUserByKeyword(pageable, keyword).map(userMapper::toUserResponse);
+    }
 
     @PreAuthorize("hasRole('ADMIN') or @security.isUserOwner(#userId, authentication)")
     public UserResponse getUser(String userId) {

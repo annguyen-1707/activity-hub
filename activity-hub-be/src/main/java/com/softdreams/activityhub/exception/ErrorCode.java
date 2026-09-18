@@ -1,6 +1,5 @@
 package com.softdreams.activityhub.exception;
 
-import lombok.Setter;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 

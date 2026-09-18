@@ -16,17 +16,18 @@ public interface ActivityLogRepository extends JpaRepository<ActivityLog, String
 
     boolean existsByEventId(String eventId);
 
-    @Query("""
-        SELECT al FROM ActivityLog al LEFT JOIN al.user u
-        WHERE (:keyword IS NULL OR :keyword = ''
-            OR LOWER(u.username) LIKE LOWER(CONCAT('%', :keyword, '%'))
-            OR LOWER(u.firstName) LIKE LOWER(CONCAT('%', :keyword, '%'))
-            OR LOWER(u.lastName) LIKE LOWER(CONCAT('%', :keyword, '%'))
-            OR LOWER(al.eventId) LIKE LOWER(CONCAT('%', :keyword, '%'))
-            OR LOWER(al.targetId) LIKE LOWER(CONCAT('%', :keyword, '%')))
-          AND (:eventType IS NULL OR al.eventType = :eventType)
-          AND (:targetType IS NULL OR al.targetType = :targetType)
-        """)
+    @Query(
+            """
+		SELECT al FROM ActivityLog al LEFT JOIN al.user u
+		WHERE (:keyword IS NULL OR :keyword = ''
+			OR LOWER(u.username) LIKE LOWER(CONCAT('%', :keyword, '%'))
+			OR LOWER(u.firstName) LIKE LOWER(CONCAT('%', :keyword, '%'))
+			OR LOWER(u.lastName) LIKE LOWER(CONCAT('%', :keyword, '%'))
+			OR LOWER(al.eventId) LIKE LOWER(CONCAT('%', :keyword, '%'))
+			OR LOWER(al.targetId) LIKE LOWER(CONCAT('%', :keyword, '%')))
+		AND (:eventType IS NULL OR al.eventType = :eventType)
+		AND (:targetType IS NULL OR al.targetType = :targetType)
+		""")
     Page<ActivityLog> search(
             @Param("keyword") String keyword,
             @Param("eventType") EventType eventType,

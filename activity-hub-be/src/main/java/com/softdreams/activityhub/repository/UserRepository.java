@@ -20,29 +20,30 @@ public interface UserRepository extends JpaRepository<User, String> {
     Optional<User> findByUsername(String username);
 
     @Query(
-            value = """
-        SELECT *
-        FROM users
-        WHERE (
-            :keyword IS NULL
-            OR :keyword = ''
-            OR username LIKE CONCAT('%', :keyword, '%')
-            OR first_name LIKE CONCAT('%', :keyword, '%')
-            OR last_name LIKE CONCAT('%', :keyword, '%')
-        )
-        """,
-            countQuery = """
-        SELECT COUNT(*)
-        FROM users
-        WHERE (
-            :keyword IS NULL
-            OR :keyword = ''
-            OR username LIKE CONCAT('%', :keyword, '%')
-            OR first_name LIKE CONCAT('%', :keyword, '%')
-            OR last_name LIKE CONCAT('%', :keyword, '%')
-        )
-        """,
-            nativeQuery = true
-    )
+            value =
+                    """
+		SELECT *
+		FROM users
+		WHERE (
+			:keyword IS NULL
+			OR :keyword = ''
+			OR username LIKE CONCAT('%', :keyword, '%')
+			OR first_name LIKE CONCAT('%', :keyword, '%')
+			OR last_name LIKE CONCAT('%', :keyword, '%')
+		)
+		""",
+            countQuery =
+                    """
+		SELECT COUNT(*)
+		FROM users
+		WHERE (
+			:keyword IS NULL
+			OR :keyword = ''
+			OR username LIKE CONCAT('%', :keyword, '%')
+			OR first_name LIKE CONCAT('%', :keyword, '%')
+			OR last_name LIKE CONCAT('%', :keyword, '%')
+		)
+		""",
+            nativeQuery = true)
     Page<User> searchUserByKeyword(Pageable pageable, @Param("keyword") String keyword);
 }

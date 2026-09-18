@@ -1,11 +1,12 @@
 package com.softdreams.activityhub.security;
 
-import com.softdreams.activityhub.repository.OrderRepository;
-import com.softdreams.activityhub.repository.UserRepository;
-import com.softdreams.activityhub.service.UserService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
+
+import com.softdreams.activityhub.repository.OrderRepository;
+import com.softdreams.activityhub.repository.UserRepository;
+
+import lombok.RequiredArgsConstructor;
 
 @Component("security")
 @RequiredArgsConstructor

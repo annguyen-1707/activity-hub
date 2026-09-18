@@ -1,13 +1,13 @@
 package com.softdreams.activityhub.consumer;
 
+import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.springframework.stereotype.Component;
+
 import com.softdreams.activityhub.configuration.RabbitMQConfig;
 import com.softdreams.activityhub.dto.ActivityLogEvent;
 import com.softdreams.activityhub.service.ActivityLogService;
 
 import lombok.RequiredArgsConstructor;
-
-import org.springframework.amqp.rabbit.annotation.RabbitListener;
-import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor

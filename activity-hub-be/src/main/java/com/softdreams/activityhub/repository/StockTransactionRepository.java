@@ -13,17 +13,16 @@ import com.softdreams.activityhub.enums.StockTransactionType;
 @Repository
 public interface StockTransactionRepository extends JpaRepository<StockTransaction, String> {
 
-    @Query("""
-        SELECT st FROM StockTransaction st
-        WHERE (:type IS NULL OR st.type = :type)
-          AND (:productId IS NULL OR :productId = ''
-            OR EXISTS (
-                SELECT 1 FROM StockTransactionLine l
-                WHERE l.stockTransaction = st AND l.product.id = :productId
-            ))
-        """)
+    @Query(
+            """
+		SELECT st FROM StockTransaction st
+		WHERE (:type IS NULL OR st.type = :type)
+		AND (:productId IS NULL OR :productId = ''
+			OR EXISTS (
+				SELECT 1 FROM StockTransactionLine l
+				WHERE l.stockTransaction = st AND l.product.id = :productId
+			))
+		""")
     Page<StockTransaction> search(
-            @Param("type") StockTransactionType type,
-            @Param("productId") String productId,
-            Pageable pageable);
+            @Param("type") StockTransactionType type, @Param("productId") String productId, Pageable pageable);
 }

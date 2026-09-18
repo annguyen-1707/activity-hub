@@ -38,6 +38,16 @@ export const routes: Routes = [
         path: 'activity-logs',
         loadChildren: () => import('./views/activity-logs/routes').then((m) => m.routes),
         canActivate: [roleGuard(['ADMIN'])],
+      },
+      {
+        path: 'products',
+        loadChildren: () => import('./views/products/routes').then((m) => m.routes),
+        canActivate: [roleGuard(['ADMIN'])],
+      },
+      {
+        path: 'admin-orders',
+        loadChildren: () => import('./views/admin-orders/routes').then((m) => m.routes),
+        canActivate: [roleGuard(['ADMIN'])],
       }
     ]
   },

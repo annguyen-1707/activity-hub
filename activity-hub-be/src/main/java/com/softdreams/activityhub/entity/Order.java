@@ -4,13 +4,15 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import jakarta.persistence.*;
+
+import org.hibernate.annotations.BatchSize;
+
 import com.softdreams.activityhub.enums.OrderStatus;
 import com.softdreams.activityhub.enums.PaymentMethodEnum;
-import jakarta.persistence.*;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;
-import org.hibernate.annotations.BatchSize;
 
 @Getter
 @Setter
@@ -48,12 +50,7 @@ public class Order {
     @Column(name = "note", length = 500, columnDefinition = "NVARCHAR(255)")
     String note;
 
-    @OneToMany(
-            mappedBy = "order",
-            cascade = CascadeType.ALL,
-            orphanRemoval = true,
-            fetch = FetchType.LAZY
-    )
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @BatchSize(size = 50)
     private List<OrderLine> orderLines;
 

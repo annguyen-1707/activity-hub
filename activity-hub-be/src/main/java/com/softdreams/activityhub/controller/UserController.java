@@ -1,7 +1,5 @@
 package com.softdreams.activityhub.controller;
 
-import java.util.List;
-
 import jakarta.validation.Valid;
 
 import org.springframework.data.domain.Page;
@@ -39,9 +37,7 @@ public class UserController {
     }
 
     @GetMapping
-    ApiResponse<Page<UserResponse>> getUsers(
-            Pageable pageable,
-            @RequestParam(required = false) String keyword) {
+    ApiResponse<Page<UserResponse>> getUsers(Pageable pageable, @RequestParam(required = false) String keyword) {
         return ApiResponse.<Page<UserResponse>>builder()
                 .result(userService.getUsers(pageable, keyword))
                 .build();

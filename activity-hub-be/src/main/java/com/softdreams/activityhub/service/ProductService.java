@@ -6,7 +6,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import com.softdreams.activityhub.dto.request.ProductRequest;
-import com.softdreams.activityhub.dto.request.ProductUpdateRequest;
 import com.softdreams.activityhub.dto.response.ProductResponse;
 import com.softdreams.activityhub.entity.Product;
 import com.softdreams.activityhub.enums.CategoryEnum;
@@ -43,14 +42,16 @@ public class ProductService {
     }
 
     public ProductResponse getById(String productId) {
-        return productMapper.toProductResponse(
-                productRepository.findById(productId).orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_EXISTED)));
+        return productMapper.toProductResponse(productRepository
+                .findById(productId)
+                .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_EXISTED)));
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    public ProductResponse update(String productId, ProductUpdateRequest request) {
-        Product product =
-                productRepository.findById(productId).orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_EXISTED));
+    public ProductResponse update(String productId, ProductRequest request) {
+        Product product = productRepository
+                .findById(productId)
+                .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_EXISTED));
 
         productMapper.updateProduct(product, request);
         return productMapper.toProductResponse(productRepository.save(product));
@@ -62,7 +63,8 @@ public class ProductService {
             throw new AppException(ErrorCode.PRODUCT_NOT_EXISTED);
         }
 
-        if (orderLineRepository.existsByProduct_Id(productId) || stockTransactionLineRepository.existsByProduct_Id(productId)) {
+        if (orderLineRepository.existsByProduct_Id(productId)
+                || stockTransactionLineRepository.existsByProduct_Id(productId)) {
             throw new AppException(ErrorCode.PRODUCT_IN_USE);
         }
 

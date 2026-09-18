@@ -3,12 +3,14 @@ package com.softdreams.activityhub.entity;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import com.softdreams.activityhub.enums.StockTransactionType;
 import jakarta.persistence.*;
+
+import org.hibernate.annotations.BatchSize;
+
+import com.softdreams.activityhub.enums.StockTransactionType;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;
-import org.hibernate.annotations.BatchSize;
 
 @Getter
 @Setter
@@ -40,12 +42,7 @@ public class StockTransaction {
     @Column(name = "created_at", nullable = false)
     LocalDateTime createdAt;
 
-    @OneToMany(
-            mappedBy = "stockTransaction",
-            cascade = CascadeType.ALL,
-            orphanRemoval = true,
-            fetch = FetchType.LAZY
-    )
+    @OneToMany(mappedBy = "stockTransaction", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @BatchSize(size = 50)
     List<StockTransactionLine> lines;
 

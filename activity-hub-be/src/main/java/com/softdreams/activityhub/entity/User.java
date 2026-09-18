@@ -25,14 +25,15 @@ public class User {
     String username;
 
     String password;
+
     @Column(columnDefinition = "NVARCHAR(255)")
     String firstName;
+
     LocalDate dob;
+
     @Column(columnDefinition = "NVARCHAR(255)")
     String lastName;
 
     @ManyToMany(fetch = FetchType.LAZY)
     Set<Role> roles;
-
-
 }

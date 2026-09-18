@@ -4,7 +4,7 @@ import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { environment } from '../../../../environments/environment';
 import { ApiResponse, PageResponse } from '../../../core/models/api-response.model';
-import { CartItem, OrderRequest, OrderResponse } from '../../../core/models/order.model';
+import { CartItem, OrderRequest, OrderResponse, OrderStatus } from '../../../core/models/order.model';
 
 @Injectable({
   providedIn: 'root',
@@ -88,6 +88,43 @@ export class OrderService {
   deleteOrder(orderId: string): Observable<void> {
     return this.http
       .delete<ApiResponse<void>>(`${this.baseUrl}/orders/${orderId}`)
+      .pipe(map((res) => res.result));
+  }
+
+  searchAdminOrders(
+    page: number = 0,
+    size: number = 10,
+    keyword: string = '',
+    status?: string,
+    paymentMethod?: string
+  ): Observable<PageResponse<OrderResponse>> {
+    let params = new HttpParams()
+      .set('page', page.toString())
+      .set('size', size.toString());
+
+    if (keyword && keyword.trim()) {
+      params = params.set('keyword', keyword.trim());
+    }
+    if (status && status !== 'ALL') {
+      params = params.set('status', status);
+    }
+    if (paymentMethod && paymentMethod !== 'ALL') {
+      params = params.set('paymentMethod', paymentMethod);
+    }
+
+    return this.http
+      .get<ApiResponse<PageResponse<OrderResponse>>>(`${this.baseUrl}/orders/admin`, {
+        params,
+      })
+      .pipe(map((res) => res.result));
+  }
+
+  updateOrderStatus(orderId: string, status: OrderStatus): Observable<OrderResponse> {
+    const params = new HttpParams().set('status', status);
+    return this.http
+      .patch<ApiResponse<OrderResponse>>(`${this.baseUrl}/orders/${orderId}/status`, null, {
+        params,
+      })
       .pipe(map((res) => res.result));
   }
 }

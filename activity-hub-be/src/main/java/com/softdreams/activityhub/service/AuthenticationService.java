@@ -20,7 +20,6 @@ import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 import com.softdreams.activityhub.dto.request.AuthenticationRequest;
 import com.softdreams.activityhub.dto.request.IntrospectRequest;
-import com.softdreams.activityhub.dto.request.LogoutRequest;
 import com.softdreams.activityhub.dto.response.AuthenticationResponse;
 import com.softdreams.activityhub.dto.response.IntrospectResponse;
 import com.softdreams.activityhub.entity.InvalidatedToken;
@@ -177,8 +176,9 @@ public class AuthenticationService {
                 .subject(user.getUsername())
                 .issuer("devteria.com")
                 .issueTime(new Date())
-                .expirationTime(new Date(
-                        Instant.now().plus(REFRESHABLE_DURATION, ChronoUnit.SECONDS).toEpochMilli()))
+                .expirationTime(new Date(Instant.now()
+                        .plus(REFRESHABLE_DURATION, ChronoUnit.SECONDS)
+                        .toEpochMilli()))
                 .jwtID(UUID.randomUUID().toString())
                 .claim("token_type", "REFRESH")
                 .build();
@@ -202,9 +202,21 @@ public class AuthenticationService {
 
         Date tokenExpiry = signedJWT.getJWTClaimsSet().getExpirationTime();
         Date expiryTime = (isRefresh)
-                ? (tokenExpiry != null && tokenExpiry.toInstant().isAfter(signedJWT.getJWTClaimsSet().getIssueTime().toInstant().plus(VALID_DURATION + 60, ChronoUnit.SECONDS))
+                ? (tokenExpiry != null
+                                && tokenExpiry
+                                        .toInstant()
+                                        .isAfter(signedJWT
+                                                .getJWTClaimsSet()
+                                                .getIssueTime()
+                                                .toInstant()
+                                                .plus(VALID_DURATION + 60, ChronoUnit.SECONDS))
                         ? tokenExpiry
-                        : new Date(signedJWT.getJWTClaimsSet().getIssueTime().toInstant().plus(REFRESHABLE_DURATION, ChronoUnit.SECONDS).toEpochMilli()))
+                        : new Date(signedJWT
+                                .getJWTClaimsSet()
+                                .getIssueTime()
+                                .toInstant()
+                                .plus(REFRESHABLE_DURATION, ChronoUnit.SECONDS)
+                                .toEpochMilli()))
                 : tokenExpiry;
 
         var verified = signedJWT.verify(verifier);

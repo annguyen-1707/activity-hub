@@ -5,7 +5,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import jakarta.validation.ConstraintViolation;
 
 import org.springframework.http.ResponseEntity;
@@ -15,6 +14,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
+import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import com.softdreams.activityhub.dto.request.ApiResponse;
 
 import lombok.extern.slf4j.Slf4j;
@@ -90,17 +90,14 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
-    ResponseEntity<ApiResponse> handlingHttpMessageNotReadableException(
-            HttpMessageNotReadableException exception) {
+    ResponseEntity<ApiResponse> handlingHttpMessageNotReadableException(HttpMessageNotReadableException exception) {
 
         Throwable cause = exception.getCause();
 
         if (cause instanceof InvalidFormatException invalidFormatException
                 && invalidFormatException.getTargetType().isEnum()) {
 
-            String fieldName = invalidFormatException.getPath()
-                    .getFirst()
-                    .getFieldName();
+            String fieldName = invalidFormatException.getPath().getFirst().getFieldName();
 
             String acceptedValues = Arrays.stream(
                             invalidFormatException.getTargetType().getEnumConstants())

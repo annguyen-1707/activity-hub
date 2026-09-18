@@ -1,10 +1,12 @@
 package com.softdreams.activityhub.producer;
 
-import com.softdreams.activityhub.configuration.RabbitMQConfig;
-import com.softdreams.activityhub.dto.ActivityLogEvent;
-import lombok.RequiredArgsConstructor;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Component;
+
+import com.softdreams.activityhub.configuration.RabbitMQConfig;
+import com.softdreams.activityhub.dto.ActivityLogEvent;
+
+import lombok.RequiredArgsConstructor;
 
 @Component
 @RequiredArgsConstructor
@@ -14,10 +16,6 @@ public class ActivityLogProducer {
 
     public void send(ActivityLogEvent event) {
 
-        rabbitTemplate.convertAndSend(
-                RabbitMQConfig.ACTIVITY_EXCHANGE,
-                RabbitMQConfig.ACTIVITY_ROUTING_KEY,
-                event
-        );
+        rabbitTemplate.convertAndSend(RabbitMQConfig.ACTIVITY_EXCHANGE, RabbitMQConfig.ACTIVITY_ROUTING_KEY, event);
     }
 }

@@ -7,6 +7,7 @@ import jakarta.validation.Valid;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import com.softdreams.activityhub.anotation.ActivityLog;
@@ -14,6 +15,7 @@ import com.softdreams.activityhub.dto.request.ApiResponse;
 import com.softdreams.activityhub.dto.request.OrderRequest;
 import com.softdreams.activityhub.dto.response.OrderResponse;
 import com.softdreams.activityhub.enums.EventType;
+import com.softdreams.activityhub.enums.OrderStatus;
 import com.softdreams.activityhub.enums.TargetType;
 import com.softdreams.activityhub.service.OrderService;
 
@@ -74,11 +76,32 @@ public class OrderController {
             @RequestParam(required = false) String status,
             @RequestParam(required = false) String paymentMethod,
             @RequestParam(required = false) LocalDateTime fromDate,
-            @RequestParam(required = false) LocalDateTime toDate
-            ) {
+            @RequestParam(required = false) LocalDateTime toDate) {
         return ApiResponse.<Page<OrderResponse>>builder()
-                .result(orderService.searchMyOrders(keyword,status,paymentMethod,
-                        fromDate,toDate,pageable))
+                .result(orderService.searchMyOrders(keyword, status, paymentMethod, fromDate, toDate, pageable))
+                .build();
+    }
+
+    @GetMapping("/admin")
+    @PreAuthorize("hasRole('ADMIN')")
+    ApiResponse<Page<OrderResponse>> searchAdminOrders(
+            Pageable pageable,
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String paymentMethod,
+            @RequestParam(required = false) LocalDateTime fromDate,
+            @RequestParam(required = false) LocalDateTime toDate) {
+        return ApiResponse.<Page<OrderResponse>>builder()
+                .result(orderService.searchAdminOrders(keyword, status, paymentMethod, fromDate, toDate, pageable))
+                .build();
+    }
+
+    @PatchMapping("/{orderId}/status")
+    @PreAuthorize("hasRole('ADMIN')")
+    @ActivityLog(eventType = EventType.UPDATED, targetType = TargetType.ORDER, targetId = "#orderId")
+    ApiResponse<OrderResponse> updateStatus(@PathVariable String orderId, @RequestParam OrderStatus status) {
+        return ApiResponse.<OrderResponse>builder()
+                .result(orderService.updateStatus(orderId, status))
                 .build();
     }
 }

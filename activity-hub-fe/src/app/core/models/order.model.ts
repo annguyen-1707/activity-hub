@@ -43,6 +43,8 @@ export interface OrderLineResponse {
 export interface OrderResponse {
   id: string;
   userId?: string;
+  username?: string;
+  customerName?: string;
   totalAmount: number;
   status: OrderStatus;
   createdAt: string;

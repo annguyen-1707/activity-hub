@@ -3,6 +3,8 @@ package com.softdreams.activityhub.service;
 import java.util.ArrayList;
 import java.util.List;
 
+import jakarta.transaction.Transactional;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -23,7 +25,6 @@ import com.softdreams.activityhub.repository.ProductRepository;
 import com.softdreams.activityhub.repository.StockTransactionRepository;
 import com.softdreams.activityhub.repository.UserRepository;
 
-import jakarta.transaction.Transactional;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -72,17 +73,28 @@ public class StockTransactionService {
      */
     @Transactional
     public StockTransactionResponse postSale(String orderId, List<StockLine> lines) {
-        List<PendingLine> pending =
-                lines.stream().map(l -> new PendingLine(l.product(), -l.quantity())).toList();
+        List<PendingLine> pending = lines.stream()
+                .map(l -> new PendingLine(l.product(), -l.quantity()))
+                .toList();
 
         return apply(StockTransactionType.SALE, "Auto-generated from order checkout", orderId, pending);
     }
 
+    /**
+     * Restores stock for a cancelled order.
+     */
+    @Transactional
+    public StockTransactionResponse postCancel(String orderId, List<StockLine> lines) {
+        List<PendingLine> pending = lines.stream()
+                .map(l -> new PendingLine(l.product(), l.quantity()))
+                .toList();
+
+        return apply(StockTransactionType.CANCEL, "Auto-restored from order cancellation", orderId, pending);
+    }
+
     @PreAuthorize("hasRole('ADMIN')")
     public Page<StockTransactionResponse> search(StockTransactionType type, String productId, Pageable pageable) {
-        return stockTransactionRepository
-                .search(type, productId, pageable)
-                .map(stockTransactionMapper::toResponse);
+        return stockTransactionRepository.search(type, productId, pageable).map(stockTransactionMapper::toResponse);
     }
 
     private record PendingLine(Product product, int delta) {}
@@ -123,7 +135,9 @@ public class StockTransactionService {
 
     private User getMyUser() {
         var authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || !authentication.isAuthenticated() || "anonymousUser".equals(authentication.getName())) {
+        if (authentication == null
+                || !authentication.isAuthenticated()
+                || "anonymousUser".equals(authentication.getName())) {
             return null;
         }
         return userRepository.findByUsername(authentication.getName()).orElse(null);

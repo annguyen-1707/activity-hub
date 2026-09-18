@@ -3,8 +3,9 @@ package com.softdreams.activityhub.entity;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-import com.softdreams.activityhub.enums.CategoryEnum;
 import jakarta.persistence.*;
+
+import com.softdreams.activityhub.enums.CategoryEnum;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;

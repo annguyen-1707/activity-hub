@@ -1,9 +1,11 @@
 package com.softdreams.activityhub.entity;
 
+import java.math.BigDecimal;
+
 import jakarta.persistence.*;
+
 import lombok.*;
 import lombok.experimental.FieldDefaults;
-import java.math.BigDecimal;
 
 @Getter
 @Setter

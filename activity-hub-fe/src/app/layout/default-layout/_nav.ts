@@ -60,5 +60,17 @@ export const navItems: AppNavItem[] = [
     url: '/activity-logs',
     iconComponent: {name: 'cil-description'},
     roles: ["ADMIN"]
+  },
+  {
+    name: 'Quản lý sản phẩm & Kho',
+    url: '/products',
+    iconComponent: {name: 'cil-tags'},
+    roles: ["ADMIN"]
+  },
+  {
+    name: 'Quản lý đơn hàng (Admin)',
+    url: '/admin-orders',
+    iconComponent: {name: 'cil-cart'},
+    roles: ["ADMIN"]
   }
 ];

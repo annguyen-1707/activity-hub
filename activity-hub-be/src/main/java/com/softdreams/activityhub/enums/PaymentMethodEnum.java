@@ -6,7 +6,6 @@ import lombok.RequiredArgsConstructor;
 @Getter
 @RequiredArgsConstructor
 public enum PaymentMethodEnum {
-
     BANK("Chuyển khoản"),
     CASH("Tiền mặt");
 
