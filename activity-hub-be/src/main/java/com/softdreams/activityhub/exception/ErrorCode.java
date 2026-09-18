@@ -19,6 +19,8 @@ public enum ErrorCode {
     INVALID_DOB(1008, "Your age must be at least {min}", HttpStatus.BAD_REQUEST),
     ORDER_NOT_EXISTED(1009, "Order not existed", HttpStatus.NOT_FOUND),
     INVALID_ENUM_VALUE(1010, "Invalid value enum for field", HttpStatus.BAD_REQUEST),
+    ROLE_NOT_EXISTED(1011, "Role not existed", HttpStatus.NOT_FOUND),
+    ROLE_IN_USE(1012, "Role is assigned to users and cannot be deleted", HttpStatus.BAD_REQUEST),
     ;
 
     ErrorCode(int code, String message, HttpStatusCode statusCode) {

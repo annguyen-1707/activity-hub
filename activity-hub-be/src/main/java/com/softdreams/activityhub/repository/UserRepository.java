@@ -15,6 +15,8 @@ import com.softdreams.activityhub.entity.User;
 public interface UserRepository extends JpaRepository<User, String> {
     boolean existsByUsername(String username);
 
+    boolean existsByRoles_Name(String name);
+
     Optional<User> findByUsername(String username);
 
     @Query(

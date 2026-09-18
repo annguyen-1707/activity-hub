@@ -1,12 +1,14 @@
 package com.softdreams.activityhub.service;
 
 import com.softdreams.activityhub.dto.ActivityLogEvent;
+import com.softdreams.activityhub.dto.response.ActivityLogResponse;
 import com.softdreams.activityhub.entity.ActivityLog;
 import com.softdreams.activityhub.entity.User;
 import com.softdreams.activityhub.enums.EventType;
 import com.softdreams.activityhub.enums.TargetType;
 import com.softdreams.activityhub.exception.AppException;
 import com.softdreams.activityhub.exception.ErrorCode;
+import com.softdreams.activityhub.mapper.ActivityLogMapper;
 import com.softdreams.activityhub.producer.ActivityLogProducer;
 import com.softdreams.activityhub.repository.ActivityLogRepository;
 import com.softdreams.activityhub.repository.UserRepository;
@@ -15,6 +17,9 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
@@ -29,6 +34,7 @@ public class ActivityLogService {
 
     ActivityLogRepository activityLogRepository;
     UserRepository userRepository;
+    ActivityLogMapper activityLogMapper;
     HttpServletRequest request;
 
     public void save(ActivityLogEvent event) {
@@ -80,6 +86,13 @@ public class ActivityLogService {
                 .build();
 
         producer.send(event);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    public Page<ActivityLogResponse> search(Pageable pageable, String keyword, EventType eventType, TargetType targetType) {
+        return activityLogRepository
+                .search(keyword, eventType, targetType, pageable)
+                .map(activityLogMapper::toResponse);
     }
 
     private User resolveActor(TargetType targetType, String targetId) {

@@ -6,9 +6,9 @@ import lombok.RequiredArgsConstructor;
 @Getter
 @RequiredArgsConstructor
 public enum TargetType {
-    USER("Người dùng"),
-    ORDER("Đơn hàng"),
-    ROLE("Vai trò"),
+    USER("USER"),
+    ORDER("ORDER"),
+    ROLE("ROLE"),
     ;
     private final String label;
 }
