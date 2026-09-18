@@ -2,6 +2,8 @@ package com.softdreams.activityhub.entity;
 
 import java.time.LocalDateTime;
 
+import com.softdreams.activityhub.enums.EventType;
+import com.softdreams.activityhub.enums.TargetType;
 import jakarta.persistence.*;
 
 import lombok.*;
@@ -30,15 +32,26 @@ public class ActivityLog {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "event_type", nullable = false, length = 50)
-    private String eventType;
+    private EventType eventType;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "target_type", length = 50)
-    private String targetType;
+    private TargetType targetType;
 
     @Column(name = "target_id")
-    private Long targetId;
+    private String targetId;
 
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
+
+    @Column(name = "ip_address")
+    String ipAddress;
+
+    @PrePersist
+    protected void onCreate() {
+        createdAt = LocalDateTime.now();
+    }
+
 }
