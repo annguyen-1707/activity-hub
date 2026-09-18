@@ -36,6 +36,15 @@ public class ActivityLogService {
         if (activityLogRepository.existsByEventId(event.getEventId())) {
             return;
         }
+
+        if (event.getUserId() == null) {
+            // Never requeue-loop the consumer over an unresolvable actor;
+            // drop the record instead of retrying it forever.
+            log.warn("Skipped activity log {}: no resolvable actor", event.getEventId());
+            return;
+        }
+
+        User user = userRepository.findById(event.getUserId()).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
         ActivityLog activityLog = ActivityLog.builder()
                 .eventId(event.getEventId())
                 .eventType(event.getEventType())
@@ -43,6 +52,7 @@ public class ActivityLogService {
                 .targetId(event.getTargetId())
                 .ipAddress(event.getIpAddress())
                 .createdAt(event.getCreatedAt())
+                .user(user)
                 .build();
 
         activityLogRepository.save(activityLog);
@@ -57,9 +67,11 @@ public class ActivityLogService {
     ) {
         String ipAddress = request.getRemoteAddr();
 
+        User actor = resolveActor(targetType, targetId);
+
         ActivityLogEvent event = ActivityLogEvent.builder()
                 .eventId(UUID.randomUUID().toString())
-                .userId(getMyUser().getId())
+                .userId(actor != null ? actor.getId() : null)
                 .eventType(eventType)
                 .targetType(targetType)
                 .targetId(targetId)
@@ -70,13 +82,32 @@ public class ActivityLogService {
         producer.send(event);
     }
 
+    private User resolveActor(TargetType targetType, String targetId) {
+        User actor = getMyUser();
+        if (actor != null) {
+            return actor;
+        }
+
+        // Login/logout run on public endpoints, so there is no SecurityContext
+        // yet; the user is the same one identified by targetId (their username).
+        if (targetType == TargetType.USER && targetId != null) {
+            return userRepository.findByUsername(targetId).orElse(null);
+        }
+
+        return null;
+    }
+
     private User getMyUser() {
-        User user;
-        String username =
-                SecurityContextHolder.getContext().getAuthentication().getName();
-        user = userRepository
-                .findByUsername(username)
-                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
-        return user;
+        var authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        // Login/logout happen on public endpoints, so there is no authenticated
+        // actor yet; fall back to an unknown actor instead of failing the request.
+        if (authentication == null
+                || !authentication.isAuthenticated()
+                || "anonymousUser".equals(authentication.getName())) {
+            return null;
+        }
+
+        return userRepository.findByUsername(authentication.getName()).orElse(null);
     }
 }

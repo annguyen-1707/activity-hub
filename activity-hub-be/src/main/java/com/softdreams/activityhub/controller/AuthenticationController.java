@@ -12,10 +12,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.nimbusds.jose.JOSEException;
+import com.softdreams.activityhub.anotation.ActivityLog;
 import com.softdreams.activityhub.dto.request.*;
 import com.softdreams.activityhub.dto.response.AuthenticationResponse;
 import com.softdreams.activityhub.dto.response.IntrospectResponse;
 import com.softdreams.activityhub.dto.response.AuthenticationResponse;
+import com.softdreams.activityhub.enums.EventType;
+import com.softdreams.activityhub.enums.TargetType;
 import com.softdreams.activityhub.exception.AppException;
 import com.softdreams.activityhub.exception.ErrorCode;
 import com.softdreams.activityhub.service.AuthenticationService;
@@ -44,6 +47,7 @@ public class AuthenticationController {
     }
 
     @PostMapping("/token")
+    @ActivityLog(eventType = EventType.LOGIN, targetType = TargetType.USER, targetId = "#request.username")
     public ResponseEntity<ApiResponse<AuthenticationResponse>> authenticate(@RequestBody AuthenticationRequest request) {
         AuthenticationResponse authenticationResponse = authenticationService.authenticate(request);
 
@@ -105,6 +109,11 @@ public class AuthenticationController {
     }
 
     @PostMapping("/logout")
+    @ActivityLog(
+            eventType = EventType.LOGOUT,
+            targetType = TargetType.USER,
+            targetId =
+                    "#jwtSubject(#refreshTokenFromCookie != null ? #refreshTokenFromCookie : (#request != null ? #request.token : null))")
     public ResponseEntity<ApiResponse<Void>> logout(
             @CookieValue(name = REFRESH_TOKEN_COOKIE_NAME, required = false) String refreshTokenFromCookie,
             @RequestBody(required = false) LogoutRequest request) throws ParseException, JOSEException {

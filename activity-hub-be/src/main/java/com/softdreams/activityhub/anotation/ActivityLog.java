@@ -14,6 +14,12 @@ public @interface ActivityLog {
 
     TargetType targetType();
 
+    /**
+     * SpEL expression evaluated after the method returns successfully.
+     * Available: {@code #result} (the method's return value), every method
+     * parameter by its name (e.g. {@code #userId}, {@code #request}), and the
+     * {@code #jwtSubject(token)} helper to pull a username out of a JWT.
+     */
     String targetId() default "#result.id";
 
 }
