@@ -4,9 +4,12 @@ import java.util.List;
 
 import org.springframework.web.bind.annotation.*;
 
+import com.softdreams.activityhub.anotation.ActivityLog;
 import com.softdreams.activityhub.dto.request.ApiResponse;
 import com.softdreams.activityhub.dto.request.RoleRequest;
 import com.softdreams.activityhub.dto.response.RoleResponse;
+import com.softdreams.activityhub.enums.EventType;
+import com.softdreams.activityhub.enums.TargetType;
 import com.softdreams.activityhub.service.RoleService;
 
 import lombok.AccessLevel;
@@ -23,6 +26,7 @@ public class RoleController {
     RoleService roleService;
 
     @PostMapping
+    @ActivityLog(eventType = EventType.CREATED, targetType = TargetType.ROLE, targetId = "#result.result.name")
     ApiResponse<RoleResponse> create(@RequestBody RoleRequest request) {
         return ApiResponse.<RoleResponse>builder()
                 .result(roleService.create(request))
@@ -37,6 +41,7 @@ public class RoleController {
     }
 
     @DeleteMapping("/{role}")
+    @ActivityLog(eventType = EventType.DELETED, targetType = TargetType.ROLE, targetId = "#role")
     ApiResponse<Void> delete(@PathVariable String role) {
         roleService.delete(role);
         return ApiResponse.<Void>builder().build();

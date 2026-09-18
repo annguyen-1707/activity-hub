@@ -7,9 +7,12 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 
+import com.softdreams.activityhub.anotation.ActivityLog;
 import com.softdreams.activityhub.dto.request.ApiResponse;
 import com.softdreams.activityhub.dto.request.OrderRequest;
 import com.softdreams.activityhub.dto.response.OrderResponse;
+import com.softdreams.activityhub.enums.EventType;
+import com.softdreams.activityhub.enums.TargetType;
 import com.softdreams.activityhub.service.OrderService;
 
 import lombok.AccessLevel;
@@ -26,6 +29,7 @@ public class OrderController {
     OrderService orderService;
 
     @PostMapping
+    @ActivityLog(eventType = EventType.CREATED, targetType = TargetType.ORDER, targetId = "#result.result.id")
     ApiResponse<OrderResponse> create(@RequestBody OrderRequest request) {
         return ApiResponse.<OrderResponse>builder()
                 .result(orderService.create(request))
@@ -47,6 +51,7 @@ public class OrderController {
     }
 
     @PutMapping("/{orderId}")
+    @ActivityLog(eventType = EventType.UPDATED, targetType = TargetType.ORDER, targetId = "#orderId")
     ApiResponse<OrderResponse> update(@PathVariable String orderId, @RequestBody OrderRequest request) {
         return ApiResponse.<OrderResponse>builder()
                 .result(orderService.update(orderId, request))
@@ -54,6 +59,7 @@ public class OrderController {
     }
 
     @DeleteMapping("/{orderId}")
+    @ActivityLog(eventType = EventType.DELETED, targetType = TargetType.ORDER, targetId = "#orderId")
     ApiResponse<Void> delete(@PathVariable String orderId) {
         orderService.delete(orderId);
         return ApiResponse.<Void>builder().build();

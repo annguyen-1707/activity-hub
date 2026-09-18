@@ -8,10 +8,13 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 
+import com.softdreams.activityhub.anotation.ActivityLog;
 import com.softdreams.activityhub.dto.request.ApiResponse;
 import com.softdreams.activityhub.dto.request.UserCreationRequest;
 import com.softdreams.activityhub.dto.request.UserUpdateRequest;
 import com.softdreams.activityhub.dto.response.UserResponse;
+import com.softdreams.activityhub.enums.EventType;
+import com.softdreams.activityhub.enums.TargetType;
 import com.softdreams.activityhub.service.UserService;
 
 import lombok.AccessLevel;
@@ -28,6 +31,7 @@ public class UserController {
     UserService userService;
 
     @PostMapping
+    @ActivityLog(eventType = EventType.CREATED, targetType = TargetType.USER, targetId = "#result.result.id")
     ApiResponse<UserResponse> createUser(@RequestBody @Valid UserCreationRequest request) {
         return ApiResponse.<UserResponse>builder()
                 .result(userService.createUser(request))
@@ -58,12 +62,14 @@ public class UserController {
     }
 
     @DeleteMapping("/{userId}")
+    @ActivityLog(eventType = EventType.DELETED, targetType = TargetType.USER, targetId = "#userId")
     ApiResponse<String> deleteUser(@PathVariable String userId) {
         userService.deleteUser(userId);
         return ApiResponse.<String>builder().result("User has been deleted").build();
     }
 
     @PatchMapping("/{userId}")
+    @ActivityLog(eventType = EventType.UPDATED, targetType = TargetType.USER, targetId = "#userId")
     ApiResponse<UserResponse> updateUser(@PathVariable String userId, @RequestBody UserUpdateRequest request) {
         return ApiResponse.<UserResponse>builder()
                 .result(userService.updateUser(userId, request))
