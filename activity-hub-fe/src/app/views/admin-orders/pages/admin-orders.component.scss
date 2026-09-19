@@ -3,7 +3,7 @@
     transition: transform 0.2s ease, box-shadow 0.2s ease;
     &:hover {
       transform: translateY(-2px);
-      box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1) !important;
+      box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.08) !important;
     }
   }
 
@@ -14,14 +14,5 @@
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-  }
-
-  .admin-orders-table th {
-    font-weight: 600;
-    font-size: 0.85rem;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    padding-top: 0.75rem;
-    padding-bottom: 0.75rem;
   }
 }

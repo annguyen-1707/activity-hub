@@ -2,7 +2,8 @@
   <!-- Toast Notification -->
   @if (alertMessage()) {
   <c-alert [color]="alertType()" [dismissible]="true" class="mb-4 d-flex align-items-center shadow-sm rounded-3">
-    <svg cIcon [name]="alertType() === 'success' ? 'cilCheck' : 'cilWarning'" class="me-2 flex-shrink-0" size="lg"></svg>
+    <svg cIcon [name]="alertType() === 'success' ? 'cilCheck' : 'cilWarning'" class="me-2 flex-shrink-0"
+      size="lg"></svg>
     <div class="fw-medium">{{ alertMessage() }}</div>
   </c-alert>
   }
@@ -17,19 +18,11 @@
             <span cInputGroupText class="bg-body-secondary border-end-0">
               <svg cIcon name="cilMagnifyingGlass" class="text-body-secondary"></svg>
             </span>
-            <input
-              cFormControl
-              placeholder="Tìm sản phẩm (iPhone, Mac, tai nghe, phụ kiện...)"
-              class="border-start-0"
-              [ngModel]="searchKeyword()"
-              (ngModelChange)="searchKeyword.set($event)"
-            />
+            <input cFormControl placeholder="Tìm sản phẩm (iPhone, Mac, tai nghe, phụ kiện...)" class="border-start-0"
+              [ngModel]="searchKeyword()" (ngModelChange)="searchKeyword.set($event)" />
             @if (searchKeyword()) {
-            <button
-              class="btn btn-outline-secondary border-start-0 bg-transparent"
-              type="button"
-              (click)="searchKeyword.set('')"
-            >
+            <button class="btn btn-outline-secondary border-start-0 bg-transparent" type="button"
+              (click)="searchKeyword.set('')">
               <svg cIcon name="cilX" size="sm"></svg>
             </button>
             }
@@ -40,12 +33,8 @@
         <c-col md="6" lg="7" xs="12">
           <div class="category-pills d-flex flex-wrap gap-1 justify-content-md-end">
             @for (cat of categories(); track cat) {
-            <button
-              type="button"
-              class="category-pill-btn"
-              [class.active]="selectedCategory() === cat"
-              (click)="selectCategory(cat)"
-            >
+            <button type="button" class="category-pill-btn" [class.active]="selectedCategory() === cat"
+              (click)="selectCategory(cat)">
               {{ cat }}
             </button>
             }
@@ -64,7 +53,8 @@
       </div>
       <h5 class="fw-bold">Không tìm thấy sản phẩm phù hợp</h5>
       <p class="text-body-secondary small mb-3">Thử tìm kiếm với từ khóa khác hoặc chọn danh mục "Tất cả".</p>
-      <button cButton color="primary" variant="outline" size="sm" class="rounded-pill px-4" (click)="searchKeyword.set(''); selectCategory('Tất cả')">
+      <button cButton color="primary" variant="outline" size="sm" class="rounded-pill px-4"
+        (click)="searchKeyword.set(''); selectCategory('Tất cả')">
         Xem tất cả sản phẩm
       </button>
     </div>
@@ -82,7 +72,8 @@
               </span>
             </div>
             <div class="stock-chip position-absolute top-0 end-0 m-2">
-              <span class="badge rounded-pill" [class.bg-success]="product.stock > 10" [class.bg-warning]="product.stock <= 10">
+              <span class="badge rounded-pill" [class.bg-success]="product.stock > 10"
+                [class.bg-warning]="product.stock <= 10">
                 Kho: {{ product.stock }}
               </span>
             </div>
@@ -95,7 +86,7 @@
                 <span>★</span>
                 <span class="ms-1 text-body-secondary fw-semibold">{{ product.rating || 5.0 }}</span>
               </div>
-              <span class="text-body-tertiary font-monospace" style="font-size: 0.72rem;">#{{ product.id }}</span>
+              <!-- <span class="text-body-tertiary font-monospace" style="font-size: 0.72rem;">#{{ product.id }}</span> -->
             </div>
 
             <h6 class="product-title fw-bold mb-1 text-truncate" [title]="product.name">
@@ -118,34 +109,21 @@
               <!-- In-cart Stepper or Add button -->
               @if (getProductCartQuantity(product.id) > 0) {
               <div class="card-stepper d-flex align-items-center gap-1 bg-primary-subtle rounded-pill p-1">
-                <button
-                  type="button"
-                  class="btn btn-sm btn-primary rounded-circle p-0 stepper-btn"
-                  (click)="updateQuantityByProduct(product, -1)"
-                  title="Giảm"
-                >
+                <button type="button" class="btn btn-sm btn-primary rounded-circle p-0 stepper-btn"
+                  (click)="updateQuantityByProduct(product, -1)" title="Giảm">
                   -
                 </button>
                 <span class="fw-bold px-2 text-primary small">
                   {{ getProductCartQuantity(product.id) }}
                 </span>
-                <button
-                  type="button"
-                  class="btn btn-sm btn-primary rounded-circle p-0 stepper-btn"
-                  (click)="updateQuantityByProduct(product, 1)"
-                  title="Tăng"
-                >
+                <button type="button" class="btn btn-sm btn-primary rounded-circle p-0 stepper-btn"
+                  (click)="updateQuantityByProduct(product, 1)" title="Tăng">
                   +
                 </button>
               </div>
               } @else {
-              <button
-                cButton
-                color="primary"
-                size="sm"
-                class="rounded-pill px-3 py-1 d-flex align-items-center shadow-sm"
-                (click)="addToCart(product)"
-              >
+              <button cButton color="primary" size="sm"
+                class="rounded-pill px-3 py-1 d-flex align-items-center shadow-sm" (click)="addToCart(product)">
                 <svg cIcon name="cilPlus" class="me-1" size="sm"></svg>
                 <span>Chọn mua</span>
               </button>
@@ -161,9 +139,13 @@
 
   <!-- FLOATING BOTTOM BAR WHEN CART HAS ITEMS -->
   @if (totalCartQuantity() > 0) {
-  <div class="floating-cart-bar position-fixed bottom-0 start-50 translate-middle-x mb-4 shadow-lg rounded-pill p-2 px-4 bg-dark text-white d-flex align-items-center justify-content-between gap-4 border border-secondary" style="z-index: 1040; max-width: 90%; min-width: 320px;">
+  <div
+    class="floating-cart-bar position-fixed bottom-0 start-50 translate-middle-x mb-4 shadow-lg rounded-pill p-2 px-4 bg-dark text-white d-flex align-items-center justify-content-between gap-4 border border-secondary"
+    style="z-index: 1040; max-width: 90%; min-width: 320px;">
     <div class="d-flex align-items-center gap-3">
-      <div class="floating-cart-badge bg-primary text-white rounded-circle d-flex align-items-center justify-content-center fw-bold" style="width: 38px; height: 38px;">
+      <div
+        class="floating-cart-badge bg-primary text-white rounded-circle d-flex align-items-center justify-content-center fw-bold"
+        style="width: 38px; height: 38px;">
         {{ totalCartQuantity() }}
       </div>
       <div>
@@ -172,10 +154,8 @@
       </div>
     </div>
 
-    <a
-      routerLink="/orders/checkout"
-      class="btn btn-primary rounded-pill px-4 py-2 fw-bold d-flex align-items-center gap-2 shadow-sm text-nowrap"
-    >
+    <a routerLink="/orders/checkout"
+      class="btn btn-primary rounded-pill px-4 py-2 fw-bold d-flex align-items-center gap-2 shadow-sm text-nowrap">
       <span>Xem Giỏ Hàng & Thanh Toán</span>
       <svg cIcon name="cilArrowRight" size="sm"></svg>
     </a>

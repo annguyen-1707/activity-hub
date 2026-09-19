@@ -10,7 +10,6 @@ import {
 import {
   AlertComponent,
   BadgeComponent,
-  ButtonCloseDirective,
   ButtonDirective,
   CardBodyComponent,
   CardComponent,
@@ -57,7 +56,6 @@ import { AuthService } from '../../../core/services/auth.service';
     CardBodyComponent,
     TableDirective,
     ButtonDirective,
-    ButtonCloseDirective,
     BadgeComponent,
     SpinnerComponent,
     AlertComponent,

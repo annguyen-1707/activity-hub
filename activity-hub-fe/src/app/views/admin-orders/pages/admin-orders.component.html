@@ -1,30 +1,30 @@
 <div class="admin-orders-page">
-  <!-- PAGE HEADER -->
-  <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
-    <div>
-      <h3 class="fw-bold mb-1 d-flex align-items-center gap-2">
-        <svg cIcon name="cilCart" class="text-primary"></svg>
-        Quản Lý Đơn Hàng Hệ Thống
-      </h3>
-      <div class="text-body-secondary small">
-        Theo dõi, kiểm tra chi tiết, cập nhật trạng thái đơn hàng và doanh số bán hàng của toàn bộ hệ thống.
-      </div>
-    </div>
-  </div>
-
-  <!-- ALERT NOTIFICATION -->
+  <!-- Alerts -->
   @if (alertMessage()) {
-    <c-alert [color]="alertType()" dismissible class="d-flex align-items-center gap-2 mb-4 shadow-sm">
-      <svg cIcon [name]="alertType() === 'success' ? 'cilCheck' : 'cilBug'"></svg>
-      <span>{{ alertMessage() }}</span>
+    <c-alert [color]="alertType()" [dismissible]="true" class="mb-3 d-flex align-items-center shadow-sm">
+      <svg cIcon [name]="alertType() === 'success' ? 'cilCheck' : 'cilBug'" class="me-2" size="lg"></svg>
+      <div>{{ alertMessage() }}</div>
     </c-alert>
   }
+
+  <!-- Header Banner -->
+  <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 pb-2 border-bottom">
+    <div>
+      <h3 class="fw-bold text-primary mb-1 d-flex align-items-center">
+        <svg cIcon name="cilCart" class="me-2"></svg>
+        Quản Lý Đơn Hàng Hệ Thống
+      </h3>
+      <p class="text-body-secondary mb-0 small">
+        Theo dõi, kiểm tra chi tiết, cập nhật trạng thái đơn hàng và doanh số bán hàng của toàn bộ hệ thống.
+      </p>
+    </div>
+  </div>
 
   <!-- KPI SUMMARY CARDS -->
   <c-row class="g-3 mb-4">
     <!-- Total Orders -->
     <c-col sm="6" lg="3">
-      <c-card class="border-0 shadow-sm rounded-4 h-100 kpi-card">
+      <c-card class="border-0 shadow-sm h-100 kpi-card">
         <c-card-body class="d-flex align-items-center gap-3 p-3">
           <div class="kpi-icon-wrapper bg-primary-subtle text-primary rounded-3">
             <svg cIcon name="cilCart" size="xl"></svg>
@@ -39,13 +39,13 @@
 
     <!-- Revenue -->
     <c-col sm="6" lg="3">
-      <c-card class="border-0 shadow-sm rounded-4 h-100 kpi-card">
+      <c-card class="border-0 shadow-sm h-100 kpi-card">
         <c-card-body class="d-flex align-items-center gap-3 p-3">
           <div class="kpi-icon-wrapper bg-success-subtle text-success rounded-3">
             <svg cIcon name="cilDollar" size="xl"></svg>
           </div>
           <div>
-            <div class="text-body-secondary small text-uppercase fw-semibold">Doanh Thu Đơn Trang Này</div>
+            <div class="text-body-secondary small text-uppercase fw-semibold">Doanh Thu Trang Này</div>
             <div class="fs-5 fw-bold text-success text-truncate" style="max-width: 170px;">
               {{ formatCurrency(totalRevenue()) }}
             </div>
@@ -56,13 +56,13 @@
 
     <!-- Pending / Confirmed -->
     <c-col sm="6" lg="3">
-      <c-card class="border-0 shadow-sm rounded-4 h-100 kpi-card">
+      <c-card class="border-0 shadow-sm h-100 kpi-card">
         <c-card-body class="d-flex align-items-center gap-3 p-3">
           <div class="kpi-icon-wrapper bg-warning-subtle text-warning rounded-3">
             <svg cIcon name="cilSpeedometer" size="xl"></svg>
           </div>
           <div>
-            <div class="text-body-secondary small text-uppercase fw-semibold">Đang Xử Lý / Chuẩn Bị</div>
+            <div class="text-body-secondary small text-uppercase fw-semibold">Đang Xử Lý</div>
             <div class="fs-4 fw-bold text-warning">{{ pendingCount() }}</div>
           </div>
         </c-card-body>
@@ -71,7 +71,7 @@
 
     <!-- Completed -->
     <c-col sm="6" lg="3">
-      <c-card class="border-0 shadow-sm rounded-4 h-100 kpi-card">
+      <c-card class="border-0 shadow-sm h-100 kpi-card">
         <c-card-body class="d-flex align-items-center gap-3 p-3">
           <div class="kpi-icon-wrapper bg-info-subtle text-info rounded-3">
             <svg cIcon name="cilCheck" size="xl"></svg>
@@ -86,20 +86,30 @@
   </c-row>
 
   <!-- TABLE & FILTERS CARD -->
-  <c-card class="border-0 shadow-sm rounded-4 overflow-hidden mb-4">
-    <!-- Toolbar -->
-    <c-card-header class="bg-body py-3 px-4 border-bottom">
-      <c-row class="g-3 align-items-center justify-content-between">
-        <!-- Search Input -->
+  <c-card class="border-0 shadow-sm mb-4">
+    <!-- Card Header -->
+    <c-card-header class="bg-body d-flex flex-wrap justify-content-between align-items-center py-3 border-bottom">
+      <div class="fw-bold text-body">
+        Danh sách đơn hàng ({{ totalElements() }} đơn hàng)
+      </div>
+
+      <button cButton color="secondary" variant="outline" size="sm" (click)="loadOrders()" [disabled]="loading()" title="Làm mới">
+        <svg cIcon name="cilSpeedometer" class="me-1"></svg>
+        Làm mới
+      </button>
+    </c-card-header>
+
+    <c-card-body>
+      <!-- Search & Filter Toolbar -->
+      <c-row class="mb-3 g-2 align-items-center justify-content-between">
         <c-col md="5" xs="12">
-          <c-input-group size="sm">
-            <span cInputGroupText class="bg-body-secondary border-end-0">
-              <svg cIcon name="cilMagnifyingGlass" class="text-body-secondary" size="sm"></svg>
+          <c-input-group>
+            <span cInputGroupText>
+              <svg cIcon name="cilMagnifyingGlass"></svg>
             </span>
             <input
               cFormControl
               placeholder="Tìm theo mã đơn, khách hàng, địa chỉ..."
-              class="border-start-0"
               [ngModel]="keyword()"
               (ngModelChange)="onKeywordChange($event)"
               (keyup.enter)="onSearch()"
@@ -112,14 +122,12 @@
           </c-input-group>
         </c-col>
 
-        <!-- Dropdowns -->
         <c-col md="7" xs="12">
           <div class="d-flex flex-wrap gap-2 justify-content-md-end align-items-center">
             <!-- Status Filter -->
             <select
               cSelect
-              size="sm"
-              class="form-select-sm w-auto rounded-3"
+              class="form-select w-auto"
               [ngModel]="statusFilter()"
               (ngModelChange)="onStatusChange($event)"
             >
@@ -133,8 +141,7 @@
             <!-- Payment Filter -->
             <select
               cSelect
-              size="sm"
-              class="form-select-sm w-auto rounded-3"
+              class="form-select w-auto"
               [ngModel]="paymentFilter()"
               (ngModelChange)="onPaymentChange($event)"
             >
@@ -144,46 +151,28 @@
             </select>
 
             <!-- Page Size -->
-            <div class="d-flex align-items-center gap-1 ms-auto ms-md-0">
-              <span class="text-body-secondary small text-nowrap d-none d-sm-inline">Hiển thị:</span>
-              <select
-                cSelect
-                size="sm"
-                class="form-select-sm w-auto rounded-3"
-                [ngModel]="pageSize()"
-                (ngModelChange)="onPageSizeChange($event)"
-              >
-                <option [value]="5">5 dòng</option>
-                <option [value]="10">10 dòng</option>
-                <option [value]="20">20 dòng</option>
-                <option [value]="50">50 dòng</option>
-              </select>
-            </div>
-
-            <!-- Refresh Button -->
-            <button
-              cButton
-              color="secondary"
-              variant="outline"
-              size="sm"
-              class="rounded-3 d-flex align-items-center gap-1"
-              (click)="loadOrders()"
-              [disabled]="loading()"
+            <span class="text-body-secondary small text-nowrap">Hiển thị:</span>
+            <select
+              cSelect
+              class="form-select w-auto"
+              [ngModel]="pageSize()"
+              (ngModelChange)="onPageSizeChange($event)"
             >
-              <svg cIcon name="cilSpeedometer" size="sm"></svg>
-              <span>Làm mới</span>
-            </button>
+              <option [value]="5">5 dòng</option>
+              <option [value]="10">10 dòng</option>
+              <option [value]="20">20 dòng</option>
+              <option [value]="50">50 dòng</option>
+            </select>
           </div>
         </c-col>
       </c-row>
-    </c-card-header>
 
-    <!-- Orders Table -->
-    <c-card-body class="p-0">
-      <div class="table-responsive">
-        <table cTable hover class="align-middle mb-0 admin-orders-table">
+      <!-- Orders Table -->
+      <div class="table-responsive border rounded">
+        <table cTable hover class="align-middle mb-0">
           <thead class="table-light">
             <tr>
+              <th scope="col" class="text-center" style="width: 60px;">#</th>
               <th scope="col" style="width: 140px;">Mã Đơn Hàng</th>
               <th scope="col">Khách Hàng</th>
               <th scope="col">Thời Gian Đặt</th>
@@ -191,29 +180,33 @@
               <th scope="col" class="text-end">Tổng Tiền</th>
               <th scope="col" class="text-center">Hình Thức</th>
               <th scope="col" class="text-center">Trạng Thái</th>
-              <th scope="col" class="text-center" style="width: 160px;">Thao Tác</th>
+              <th scope="col" class="text-center" style="width: 150px;">Thao Tác</th>
             </tr>
           </thead>
           <tbody>
             @if (loading()) {
               <tr>
-                <td colspan="8" class="text-center py-5">
-                  <c-spinner color="primary"></c-spinner>
-                  <div class="text-body-secondary mt-2 small">Đang tải danh sách đơn hàng...</div>
+                <td colspan="9" class="text-center py-5">
+                  <c-spinner color="primary" class="me-2"></c-spinner>
+                  <span class="text-body-secondary">Đang tải danh sách đơn hàng...</span>
                 </td>
               </tr>
             } @else if (orders().length === 0) {
               <tr>
-                <td colspan="8" class="text-center py-5">
-                  <div class="text-body-secondary">
-                    <svg cIcon name="cilCart" size="xl" class="mb-2 opacity-50"></svg>
-                    <p class="mb-0">Không tìm thấy đơn hàng nào phù hợp.</p>
-                  </div>
+                <td colspan="9" class="text-center py-5">
+                  <svg cIcon name="cilCart" size="3xl" class="text-secondary opacity-50 mb-2"></svg>
+                  <h6>Không tìm thấy đơn hàng nào</h6>
+                  <p class="text-body-secondary small mb-0">Thử tìm kiếm với từ khóa khác hoặc điều chỉnh bộ lọc.</p>
                 </td>
               </tr>
             } @else {
-              @for (order of orders(); track order.id) {
+              @for (order of orders(); track order.id; let i = $index) {
                 <tr>
+                  <!-- Index -->
+                  <td class="text-center text-body-secondary small fw-semibold">
+                    {{ page() * pageSize() + i + 1 }}
+                  </td>
+
                   <!-- Order ID -->
                   <td>
                     <div class="d-flex align-items-center gap-1">
@@ -271,10 +264,9 @@
                       <!-- Detail Receipt Button -->
                       <button
                         cButton
-                        color="info"
+                        color="primary"
                         variant="outline"
                         size="sm"
-                        class="rounded-2"
                         (click)="openDetailModal(order)"
                         title="Xem hóa đơn chi tiết"
                       >
@@ -287,7 +279,7 @@
                           cButton
                           color="warning"
                           size="sm"
-                          class="rounded-2 text-white"
+                          class="text-white"
                           (click)="requestStatusChange(order, 'CONFIRMED')"
                           title="Xác nhận / Chuẩn bị đơn"
                         >
@@ -298,7 +290,7 @@
                           cButton
                           color="success"
                           size="sm"
-                          class="rounded-2 text-white"
+                          class="text-white"
                           (click)="requestStatusChange(order, 'COMPLETED')"
                           title="Hoàn thành đơn"
                         >
@@ -313,7 +305,6 @@
                           color="danger"
                           variant="outline"
                           size="sm"
-                          class="rounded-2"
                           (click)="requestStatusChange(order, 'CANCELLED')"
                           title="Hủy đơn hàng"
                         >
@@ -324,10 +315,9 @@
                       <!-- Delete Button -->
                       <button
                         cButton
-                        color="secondary"
-                        variant="ghost"
+                        color="danger"
+                        variant="outline"
                         size="sm"
-                        class="rounded-2 text-danger"
                         (click)="openDeleteModal(order)"
                         title="Xóa đơn"
                       >
@@ -342,20 +332,20 @@
         </table>
       </div>
 
-      <!-- Sticky Pagination Footer -->
+      <!-- Pagination Footer -->
       @if (!loading() && totalElements() > 0) {
-        <div class="sticky-pagination-footer d-flex flex-wrap justify-content-between align-items-center gap-2">
-          <div class="text-body-secondary small">
+        <div class="d-flex flex-wrap justify-content-between align-items-center mt-3 pt-2 gap-2">
+          <div class="text-body-secondary small mb-2 mb-md-0">
             Hiển thị <strong>{{ orders().length }}</strong> trên tổng số <strong>{{ totalElements() }}</strong> đơn hàng
             (Trang {{ page() + 1 }} / {{ totalPages() }})
           </div>
 
           <c-pagination align="end" class="mb-0">
             <c-page-item [disabled]="page() === 0">
-              <a cPageLink (click)="goToPage(0)">&laquo;</a>
+              <a cPageLink (click)="goToPage(0)" aria-label="First">&laquo;</a>
             </c-page-item>
             <c-page-item [disabled]="page() === 0">
-              <a cPageLink (click)="goToPage(page() - 1)">&lsaquo;</a>
+              <a cPageLink (click)="goToPage(page() - 1)" aria-label="Previous">&lsaquo;</a>
             </c-page-item>
 
             @for (p of getPageNumbers(); track p) {
@@ -365,10 +355,10 @@
             }
 
             <c-page-item [disabled]="page() >= totalPages() - 1">
-              <a cPageLink (click)="goToPage(page() + 1)">&rsaquo;</a>
+              <a cPageLink (click)="goToPage(page() + 1)" aria-label="Next">&rsaquo;</a>
             </c-page-item>
             <c-page-item [disabled]="page() >= totalPages() - 1">
-              <a cPageLink (click)="goToPage(totalPages() - 1)">&raquo;</a>
+              <a cPageLink (click)="goToPage(totalPages() - 1)" aria-label="Last">&raquo;</a>
             </c-page-item>
           </c-pagination>
         </div>
@@ -380,8 +370,8 @@
 <!-- ORDER DETAIL RECEIPT MODAL -->
 <c-modal [visible]="detailModalVisible()" (visibleChange)="detailModalVisible.set($event)" size="lg" backdrop="static">
   <c-modal-header class="bg-primary text-white">
-    <h5 cModalTitle class="d-flex align-items-center gap-2">
-      <svg cIcon name="cilNotes"></svg>
+    <h5 cModalTitle class="d-flex align-items-center">
+      <svg cIcon name="cilNotes" class="me-2"></svg>
       Chi Tiết Hóa Đơn Đặt Hàng
     </h5>
     <button (click)="closeDetailModal()" class="btn-close btn-close-white"></button>
@@ -416,7 +406,7 @@
 
       <!-- Items Breakdown -->
       <h6 class="fw-bold mb-2">Danh sách sản phẩm đã đặt:</h6>
-      <div class="table-responsive mb-3 border rounded-3 overflow-hidden">
+      <div class="table-responsive mb-3 border rounded overflow-hidden">
         <table class="table table-sm table-hover mb-0 align-middle">
           <thead class="table-light">
             <tr>
@@ -488,8 +478,8 @@
 <!-- STATUS CHANGE CONFIRMATION MODAL -->
 <c-modal [visible]="statusConfirmModalVisible()" (visibleChange)="statusConfirmModalVisible.set($event)">
   <c-modal-header [class]="targetStatusToChange() === 'CANCELLED' ? 'bg-danger text-white' : 'bg-primary text-white'">
-    <h5 cModalTitle class="d-flex align-items-center gap-2">
-      <svg cIcon name="cilCheck"></svg>
+    <h5 cModalTitle class="d-flex align-items-center">
+      <svg cIcon name="cilCheck" class="me-2"></svg>
       Xác Nhận Cập Nhật Trạng Thái
     </h5>
     <button (click)="statusConfirmModalVisible.set(false)" class="btn-close btn-close-white"></button>
@@ -528,8 +518,8 @@
 <!-- DELETE CONFIRMATION MODAL -->
 <c-modal [visible]="deleteModalVisible()" (visibleChange)="deleteModalVisible.set($event)">
   <c-modal-header class="bg-danger text-white">
-    <h5 cModalTitle class="d-flex align-items-center gap-2">
-      <svg cIcon name="cilTrash"></svg>
+    <h5 cModalTitle class="d-flex align-items-center">
+      <svg cIcon name="cilTrash" class="me-2"></svg>
       Xác Nhận Xóa Đơn Hàng
     </h5>
     <button (click)="deleteModalVisible.set(false)" class="btn-close btn-close-white"></button>

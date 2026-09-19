@@ -25,13 +25,7 @@ public class RabbitMQConfig {
     }
 
     @Bean
-    public Binding activityBinding(
-            Queue activityQueue,
-            DirectExchange activityExchange
-    ) {
-        return BindingBuilder
-                .bind(activityQueue)
-                .to(activityExchange)
-                .with(ACTIVITY_ROUTING_KEY);
+    public Binding activityBinding(Queue activityQueue, DirectExchange activityExchange) {
+        return BindingBuilder.bind(activityQueue).to(activityExchange).with(ACTIVITY_ROUTING_KEY);
     }
 }

@@ -1,6 +1,7 @@
 package com.softdreams.activityhub.service;
 
-import java.util.HashSet;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
@@ -13,11 +14,13 @@ import org.springframework.stereotype.Service;
 import com.softdreams.activityhub.constant.PredefinedRole;
 import com.softdreams.activityhub.dto.request.UserCreationRequest;
 import com.softdreams.activityhub.dto.request.UserUpdateRequest;
+import com.softdreams.activityhub.dto.response.RoleResponse;
 import com.softdreams.activityhub.dto.response.UserResponse;
 import com.softdreams.activityhub.entity.Role;
 import com.softdreams.activityhub.entity.User;
 import com.softdreams.activityhub.exception.AppException;
 import com.softdreams.activityhub.exception.ErrorCode;
+import com.softdreams.activityhub.mapper.RoleMapper;
 import com.softdreams.activityhub.mapper.UserMapper;
 import com.softdreams.activityhub.repository.RoleRepository;
 import com.softdreams.activityhub.repository.UserRepository;
@@ -36,6 +39,7 @@ public class UserService {
     RoleRepository roleRepository;
     UserMapper userMapper;
     PasswordEncoder passwordEncoder;
+    private final RoleMapper roleMapper;
 
     public UserResponse createUser(UserCreationRequest request) {
         User user = userMapper.toUser(request);
@@ -96,8 +100,22 @@ public class UserService {
 
     @PreAuthorize("hasRole('ADMIN')")
     public Page<UserResponse> getUsers(Pageable pageable, String keyword) {
-        log.info("In method get Users");
-        return userRepository.searchUserByKeyword(pageable, keyword).map(userMapper::toUserResponse);
+        Page<User> userPage = userRepository.searchUserByKeyword(pageable, keyword);
+
+        List<String> userIds = userPage.getContent().stream().map(User::getId).toList();
+
+        List<Object[]> roleRows = userIds.isEmpty() ? List.of() : roleRepository.findRolesByUserIds(userIds);
+
+        Map<String, Set<RoleResponse>> rolesByUserIds = roleRows.stream()
+                .collect(Collectors.groupingBy(
+                        row -> (String) row[0],
+                        Collectors.mapping(row -> roleMapper.toRoleResponse((Role) row[1]), Collectors.toSet())));
+        return userPage.map(user -> {
+            UserResponse userResponse = userMapper.toUserResponse(user);
+
+            userResponse.setRoles(rolesByUserIds.getOrDefault(user.getId(), Set.of()));
+            return userResponse;
+        });
     }
 
     @PreAuthorize("hasRole('ADMIN') or @security.isUserOwner(#userId, authentication)")

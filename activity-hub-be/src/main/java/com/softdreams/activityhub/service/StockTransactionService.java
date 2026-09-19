@@ -2,6 +2,8 @@ package com.softdreams.activityhub.service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import jakarta.transaction.Transactional;
 
@@ -22,6 +24,7 @@ import com.softdreams.activityhub.exception.AppException;
 import com.softdreams.activityhub.exception.ErrorCode;
 import com.softdreams.activityhub.mapper.StockTransactionMapper;
 import com.softdreams.activityhub.repository.ProductRepository;
+import com.softdreams.activityhub.repository.StockTransactionLineRepository;
 import com.softdreams.activityhub.repository.StockTransactionRepository;
 import com.softdreams.activityhub.repository.UserRepository;
 
@@ -39,16 +42,13 @@ public class StockTransactionService {
     ProductRepository productRepository;
     UserRepository userRepository;
     StockTransactionMapper stockTransactionMapper;
+    StockTransactionLineRepository stockTransactionLineRepository;
 
-    /** A stock movement not yet posted: how many units of a product move, and in which direction. */
     public record StockLine(Product product, int quantity) {}
 
     @PreAuthorize("hasRole('ADMIN')")
     @Transactional
     public StockTransactionResponse createManual(StockTransactionRequest request) {
-        if (request.getType() != StockTransactionType.IMPORT && request.getType() != StockTransactionType.ADJUSTMENT) {
-            throw new AppException(ErrorCode.INVALID_STOCK_TRANSACTION_TYPE);
-        }
 
         List<PendingLine> pending = request.getLines().stream()
                 .map(line -> {
@@ -56,7 +56,7 @@ public class StockTransactionService {
                             .findByIdForUpdate(line.getProductId())
                             .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_EXISTED));
 
-                    int delta = request.getType() == StockTransactionType.IMPORT
+                    int delta = StockTransactionType.IMPORT.equals(request.getType())
                             ? Math.abs(line.getQuantity())
                             : line.getQuantity();
 
@@ -67,10 +67,6 @@ public class StockTransactionService {
         return apply(request.getType(), request.getNote(), null, pending);
     }
 
-    /**
-     * Deducts stock for a checkout. Called from OrderService inside the same
-     * transaction as the order insert, so a rollback undoes both together.
-     */
     @Transactional
     public StockTransactionResponse postSale(String orderId, List<StockLine> lines) {
         List<PendingLine> pending = lines.stream()
@@ -80,9 +76,6 @@ public class StockTransactionService {
         return apply(StockTransactionType.SALE, "Auto-generated from order checkout", orderId, pending);
     }
 
-    /**
-     * Restores stock for a cancelled order.
-     */
     @Transactional
     public StockTransactionResponse postCancel(String orderId, List<StockLine> lines) {
         List<PendingLine> pending = lines.stream()
@@ -94,7 +87,22 @@ public class StockTransactionService {
 
     @PreAuthorize("hasRole('ADMIN')")
     public Page<StockTransactionResponse> search(StockTransactionType type, String productId, Pageable pageable) {
-        return stockTransactionRepository.search(type, productId, pageable).map(stockTransactionMapper::toResponse);
+        Page<StockTransaction> page = stockTransactionRepository.search(type, productId, pageable);
+
+        List<String> transactionIds =
+                page.getContent().stream().map(StockTransaction::getId).toList();
+
+        List<StockTransactionLine> lines = transactionIds.isEmpty()
+                ? List.of()
+                : stockTransactionLineRepository.findLinesWithProduct(transactionIds);
+
+        Map<String, List<StockTransactionLine>> linesByTransaction = lines.stream()
+                .collect(
+                        Collectors.groupingBy(line -> line.getStockTransaction().getId()));
+        return page.map(transaction -> {
+            transaction.setLines(linesByTransaction.getOrDefault(transaction.getId(), List.of()));
+            return stockTransactionMapper.toResponse(transaction);
+        });
     }
 
     private record PendingLine(Product product, int delta) {}

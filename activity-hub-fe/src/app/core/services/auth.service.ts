@@ -1,11 +1,11 @@
-import {inject, Injectable, signal, Signal} from '@angular/core';
-import {HttpClient} from '@angular/common/http';
-import {environment} from '../../../environments/environment';
-import {Observable, switchMap} from 'rxjs';
-import {ApiResponse} from '../models/api-response.model';
-import {LoginRequest, LoginResponse} from '../models/auth.model';
-import {UserResponse} from '../models/user.model';
-import {map, tap} from 'rxjs/operators';
+import { inject, Injectable, signal, Signal } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { environment } from '../../../environments/environment';
+import { Observable, switchMap } from 'rxjs';
+import { ApiResponse } from '../models/api-response.model';
+import { LoginRequest, LoginResponse } from '../models/auth.model';
+import { UserResponse } from '../models/user.model';
+import { map, tap } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root'
@@ -48,7 +48,7 @@ export class AuthService {
     this.currentUser.set(user);
     try {
       localStorage.setItem(this.USER_KEY, JSON.stringify(user));
-    } catch {}
+    } catch { }
   }
 
   clearUser(): void {
@@ -105,8 +105,8 @@ export class AuthService {
         { withCredentials: true }
       )
       .subscribe({
-        next: () => {},
-        error: () => {},
+        next: () => { },
+        error: () => { },
       });
 
     this.removeToken();

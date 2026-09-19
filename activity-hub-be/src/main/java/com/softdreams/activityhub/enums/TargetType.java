@@ -9,6 +9,7 @@ public enum TargetType {
     USER("USER"),
     ORDER("ORDER"),
     ROLE("ROLE"),
-    ;
+    PRODUCT("PRODUCT"),
+    PRODUCT_REVIEW("PRODUCT_REVIEW");
     private final String label;
 }

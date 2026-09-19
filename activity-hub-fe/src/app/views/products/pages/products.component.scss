@@ -1,35 +1,25 @@
-.products-page {
+.products-management-page {
   .product-thumb-container {
-    width: 48px;
-    height: 48px;
+    width: 44px;
+    height: 44px;
     display: flex;
     align-items: center;
     justify-content: center;
   }
 
   .product-thumb {
-    width: 48px;
-    height: 48px;
+    width: 44px;
+    height: 44px;
     object-fit: cover;
     border: 1px solid var(--cui-border-color, #dee2e6);
   }
 
   .product-thumb-placeholder {
-    width: 48px;
-    height: 48px;
+    width: 44px;
+    height: 44px;
   }
 
   .cursor-pointer {
     cursor: pointer;
-  }
-
-  .product-table th,
-  .stock-table th {
-    font-weight: 600;
-    font-size: 0.85rem;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    padding-top: 0.75rem;
-    padding-bottom: 0.75rem;
   }
 }

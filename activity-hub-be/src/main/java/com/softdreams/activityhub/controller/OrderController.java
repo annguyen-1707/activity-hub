@@ -15,7 +15,6 @@ import com.softdreams.activityhub.dto.request.ApiResponse;
 import com.softdreams.activityhub.dto.request.OrderRequest;
 import com.softdreams.activityhub.dto.response.OrderResponse;
 import com.softdreams.activityhub.enums.EventType;
-import com.softdreams.activityhub.enums.OrderStatus;
 import com.softdreams.activityhub.enums.TargetType;
 import com.softdreams.activityhub.service.OrderService;
 
@@ -96,12 +95,47 @@ public class OrderController {
                 .build();
     }
 
-    @PatchMapping("/{orderId}/status")
+    @PatchMapping("/{orderId}/approve")
     @PreAuthorize("hasRole('ADMIN')")
-    @ActivityLog(eventType = EventType.UPDATED, targetType = TargetType.ORDER, targetId = "#orderId")
-    ApiResponse<OrderResponse> updateStatus(@PathVariable String orderId, @RequestParam OrderStatus status) {
+    @ActivityLog(eventType = EventType.APPROVED, targetType = TargetType.ORDER, targetId = "#orderId")
+    ApiResponse<OrderResponse> approve(@PathVariable String orderId) {
         return ApiResponse.<OrderResponse>builder()
-                .result(orderService.updateStatus(orderId, status))
+                .result(orderService.approve(orderId))
                 .build();
     }
+
+    @PatchMapping("/{orderId}/reject")
+    @PreAuthorize("hasRole('ADMIN')")
+    @ActivityLog(eventType = EventType.REJECTED, targetType = TargetType.ORDER, targetId = "#orderId")
+    ApiResponse<OrderResponse> reject(@PathVariable String orderId) {
+        return ApiResponse.<OrderResponse>builder()
+                .result(orderService.reject(orderId))
+                .build();
+    }
+
+    @PatchMapping("/{orderId}/cancel")
+    @PreAuthorize("hasRole('ADMIN') or @security.isOrderOwner(#orderId, authentication)")
+    @ActivityLog(eventType = EventType.CANCEL, targetType = TargetType.ORDER, targetId = "#orderId")
+    ApiResponse<OrderResponse> cancel(@PathVariable String orderId) {
+        return ApiResponse.<OrderResponse>builder()
+                .result(orderService.cancel(orderId))
+                .build();
+    }
+
+    @PatchMapping("/{orderId}/done")
+    @PreAuthorize("hasRole('ADMIN')")
+    @ActivityLog(eventType = EventType.DONE, targetType = TargetType.ORDER, targetId = "#orderId")
+    ApiResponse<OrderResponse> done(@PathVariable String orderId) {
+        return ApiResponse.<OrderResponse>builder()
+                .result(orderService.done(orderId))
+                .build();
+    }
+
+    //    @PatchMapping("/{orderId}/status")
+    //    @PreAuthorize("hasRole('ADMIN')")
+    //    ApiResponse<OrderResponse> updateStatus(@PathVariable String orderId, @RequestParam OrderStatus status) {
+    //        return ApiResponse.<OrderResponse>builder()
+    //                .result(orderService.updateStatus(orderId, status))
+    //                .build();
+    //    }
 }

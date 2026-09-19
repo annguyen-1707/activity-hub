@@ -15,14 +15,21 @@ public interface StockTransactionRepository extends JpaRepository<StockTransacti
 
     @Query(
             """
-		SELECT st FROM StockTransaction st
-		WHERE (:type IS NULL OR st.type = :type)
-		AND (:productId IS NULL OR :productId = ''
-			OR EXISTS (
-				SELECT 1 FROM StockTransactionLine l
-				WHERE l.stockTransaction = st AND l.product.id = :productId
-			))
-		""")
+				SELECT st
+				FROM StockTransaction st
+				JOIN FETCH st.createdBy
+				WHERE (:type IS NULL OR st.type = :type)
+				AND (
+					:productId IS NULL
+					OR :productId = ''
+					OR EXISTS (
+						SELECT 1
+						FROM StockTransactionLine l
+						WHERE l.stockTransaction = st
+						AND l.product.id = :productId
+					)
+				)
+			""")
     Page<StockTransaction> search(
             @Param("type") StockTransactionType type, @Param("productId") String productId, Pageable pageable);
 }

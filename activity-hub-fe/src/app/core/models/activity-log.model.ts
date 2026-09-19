@@ -1,4 +1,13 @@
-export type ActivityEventType = 'CREATED' | 'UPDATED' | 'DELETED' | 'APPROVED' | 'REJECTED' | 'LOGIN' | 'LOGOUT';
+export type ActivityEventType =
+  | 'CREATED'
+  | 'UPDATED'
+  | 'DELETED'
+  | 'APPROVED'
+  | 'REJECTED'
+  | 'CANCEL'
+  | 'DONE'
+  | 'LOGIN'
+  | 'LOGOUT';
 
 export type ActivityTargetType = 'USER' | 'ORDER' | 'ROLE';
 

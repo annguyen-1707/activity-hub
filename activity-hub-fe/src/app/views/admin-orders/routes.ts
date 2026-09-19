@@ -6,7 +6,7 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./pages/admin-orders.component').then((m) => m.AdminOrdersComponent),
     data: {
-      title: 'Quản lý đơn hàng (Admin)',
+      title: 'Quản lý đơn hàng',
     },
   },
 ];

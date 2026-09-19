@@ -164,11 +164,13 @@ export class ActivityLogsComponent implements OnInit {
         return 'secondary';
       case 'CREATED':
       case 'APPROVED':
+      case 'DONE':
         return 'success';
       case 'UPDATED':
         return 'warning';
       case 'DELETED':
       case 'REJECTED':
+      case 'CANCEL':
         return 'danger';
       default:
         return 'primary';

@@ -1,9 +1,9 @@
 package com.softdreams.activityhub.anotation;
 
+import java.lang.annotation.*;
+
 import com.softdreams.activityhub.enums.EventType;
 import com.softdreams.activityhub.enums.TargetType;
-
-import java.lang.annotation.*;
 
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
@@ -21,5 +21,4 @@ public @interface ActivityLog {
      * {@code #jwtSubject(token)} helper to pull a username out of a JWT.
      */
     String targetId() default "#result.id";
-
 }

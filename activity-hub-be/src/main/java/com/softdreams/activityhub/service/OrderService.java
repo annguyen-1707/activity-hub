@@ -148,26 +148,79 @@ public class OrderService {
 
     @PreAuthorize("hasRole('ADMIN')")
     @Transactional
-    public OrderResponse updateStatus(String orderId, OrderStatus newStatus) {
+    public OrderResponse approve(String orderId) {
+        Order order = orderRepository
+                .findByIdWithLines(orderId)
+                .orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_EXISTED));
+
+        order.setStatus(OrderStatus.CONFIRMED);
+        return orderMapper.toOrderResponse(orderRepository.save(order));
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @Transactional
+    public OrderResponse done(String orderId) {
+        Order order = orderRepository
+                .findByIdWithLines(orderId)
+                .orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_EXISTED));
+
+        order.setStatus(OrderStatus.COMPLETED);
+        return orderMapper.toOrderResponse(orderRepository.save(order));
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @Transactional
+    public OrderResponse reject(String orderId) {
         Order order = orderRepository
                 .findByIdWithLines(orderId)
                 .orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_EXISTED));
 
         OrderStatus oldStatus = order.getStatus();
-        if (oldStatus == newStatus) {
-            return orderMapper.toOrderResponse(order);
-        }
-
-        // If transitioning to CANCELLED, restore stock automatically
-        if (newStatus == OrderStatus.CANCELLED && oldStatus != OrderStatus.CANCELLED) {
+        if (oldStatus != OrderStatus.CANCELLED) {
             List<StockTransactionService.StockLine> stockLines = order.getOrderLines().stream()
                     .map(line -> new StockTransactionService.StockLine(line.getProduct(), line.getQuantity()))
                     .toList();
             stockTransactionService.postCancel(order.getId(), stockLines);
         }
 
-        order.setStatus(newStatus);
+        order.setStatus(OrderStatus.CANCELLED);
         return orderMapper.toOrderResponse(orderRepository.save(order));
+    }
+
+    @PreAuthorize("hasRole('ADMIN') or @security.isOrderOwner(#orderId, authentication)")
+    @Transactional
+    public OrderResponse cancel(String orderId) {
+        Order order = orderRepository
+                .findByIdWithLines(orderId)
+                .orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_EXISTED));
+
+        OrderStatus oldStatus = order.getStatus();
+        if (oldStatus != OrderStatus.CANCELLED) {
+            List<StockTransactionService.StockLine> stockLines = order.getOrderLines().stream()
+                    .map(line -> new StockTransactionService.StockLine(line.getProduct(), line.getQuantity()))
+                    .toList();
+            stockTransactionService.postCancel(order.getId(), stockLines);
+        }
+
+        order.setStatus(OrderStatus.CANCELLED);
+        return orderMapper.toOrderResponse(orderRepository.save(order));
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @Transactional
+    public OrderResponse updateStatus(String orderId, OrderStatus newStatus) {
+        return switch (newStatus) {
+            case CONFIRMED -> approve(orderId);
+            case COMPLETED -> done(orderId);
+            case CANCELLED -> cancel(orderId);
+            default -> {
+                Order order = orderRepository
+                        .findByIdWithLines(orderId)
+                        .orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_EXISTED));
+                order.setStatus(newStatus);
+                yield orderMapper.toOrderResponse(orderRepository.save(order));
+            }
+        };
     }
 
     @PreAuthorize("hasRole('ADMIN') or @security.isOrderOwner(#orderId, authentication)")

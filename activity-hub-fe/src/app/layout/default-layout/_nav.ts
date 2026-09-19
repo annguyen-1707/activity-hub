@@ -1,4 +1,4 @@
-import {INavData} from '@coreui/angular';
+import { INavData } from '@coreui/angular';
 
 export interface AppNavItem extends INavData {
   roles?: string[];
@@ -7,26 +7,30 @@ export interface AppNavItem extends INavData {
 export const navItems: AppNavItem[] = [
   {
     title: true,
-    name: 'Bán Hàng & Đơn Hàng'
+    name: 'Bán Hàng & Đơn Hàng',
+    roles: ["USER"]
   },
   {
     name: 'Cửa hàng',
     url: '/orders/create',
-    iconComponent: {name: 'cil-basket'},
+    iconComponent: { name: 'cil-basket' },
     badge: {
       color: 'success',
       text: 'POS'
-    }
+    },
+    roles: ["USER"]
   },
   {
     name: 'Giỏ hàng & Thanh toán',
     url: '/orders/checkout',
-    iconComponent: {name: 'cil-cart'}
+    iconComponent: { name: 'cil-cart' },
+    roles: ["USER"]
   },
   {
     name: 'Lịch sử đơn hàng',
     url: '/orders/list',
-    iconComponent: {name: 'cil-notes'}
+    iconComponent: { name: 'cil-notes' },
+    roles: ["USER"]
   },
   {
     title: true,
@@ -36,7 +40,7 @@ export const navItems: AppNavItem[] = [
   {
     name: 'Dashboard',
     url: '/dashboard',
-    iconComponent: {name: 'cil-speedometer'},
+    iconComponent: { name: 'cil-speedometer' },
     badge: {
       color: 'info',
       text: 'HOT'
@@ -46,31 +50,31 @@ export const navItems: AppNavItem[] = [
   {
     name: 'Quản lý người dùng',
     url: '/users',
-    iconComponent: {name: 'cil-user'},
+    iconComponent: { name: 'cil-user' },
     roles: ["ADMIN"]
   },
   {
     name: 'Quản lý vai trò',
     url: '/roles',
-    iconComponent: {name: 'cil-lock-locked'},
+    iconComponent: { name: 'cil-lock-locked' },
     roles: ["ADMIN"]
   },
   {
     name: 'Nhật ký hoạt động',
     url: '/activity-logs',
-    iconComponent: {name: 'cil-description'},
+    iconComponent: { name: 'cil-description' },
     roles: ["ADMIN"]
   },
   {
     name: 'Quản lý sản phẩm & Kho',
     url: '/products',
-    iconComponent: {name: 'cil-tags'},
+    iconComponent: { name: 'cil-tags' },
     roles: ["ADMIN"]
   },
   {
-    name: 'Quản lý đơn hàng (Admin)',
+    name: 'Quản lý đơn hàng',
     url: '/admin-orders',
-    iconComponent: {name: 'cil-cart'},
+    iconComponent: { name: 'cil-cart' },
     roles: ["ADMIN"]
   }
 ];

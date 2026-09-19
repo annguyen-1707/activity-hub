@@ -15,10 +15,7 @@ public class RabbitMQMessageConfig {
     }
 
     @Bean
-    public RabbitTemplate rabbitTemplate(
-            ConnectionFactory connectionFactory,
-            Jackson2JsonMessageConverter converter
-    ) {
+    public RabbitTemplate rabbitTemplate(ConnectionFactory connectionFactory, Jackson2JsonMessageConverter converter) {
         RabbitTemplate rabbitTemplate = new RabbitTemplate(connectionFactory);
         rabbitTemplate.setMessageConverter(converter);
         return rabbitTemplate;

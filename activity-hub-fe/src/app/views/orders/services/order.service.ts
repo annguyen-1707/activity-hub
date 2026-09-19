@@ -119,7 +119,40 @@ export class OrderService {
       .pipe(map((res) => res.result));
   }
 
+  approveOrder(orderId: string): Observable<OrderResponse> {
+    return this.http
+      .patch<ApiResponse<OrderResponse>>(`${this.baseUrl}/orders/${orderId}/approve`, null)
+      .pipe(map((res) => res.result));
+  }
+
+  doneOrder(orderId: string): Observable<OrderResponse> {
+    return this.http
+      .patch<ApiResponse<OrderResponse>>(`${this.baseUrl}/orders/${orderId}/done`, null)
+      .pipe(map((res) => res.result));
+  }
+
+  rejectOrder(orderId: string): Observable<OrderResponse> {
+    return this.http
+      .patch<ApiResponse<OrderResponse>>(`${this.baseUrl}/orders/${orderId}/reject`, null)
+      .pipe(map((res) => res.result));
+  }
+
+  cancelOrder(orderId: string): Observable<OrderResponse> {
+    return this.http
+      .patch<ApiResponse<OrderResponse>>(`${this.baseUrl}/orders/${orderId}/cancel`, null)
+      .pipe(map((res) => res.result));
+  }
+
   updateOrderStatus(orderId: string, status: OrderStatus): Observable<OrderResponse> {
+    if (status === 'CONFIRMED') {
+      return this.approveOrder(orderId);
+    }
+    if (status === 'COMPLETED') {
+      return this.doneOrder(orderId);
+    }
+    if (status === 'CANCELLED') {
+      return this.rejectOrder(orderId);
+    }
     const params = new HttpParams().set('status', status);
     return this.http
       .patch<ApiResponse<OrderResponse>>(`${this.baseUrl}/orders/${orderId}/status`, null, {

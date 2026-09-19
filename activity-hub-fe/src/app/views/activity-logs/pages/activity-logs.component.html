@@ -7,7 +7,8 @@
         Nhật Ký Hoạt Động
       </h3>
       <p class="text-body-secondary mb-0 small">
-        Theo dõi và kiểm toán toàn bộ thao tác của người dùng trong hệ thống (Đăng nhập, Tạo đơn, Sửa thông tin, Thêm vai trò).
+        Theo dõi và kiểm toán toàn bộ thao tác của người dùng trong hệ thống (Đăng nhập, Tạo đơn, Sửa thông tin, Thêm
+        vai trò).
       </p>
     </div>
   </div>
@@ -22,43 +23,32 @@
             <span cInputGroupText>
               <svg cIcon name="cilMagnifyingGlass"></svg>
             </span>
-            <input
-              cFormControl
-              placeholder="Tìm theo Username, Event ID, Target ID..."
-              [ngModel]="keyword()"
-              (ngModelChange)="onKeywordChange($event)"
-              (keyup.enter)="onSearch()"
-            />
+            <input cFormControl placeholder="Tìm theo Username, Event ID, Target ID..." [ngModel]="keyword()"
+              (ngModelChange)="onKeywordChange($event)" (keyup.enter)="onSearch()" />
           </c-input-group>
         </c-col>
 
         <!-- Filter Event Type -->
         <c-col lg="3" md="3" xs="6">
-          <select
-            cSelect
-            class="form-select"
-            [ngModel]="selectedEventType()"
-            (ngModelChange)="selectedEventType.set($event); onFilterChange()"
-          >
+          <select cSelect class="form-select" [ngModel]="selectedEventType()"
+            (ngModelChange)="selectedEventType.set($event); onFilterChange()">
             <option value="ALL">Tất cả loại sự kiện</option>
             <option value="LOGIN">Đăng nhập</option>
             <option value="LOGOUT">Đăng xuất</option>
             <option value="CREATED">Tạo mới</option>
             <option value="UPDATED">Cập nhật</option>
             <option value="DELETED">Xóa</option>
-            <option value="APPROVED">Phê duyệt</option>
-            <option value="REJECTED">Từ chối</option>
+            <option value="APPROVED">Phê duyệt (APPROVED)</option>
+            <option value="REJECTED">Từ chối (REJECTED)</option>
+            <option value="CANCEL">Hủy bỏ (CANCEL)</option>
+            <option value="DONE">Hoàn thành (DONE)</option>
           </select>
         </c-col>
 
         <!-- Filter Target Type -->
         <c-col lg="3" md="2" xs="6">
-          <select
-            cSelect
-            class="form-select"
-            [ngModel]="selectedTargetType()"
-            (ngModelChange)="selectedTargetType.set($event); onFilterChange()"
-          >
+          <select cSelect class="form-select" [ngModel]="selectedTargetType()"
+            (ngModelChange)="selectedTargetType.set($event); onFilterChange()">
             <option value="ALL">Tất cả đối tượng</option>
             <option value="USER">Người dùng</option>
             <option value="ORDER">Đơn hàng</option>
@@ -69,12 +59,7 @@
         <!-- Page Size Selector -->
         <c-col lg="2" md="2" xs="12" class="d-flex justify-content-md-end align-items-center gap-1">
           <span class="text-body-secondary small text-nowrap d-none d-lg-inline">Hiển thị:</span>
-          <select
-            cSelect
-            class="form-select w-auto"
-            [ngModel]="pageSize()"
-            (ngModelChange)="onPageSizeChange($event)"
-          >
+          <select cSelect class="form-select w-auto" [ngModel]="pageSize()" (ngModelChange)="onPageSizeChange($event)">
             <option [value]="5">5 dòng</option>
             <option [value]="10">10 dòng</option>
             <option [value]="20">20 dòng</option>
@@ -91,7 +76,7 @@
           <thead class="table-light">
             <tr>
               <th scope="col" class="text-center" style="width: 50px;">#</th>
-              <th scope="col" style="width: 170px;">Mã sự kiện</th>
+              <!-- <th scope="col" style="width: 170px;">Mã sự kiện</th> -->
               <th scope="col" style="width: 170px;">Người thực hiện</th>
               <th scope="col" style="width: 150px;">Loại hành động</th>
               <th scope="col" style="width: 160px;">Đối tượng</th>
@@ -123,11 +108,11 @@
               </td>
 
               <!-- Event ID -->
-              <td>
+              <!-- <td>
                 <span class="badge bg-secondary-subtle text-secondary-emphasis font-monospace px-2 py-1">
                   {{ log.eventId }}
                 </span>
-              </td>
+              </td> -->
 
               <!-- User -->
               <td>
@@ -169,14 +154,8 @@
 
               <!-- Detail Action -->
               <td class="text-center">
-                <button
-                  cButton
-                  color="info"
-                  variant="outline"
-                  size="sm"
-                  (click)="openDetailModal(log)"
-                  title="Xem chi tiết"
-                >
+                <button cButton color="info" variant="outline" size="sm" (click)="openDetailModal(log)"
+                  title="Xem chi tiết">
                   <svg cIcon name="cilMagnifyingGlass"></svg>
                 </button>
               </td>
@@ -228,7 +207,8 @@
 </div>
 
 <!-- LOG DETAIL MODAL -->
-<c-modal [visible]="detailModalVisible()" (visibleChange)="detailModalVisible.set($event)" size="lg" backdrop="static" id="logDetailModal">
+<c-modal [visible]="detailModalVisible()" (visibleChange)="detailModalVisible.set($event)" size="lg" backdrop="static"
+  id="logDetailModal">
   <c-modal-header class="bg-primary text-white">
     <h5 cModalTitle class="d-flex align-items-center">
       <svg cIcon name="cilListNumbered" class="me-2"></svg>
@@ -243,7 +223,8 @@
         <div class="p-3 bg-body-tertiary rounded border">
           <div class="text-body-secondary small mb-1">Thông tin sự kiện</div>
           <div>Mã sự kiện: <strong class="font-monospace text-primary">{{ log.eventId }}</strong></div>
-          <div>Hành động: <c-badge class="ms-1" [color]="getEventBadgeColor(log.eventType)">{{ log.eventTypeLabel }}</c-badge></div>
+          <div>Hành động: <c-badge class="ms-1" [color]="getEventBadgeColor(log.eventType)">{{ log.eventTypeLabel
+              }}</c-badge></div>
           <div>Thời gian: <strong>{{ formatDate(log.createdAt) }}</strong></div>
         </div>
       </c-col>
@@ -252,7 +233,8 @@
         <div class="p-3 bg-body-tertiary rounded border">
           <div class="text-body-secondary small mb-1">Người thực hiện & Đối tượng</div>
           <div>Tài khoản: <strong>&#64;{{ log.username || '—' }}</strong></div>
-          <div>Đối tượng: <c-badge class="ms-1" [color]="getTargetBadgeColor(log.targetType)">{{ log.targetTypeLabel }}</c-badge> #{{ log.targetId || 'N/A' }}</div>
+          <div>Đối tượng: <c-badge class="ms-1" [color]="getTargetBadgeColor(log.targetType)">{{ log.targetTypeLabel
+              }}</c-badge> #{{ log.targetId || 'N/A' }}</div>
           <div>Địa chỉ IP: <strong>{{ log.ipAddress || '—' }}</strong></div>
         </div>
       </c-col>

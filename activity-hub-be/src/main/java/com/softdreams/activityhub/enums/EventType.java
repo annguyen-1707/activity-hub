@@ -11,8 +11,10 @@ public enum EventType {
     DELETED("DELETED"),
     APPROVED("APPROVED"),
     REJECTED("REJECTED"),
+    CANCEL("CANCEL"),
     LOGIN("LOGIN"),
     LOGOUT("LOGOUT"),
+    DONE("DONE"),
     ;
 
     private final String label;
