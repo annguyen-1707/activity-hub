@@ -5,7 +5,6 @@ import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 
 import com.softdreams.activityhub.dto.request.ProductRequest;
-import com.softdreams.activityhub.dto.request.ProductUpdateRequest;
 import com.softdreams.activityhub.dto.response.ProductResponse;
 import com.softdreams.activityhub.entity.Product;
 
@@ -22,7 +21,6 @@ public interface ProductMapper {
     @Mapping(target = "quantity", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
-    void updateProduct(@MappingTarget Product product, ProductUpdateRequest request);
     void updateProduct(@MappingTarget Product product, ProductRequest request);
 
     @Mapping(target = "categoryLabel", source = "category.label")

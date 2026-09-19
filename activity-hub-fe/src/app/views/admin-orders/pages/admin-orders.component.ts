@@ -26,7 +26,7 @@ import {
   TableDirective,
 } from '@coreui/angular';
 import { IconDirective } from '@coreui/icons-angular';
-import { OrderResponse, OrderStatus, PaymentMethod } from '../../../core/models/order.model';
+import { OrderResponse, OrderStatistics, OrderStatus, PaymentMethod } from '../../../core/models/order.model';
 import { OrderService } from '../../orders/services/order.service';
 
 @Component({
@@ -66,6 +66,7 @@ export class AdminOrdersComponent implements OnInit {
   private readonly orderService = inject(OrderService);
 
   orders = signal<OrderResponse[]>([]);
+  statistics = signal<OrderStatistics | null>(null);
   loading = signal<boolean>(false);
   updatingStatus = signal<boolean>(false);
   deleting = signal<boolean>(false);
@@ -92,21 +93,23 @@ export class AdminOrdersComponent implements OnInit {
   alertMessage = signal<string>('');
   alertType = signal<'success' | 'danger'>('success');
 
-  // KPI Metrics computed from current orders
-  totalOrdersCount = computed(() => this.totalElements());
-  completedCount = computed(() => this.orders().filter((o) => o.status === 'COMPLETED').length);
-  pendingCount = computed(
-    () => this.orders().filter((o) => o.status === 'CREATED' || o.status === 'CONFIRMED').length
-  );
-  cancelledCount = computed(() => this.orders().filter((o) => o.status === 'CANCELLED').length);
-  totalRevenue = computed(() =>
-    this.orders()
-      .filter((o) => o.status !== 'CANCELLED')
-      .reduce((sum, o) => sum + (Number(o.totalAmount) || 0), 0)
-  );
+  // KPI Metrics computed from backend statistics (fallback to current elements)
+  totalOrdersCount = computed(() => this.statistics()?.totalOrders ?? this.totalElements());
+  completedCount = computed(() => this.statistics()?.completedCount ?? 0);
+  pendingCount = computed(() => this.statistics()?.pendingCount ?? 0);
+  cancelledCount = computed(() => this.statistics()?.cancelledCount ?? 0);
+  totalRevenue = computed(() => this.statistics()?.totalRevenue ?? 0);
 
   ngOnInit(): void {
     this.loadOrders();
+    this.loadStatistics();
+  }
+
+  loadStatistics(): void {
+    this.orderService.getAdminStatistics().subscribe({
+      next: (stats) => this.statistics.set(stats),
+      error: () => {},
+    });
   }
 
   loadOrders(): void {
@@ -247,6 +250,7 @@ export class AdminOrdersComponent implements OnInit {
         this.detailModalVisible.set(false);
         this.showAlert(`Đã xóa đơn hàng ${order.id.substring(0, 8)}...`, 'success');
         this.loadOrders();
+        this.loadStatistics();
       },
       error: (err) => {
         this.deleting.set(false);
@@ -276,6 +280,7 @@ export class AdminOrdersComponent implements OnInit {
         }
         this.showAlert(`Đã chuyển trạng thái đơn sang "${this.getStatusLabel(newStatus)}"`, 'success');
         this.loadOrders();
+        this.loadStatistics();
       },
       error: (err) => {
         this.updatingStatus.set(false);

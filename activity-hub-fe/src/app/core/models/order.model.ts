@@ -54,3 +54,14 @@ export interface OrderResponse {
   orderLines: OrderLineResponse[];
 }
 
+export interface OrderStatistics {
+  totalOrders: number;
+  totalRevenue: number;
+  pendingCount: number;
+  completedCount: number;
+  cancelledCount: number;
+  createdCount: number;
+  confirmedCount: number;
+}
+
+

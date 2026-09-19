@@ -7,8 +7,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import com.softdreams.activityhub.dto.projection.OrderLineProjection;
-import com.softdreams.activityhub.dto.response.OrderLineResponse;
 import jakarta.transaction.Transactional;
 
 import org.springframework.data.domain.Page;
@@ -17,8 +15,12 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import com.softdreams.activityhub.dto.projection.OrderLineProjection;
+import com.softdreams.activityhub.dto.projection.OrderStatisticsProjection;
 import com.softdreams.activityhub.dto.request.OrderRequest;
+import com.softdreams.activityhub.dto.response.OrderLineResponse;
 import com.softdreams.activityhub.dto.response.OrderResponse;
+import com.softdreams.activityhub.dto.response.OrderStatisticsResponse;
 import com.softdreams.activityhub.entity.Order;
 import com.softdreams.activityhub.entity.OrderLine;
 import com.softdreams.activityhub.entity.Product;
@@ -132,8 +134,8 @@ public class OrderService {
             LocalDateTime toDate,
             Pageable pageable) {
         User user = getMyUser();
-        Page<Order> orderPages = orderRepository
-                .searchMyOrders(keyword, status, paymentMethod, fromDate, toDate, user.getId(), pageable);
+        Page<Order> orderPages = orderRepository.searchMyOrders(
+                keyword, status, paymentMethod, fromDate, toDate, user.getId(), pageable);
         return mapOrdersWithOrderLines(orderPages);
     }
 
@@ -145,23 +147,50 @@ public class OrderService {
             LocalDateTime fromDate,
             LocalDateTime toDate,
             Pageable pageable) {
-        Page<Order> orderPages = orderRepository.searchAllOrders(keyword, status, paymentMethod, fromDate, toDate, pageable);
+        Page<Order> orderPages =
+                orderRepository.searchAllOrders(keyword, status, paymentMethod, fromDate, toDate, pageable);
         return mapOrdersWithOrderLines(orderPages);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
+    public OrderStatisticsResponse getAdminStatistics() {
+        OrderStatisticsProjection proj = orderRepository.getAdminStatistics();
+        return toStatisticsResponse(proj);
+    }
+
+    private OrderStatisticsResponse toStatisticsResponse(OrderStatisticsProjection proj) {
+        if (proj == null) {
+            return OrderStatisticsResponse.builder()
+                    .totalOrders(0)
+                    .totalRevenue(BigDecimal.ZERO)
+                    .pendingCount(0)
+                    .completedCount(0)
+                    .cancelledCount(0)
+                    .createdCount(0)
+                    .confirmedCount(0)
+                    .build();
+        }
+        return OrderStatisticsResponse.builder()
+                .totalOrders(proj.getTotalOrders() != null ? proj.getTotalOrders() : 0)
+                .totalRevenue(proj.getTotalRevenue() != null ? proj.getTotalRevenue() : BigDecimal.ZERO)
+                .pendingCount(proj.getPendingCount() != null ? proj.getPendingCount() : 0)
+                .completedCount(proj.getCompletedCount() != null ? proj.getCompletedCount() : 0)
+                .cancelledCount(proj.getCancelledCount() != null ? proj.getCancelledCount() : 0)
+                .createdCount(proj.getCreatedCount() != null ? proj.getCreatedCount() : 0)
+                .confirmedCount(proj.getConfirmedCount() != null ? proj.getConfirmedCount() : 0)
+                .build();
+    }
+
     private Page<OrderResponse> mapOrdersWithOrderLines(Page<Order> orderPage) {
-        List<String> orderIds = orderPage.getContent()
-                .stream()
-                .map(Order::getId)
-                .toList();
+        List<String> orderIds =
+                orderPage.getContent().stream().map(Order::getId).toList();
 
         if (orderIds.isEmpty()) {
             return orderPage.map(orderMapper::toOrderResponse);
         }
 
         Map<String, List<OrderLineResponse>> linesByOrderId =
-                orderLineRepository.getOrderLinesByOrderIds(orderIds)
-                        .stream()
+                orderLineRepository.getOrderLinesByOrderIds(orderIds).stream()
                         .collect(Collectors.groupingBy(
                                 OrderLineProjection::getOrderId,
                                 Collectors.mapping(
@@ -171,16 +200,11 @@ public class OrderService {
                                                 p.getProductName(),
                                                 p.getQuantity(),
                                                 p.getUnitPrice(),
-                                                p.getSubtotal()
-                                        ),
-                                        Collectors.toList()
-                                )
-                        ));
+                                                p.getSubtotal()),
+                                        Collectors.toList())));
         return orderPage.map(order -> {
             OrderResponse response = orderMapper.toOrderResponse(order);
-            response.setOrderLines(
-                    linesByOrderId.getOrDefault(order.getId(), List.of())
-            );
+            response.setOrderLines(linesByOrderId.getOrDefault(order.getId(), List.of()));
             return response;
         });
     }

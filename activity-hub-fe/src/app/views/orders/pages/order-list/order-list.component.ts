@@ -82,7 +82,7 @@ export class OrderListComponent implements OnInit {
   copiedId = signal<string>('');
 
   // Computed KPI Metrics
-  totalOrdersCount = computed(() => this.orders().length);
+  totalOrdersCount = computed(() => this.totalElements());
 
   completedOrdersCount = computed(() => {
     return this.orders().filter((o) => o.status === 'COMPLETED').length;
@@ -97,17 +97,7 @@ export class OrderListComponent implements OnInit {
   });
 
   filteredOrders = computed(() => {
-    let list = this.orders();
-    const st = this.statusFilter();
-    const pm = this.paymentFilter();
-
-    if (st !== 'ALL') {
-      list = list.filter((o) => o.status === st);
-    }
-    if (pm !== 'ALL') {
-      list = list.filter((o) => o.paymentMethod === pm);
-    }
-    return list;
+    return this.orders();
   });
 
   ngOnInit(): void {
@@ -117,21 +107,41 @@ export class OrderListComponent implements OnInit {
   loadOrders(): void {
     this.loading.set(true);
 
-    this.orderService.getMyOrders(this.page(), this.pageSize(), this.keyword()).subscribe({
-      next: (res) => {
-        this.loading.set(false);
-        if (res?.content) {
-          this.orders.set(res.content);
-          this.totalElements.set(res.totalElements || res.content.length);
-          this.totalPages.set(res.totalPages || 1);
-        } else {
+    this.orderService
+      .getMyOrders(
+        this.page(),
+        this.pageSize(),
+        this.keyword(),
+        this.statusFilter(),
+        this.paymentFilter()
+      )
+      .subscribe({
+        next: (res) => {
+          this.loading.set(false);
+          if (res?.content) {
+            this.orders.set(res.content);
+            this.totalElements.set(res.totalElements || res.content.length);
+            this.totalPages.set(res.totalPages || 1);
+          } else {
+            this.fallbackLoadAllOrders();
+          }
+        },
+        error: () => {
           this.fallbackLoadAllOrders();
-        }
-      },
-      error: () => {
-        this.fallbackLoadAllOrders();
-      },
-    });
+        },
+      });
+  }
+
+  onStatusChange(val: string): void {
+    this.statusFilter.set(val);
+    this.page.set(0);
+    this.loadOrders();
+  }
+
+  onPaymentChange(val: string): void {
+    this.paymentFilter.set(val);
+    this.page.set(0);
+    this.loadOrders();
   }
 
   private fallbackLoadAllOrders(): void {

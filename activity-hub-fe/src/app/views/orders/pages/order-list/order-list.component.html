@@ -27,7 +27,7 @@
           <div class="d-flex flex-wrap gap-2 justify-content-md-end align-items-center">
             <!-- Status Filter -->
             <select cSelect size="sm" class="form-select-sm w-auto rounded-3" [ngModel]="statusFilter()"
-              (ngModelChange)="statusFilter.set($event)">
+              (ngModelChange)="onStatusChange($event)">
               <option value="ALL">Tất cả trạng thái</option>
               <option value="CREATED">Mới tạo</option>
               <option value="CONFIRMED">Đang chuẩn bị</option>
@@ -37,7 +37,7 @@
 
             <!-- Payment Filter -->
             <select cSelect size="sm" class="form-select-sm w-auto rounded-3" [ngModel]="paymentFilter()"
-              (ngModelChange)="paymentFilter.set($event)">
+              (ngModelChange)="onPaymentChange($event)">
               <option value="ALL">Tất cả thanh toán</option>
               <option value="BANK">Chuyển khoản</option>
               <option value="CASH">Tiền mặt (COD)</option>
