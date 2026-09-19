@@ -51,6 +51,6 @@ export interface OrderResponse {
   paymentMethod: PaymentMethod;
   shippingAddress: string;
   note?: string;
-  items?: OrderLineResponse[];
+  orderLines: OrderLineResponse[];
 }
 

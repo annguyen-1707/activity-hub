@@ -30,6 +30,7 @@ public class Order {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
+    @BatchSize(size = 50)
     private User user;
 
     @Column(name = "total_amount", nullable = false, precision = 18, scale = 2)

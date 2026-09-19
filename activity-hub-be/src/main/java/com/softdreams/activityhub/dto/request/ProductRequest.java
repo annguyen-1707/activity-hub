@@ -30,6 +30,9 @@ public class ProductRequest {
 
     double rate;
 
+    @PositiveOrZero
+    int quantity;
+
     String description;
 
     String image;

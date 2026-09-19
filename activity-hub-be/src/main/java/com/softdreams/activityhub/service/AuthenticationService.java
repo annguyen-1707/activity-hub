@@ -113,7 +113,6 @@ public class AuthenticationService {
             invalidatedTokenRepository.save(invalidatedToken);
         } catch (Exception exception) {
             log.error(String.valueOf(exception));
-            log.info("Token already expired or invalid when logging out");
         }
     }
 

@@ -53,3 +53,4 @@ export class StockTransactionService {
       .pipe(map((res) => res.result));
   }
 }
+

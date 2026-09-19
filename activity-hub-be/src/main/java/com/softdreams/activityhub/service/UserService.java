@@ -64,8 +64,13 @@ public class UserService {
         String name = context.getAuthentication().getName();
 
         User user = userRepository.findByUsername(name).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+        UserResponse userResponse = userMapper.toUserResponse(user);
 
-        return userMapper.toUserResponse(user);
+        userResponse.setRoles(
+                roleRepository.findRolesByUserIds(user.getId()).stream().map(roleMapper::toRoleResponse).collect(Collectors.toSet())
+        );
+
+        return userResponse;
     }
 
     @PreAuthorize("hasRole('ADMIN') or @security.isUserOwner(#userId, authentication)")

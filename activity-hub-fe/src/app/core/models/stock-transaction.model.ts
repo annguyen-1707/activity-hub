@@ -42,3 +42,4 @@ export interface StockTransactionRequest {
   note?: string;
   lines: StockTransactionLineRequest[];
 }
+

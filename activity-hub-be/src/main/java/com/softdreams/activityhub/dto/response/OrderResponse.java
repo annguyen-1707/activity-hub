@@ -26,5 +26,5 @@ public class OrderResponse {
     String shippingAddress;
     String note;
 
-    List<OrderLineResponse> items;
+    List<OrderLineResponse> orderLines;
 }

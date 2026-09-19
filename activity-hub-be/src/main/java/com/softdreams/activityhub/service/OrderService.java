@@ -4,7 +4,11 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
+import com.softdreams.activityhub.dto.projection.OrderLineProjection;
+import com.softdreams.activityhub.dto.response.OrderLineResponse;
 import jakarta.transaction.Transactional;
 
 import org.springframework.data.domain.Page;
@@ -128,9 +132,9 @@ public class OrderService {
             LocalDateTime toDate,
             Pageable pageable) {
         User user = getMyUser();
-        return orderRepository
-                .searchMyOrders(keyword, status, paymentMethod, fromDate, toDate, user.getId(), pageable)
-                .map(orderMapper::toOrderResponse);
+        Page<Order> orderPages = orderRepository
+                .searchMyOrders(keyword, status, paymentMethod, fromDate, toDate, user.getId(), pageable);
+        return mapOrdersWithOrderLines(orderPages);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -141,9 +145,44 @@ public class OrderService {
             LocalDateTime fromDate,
             LocalDateTime toDate,
             Pageable pageable) {
-        return orderRepository
-                .searchAllOrders(keyword, status, paymentMethod, fromDate, toDate, pageable)
-                .map(orderMapper::toOrderResponse);
+        Page<Order> orderPages = orderRepository.searchAllOrders(keyword, status, paymentMethod, fromDate, toDate, pageable);
+        return mapOrdersWithOrderLines(orderPages);
+    }
+
+    private Page<OrderResponse> mapOrdersWithOrderLines(Page<Order> orderPage) {
+        List<String> orderIds = orderPage.getContent()
+                .stream()
+                .map(Order::getId)
+                .toList();
+
+        if (orderIds.isEmpty()) {
+            return orderPage.map(orderMapper::toOrderResponse);
+        }
+
+        Map<String, List<OrderLineResponse>> linesByOrderId =
+                orderLineRepository.getOrderLinesByOrderIds(orderIds)
+                        .stream()
+                        .collect(Collectors.groupingBy(
+                                OrderLineProjection::getOrderId,
+                                Collectors.mapping(
+                                        p -> new OrderLineResponse(
+                                                p.getId(),
+                                                p.getProductId(),
+                                                p.getProductName(),
+                                                p.getQuantity(),
+                                                p.getUnitPrice(),
+                                                p.getSubtotal()
+                                        ),
+                                        Collectors.toList()
+                                )
+                        ));
+        return orderPage.map(order -> {
+            OrderResponse response = orderMapper.toOrderResponse(order);
+            response.setOrderLines(
+                    linesByOrderId.getOrDefault(order.getId(), List.of())
+            );
+            return response;
+        });
     }
 
     @PreAuthorize("hasRole('ADMIN')")

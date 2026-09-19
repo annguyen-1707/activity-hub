@@ -20,65 +20,34 @@ public interface OrderRepository extends JpaRepository<Order, String> {
     boolean existsByIdAndUserId(String orderId, String userId);
 
     @Query(
-            value =
-                    """
-							SELECT o.*
-							FROM orders o
-							INNER JOIN users u ON u.id = o.user_id
-							WHERE o.user_id = :userId
-							AND (
-								:keyword IS NULL
-								OR u.username LIKE CONCAT('%', :keyword, '%')
-								OR u.first_name LIKE CONCAT('%', :keyword, '%')
-								OR u.last_name LIKE CONCAT('%', :keyword, '%')
-							)
-							AND (
-								:status IS NULL
-								OR o.status = :status
-							)
-							AND (
-								:paymentMethod IS NULL
-								OR o.payment_method = :paymentMethod
-							)
-							AND (
-								:fromDate IS NULL
-								OR o.created_at >= :fromDate
-							)
-							AND (
-								:toDate IS NULL
-								OR o.created_at <= :toDate
-							)
-							""",
-            countQuery =
-                    """
-							SELECT COUNT(*)
-							FROM orders o
-							INNER JOIN users u ON u.id = o.user_id
-							WHERE o.user_id = :userId
-							AND (
-								:keyword IS NULL
-								OR u.username LIKE CONCAT('%', :keyword, '%')
-								OR u.first_name LIKE CONCAT('%', :keyword, '%')
-								OR u.last_name LIKE CONCAT('%', :keyword, '%')
-							)
-							AND (
-								:status IS NULL
-								OR o.status = :status
-							)
-							AND (
-								:paymentMethod IS NULL
-								OR o.payment_method = :paymentMethod
-							)
-							AND (
-								:fromDate IS NULL
-								OR o.created_at >= :fromDate
-							)
-							AND (
-								:toDate IS NULL
-								OR o.created_at <= :toDate
-							)
-							""",
-            nativeQuery = true)
+            value = """
+                    SELECT o
+                    FROM Order o
+                    INNER JOIN FETCH o.user u
+                    WHERE u.id = :userId
+                    AND (
+                    	:keyword IS NULL
+                    	OR u.username LIKE CONCAT('%', :keyword, '%')
+                    	OR u.firstName LIKE CONCAT('%', :keyword, '%')
+                    	OR u.lastName LIKE CONCAT('%', :keyword, '%')
+                    )
+                    AND (
+                    	:status IS NULL
+                    	OR o.status = :status
+                    )
+                    AND (
+                    	:paymentMethod IS NULL
+                    	OR o.paymentMethod = :paymentMethod
+                    )
+                    AND (
+                    	:fromDate IS NULL
+                    	OR o.createdAt >= :fromDate
+                    )
+                    AND (
+                    	:toDate IS NULL
+                    	OR o.createdAt <= :toDate
+                    )
+                    """)
     Page<Order> searchMyOrders(
             @Param("keyword") String keyword,
             @Param("status") String status,
@@ -90,34 +59,34 @@ public interface OrderRepository extends JpaRepository<Order, String> {
 
     @Query(
             """
-				SELECT o
-				FROM Order o
-				JOIN o.user u
-				WHERE o.user.id = :userId
-				AND (
-					:keyword IS NULL
-					OR :keyword = ''
-					OR u.username LIKE CONCAT('%', :keyword, '%')
-					OR u.firstName LIKE CONCAT('%', :keyword, '%')
-					OR u.lastName LIKE CONCAT('%', :keyword, '%')
-				)
-				AND (
-					:status IS NULL
-					OR o.status = :status
-				)
-				AND (
-					:paymentMethod IS NULL
-					OR o.paymentMethod = :paymentMethod
-				)
-				AND (
-					:fromDate IS NULL
-					OR o.createdAt >= :fromDate
-				)
-				AND (
-					:toDate IS NULL
-					OR o.createdAt <= :toDate
-				)
-			""")
+                    	SELECT o
+                    	FROM Order o
+                        INNER JOIN FETCH o.user u 
+                    	WHERE
+                    	(
+                    		:keyword IS NULL
+                    		OR :keyword = ''
+                    		OR u.username LIKE CONCAT('%', :keyword, '%')
+                    		OR u.firstName LIKE CONCAT('%', :keyword, '%')
+                    		OR u.lastName LIKE CONCAT('%', :keyword, '%')
+                    	)
+                    	AND (
+                    		:status IS NULL
+                    		OR o.status = :status
+                    	)
+                    	AND (
+                    		:paymentMethod IS NULL
+                    		OR o.paymentMethod = :paymentMethod
+                    	)
+                    	AND (
+                    		:fromDate IS NULL
+                    		OR o.createdAt >= :fromDate
+                    	)
+                    	AND (
+                    		:toDate IS NULL
+                    		OR o.createdAt <= :toDate
+                    	)
+                    """)
     Page<Order> searchAllOrders(
             @Param("keyword") String keyword,
             @Param("status") String status,

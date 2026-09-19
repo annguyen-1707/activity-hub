@@ -18,4 +18,12 @@ public interface RoleRepository extends JpaRepository<Role, String> {
 				WHERE u.id IN :userIds
 			""")
     List<Object[]> findRolesByUserIds(@Param("userIds") List<String> userIds);
+
+	@Query("""
+				SELECT r
+				FROM User u
+				JOIN u.roles r
+				WHERE u.id = :userIds
+			""")
+	List<Role> findRolesByUserIds(@Param("userIds") String userIds);
 }

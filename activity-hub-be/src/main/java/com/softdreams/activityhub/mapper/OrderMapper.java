@@ -23,12 +23,8 @@ public interface OrderMapper {
             target = "customerName",
             expression =
                     "java(order.getUser() != null ? ((order.getUser().getFirstName() != null ? order.getUser().getFirstName() + \" \" : \"\") + (order.getUser().getLastName() != null ? order.getUser().getLastName() : \"\")).trim() : null)")
-    @Mapping(target = "items", source = "orderLines")
-    OrderResponse toOrderResponse(Order order);
-
-    @Mapping(target = "productId", source = "product.id")
-    @Mapping(target = "productName", source = "product.name")
-    OrderLineResponse toOrderLineResponse(OrderLine orderLine);
+    @Mapping(target = "orderLines", ignore = true)
+            OrderResponse toOrderResponse(Order order);
 
     @Mapping(target = "user", ignore = true)
     @Mapping(target = "id", ignore = true)

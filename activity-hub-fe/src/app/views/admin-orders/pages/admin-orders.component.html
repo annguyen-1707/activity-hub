@@ -173,7 +173,6 @@
           <thead class="table-light">
             <tr>
               <th scope="col" class="text-center" style="width: 60px;">#</th>
-              <th scope="col" style="width: 140px;">Mã Đơn Hàng</th>
               <th scope="col">Khách Hàng</th>
               <th scope="col">Thời Gian Đặt</th>
               <th scope="col" class="text-center">Số Món</th>
@@ -207,16 +206,6 @@
                     {{ page() * pageSize() + i + 1 }}
                   </td>
 
-                  <!-- Order ID -->
-                  <td>
-                    <div class="d-flex align-items-center gap-1">
-                      <code class="fw-bold">{{ order.id.substring(0, 8) }}...</code>
-                      <button class="btn btn-sm btn-link p-0 text-body-secondary" (click)="copyId(order.id)" title="Copy mã đơn">
-                        <svg cIcon name="cilPaperclip" size="sm"></svg>
-                      </button>
-                    </div>
-                  </td>
-
                   <!-- Customer Info -->
                   <td>
                     <div class="fw-semibold">
@@ -235,7 +224,7 @@
                   <!-- Items Count -->
                   <td class="text-center">
                     <span class="badge bg-light text-dark border px-2 py-1">
-                      {{ order.items?.length || 0 }} món
+                      {{ order.orderLines?.length || 0 }} món
                     </span>
                   </td>
 
@@ -417,7 +406,7 @@
             </tr>
           </thead>
           <tbody>
-            @for (item of ord.items; track item.id || item.productId) {
+            @for (item of ord.orderLines; track item.id || item.productId) {
               <tr>
                 <td>
                   <div class="fw-semibold">{{ item.productName }}</div>
