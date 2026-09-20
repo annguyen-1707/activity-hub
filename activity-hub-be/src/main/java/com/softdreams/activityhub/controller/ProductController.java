@@ -38,9 +38,11 @@ public class ProductController {
     ApiResponse<Page<ProductResponse>> search(
             Pageable pageable,
             @RequestParam(required = false) String keyword,
-            @RequestParam(required = false) CategoryEnum category) {
+            @RequestParam(required = false) String categoryId,
+            @RequestParam(required = false) String category) {
+        String cat = categoryId != null && !categoryId.isBlank() ? categoryId : category;
         return ApiResponse.<Page<ProductResponse>>builder()
-                .result(productService.search(keyword, category, pageable))
+                .result(productService.search(keyword, cat, pageable))
                 .build();
     }
 

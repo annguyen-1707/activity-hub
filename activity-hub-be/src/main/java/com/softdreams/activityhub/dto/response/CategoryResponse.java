@@ -1,9 +1,6 @@
 package com.softdreams.activityhub.dto.response;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
-
-import com.softdreams.activityhub.enums.CategoryEnum;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -13,18 +10,13 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class ProductResponse {
+public class CategoryResponse {
     String id;
+    String code;
     String name;
-    BigDecimal price;
-    String categoryId;
-    String categoryCode;
-    String categoryName;
-    String categoryLabel;
-    double rate;
-    int quantity;
     String description;
-    String image;
+    boolean active;
+    long productCount;
     LocalDateTime createdAt;
     LocalDateTime updatedAt;
 }

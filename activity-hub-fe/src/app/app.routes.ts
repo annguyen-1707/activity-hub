@@ -40,6 +40,11 @@ export const routes: Routes = [
         canActivate: [roleGuard(['ADMIN'])],
       },
       {
+        path: 'categories',
+        loadChildren: () => import('./views/categories/routes').then((m) => m.routes),
+        canActivate: [roleGuard(['ADMIN'])],
+      },
+      {
         path: 'products',
         loadChildren: () => import('./views/products/routes').then((m) => m.routes),
         canActivate: [roleGuard(['ADMIN'])],

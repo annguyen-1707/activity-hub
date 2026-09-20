@@ -7,11 +7,12 @@ import org.springframework.stereotype.Service;
 
 import com.softdreams.activityhub.dto.request.ProductRequest;
 import com.softdreams.activityhub.dto.response.ProductResponse;
+import com.softdreams.activityhub.entity.Category;
 import com.softdreams.activityhub.entity.Product;
-import com.softdreams.activityhub.enums.CategoryEnum;
 import com.softdreams.activityhub.exception.AppException;
 import com.softdreams.activityhub.exception.ErrorCode;
 import com.softdreams.activityhub.mapper.ProductMapper;
+import com.softdreams.activityhub.repository.CategoryRepository;
 import com.softdreams.activityhub.repository.OrderLineRepository;
 import com.softdreams.activityhub.repository.ProductRepository;
 import com.softdreams.activityhub.repository.StockTransactionLineRepository;
@@ -27,18 +28,24 @@ import lombok.extern.slf4j.Slf4j;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class ProductService {
     ProductRepository productRepository;
+    CategoryRepository categoryRepository;
     OrderLineRepository orderLineRepository;
     StockTransactionLineRepository stockTransactionLineRepository;
     ProductMapper productMapper;
 
     @PreAuthorize("hasRole('ADMIN')")
     public ProductResponse create(ProductRequest request) {
+        Category category = categoryRepository
+                .findById(request.getCategoryId())
+                .orElseThrow(() -> new AppException(ErrorCode.CATEGORY_NOT_EXISTED));
+
         Product product = productMapper.toProduct(request);
+        product.setCategory(category);
         return productMapper.toProductResponse(productRepository.save(product));
     }
 
-    public Page<ProductResponse> search(String keyword, CategoryEnum category, Pageable pageable) {
-        return productRepository.search(keyword, category, pageable).map(productMapper::toProductResponse);
+    public Page<ProductResponse> search(String keyword, String categoryId, Pageable pageable) {
+        return productRepository.search(keyword, categoryId, pageable).map(productMapper::toProductResponse);
     }
 
     public ProductResponse getById(String productId) {
@@ -52,6 +59,13 @@ public class ProductService {
         Product product = productRepository
                 .findById(productId)
                 .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_EXISTED));
+
+        if (request.getCategoryId() != null) {
+            Category category = categoryRepository
+                    .findById(request.getCategoryId())
+                    .orElseThrow(() -> new AppException(ErrorCode.CATEGORY_NOT_EXISTED));
+            product.setCategory(category);
+        }
 
         productMapper.updateProduct(product, request);
         return productMapper.toProductResponse(productRepository.save(product));

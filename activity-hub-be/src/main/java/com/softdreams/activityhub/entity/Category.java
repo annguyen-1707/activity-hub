@@ -1,11 +1,8 @@
 package com.softdreams.activityhub.entity;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 import jakarta.persistence.*;
-
-import com.softdreams.activityhub.enums.CategoryEnum;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -17,31 +14,25 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Entity
-@Table(name = "products")
-public class Product {
+@Table(name = "categories")
+public class Category {
+
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     String id;
 
+    @Column(nullable = false, unique = true, length = 50)
+    String code;
+
     @Column(nullable = false, columnDefinition = "NVARCHAR(255)")
     String name;
-
-    @Column(nullable = false, precision = 18, scale = 2)
-    BigDecimal price;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "category_id")
-    Category category;
-
-    double rate;
-
-    @Column(nullable = false)
-    int quantity;
 
     @Column(columnDefinition = "NVARCHAR(1000)")
     String description;
 
-    String image;
+    @Builder.Default
+    @Column(nullable = false)
+    boolean active = true;
 
     @Column(name = "created_at", nullable = false)
     LocalDateTime createdAt;

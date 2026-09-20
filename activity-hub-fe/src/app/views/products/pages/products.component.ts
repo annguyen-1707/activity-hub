@@ -29,9 +29,9 @@ import {
 import { IconDirective } from '@coreui/icons-angular';
 import { ProductService } from '../../../core/services/product.service';
 import { StockTransactionService } from '../../../core/services/stock-transaction.service';
+import { CategoryService } from '../../../core/services/category.service';
+import { CategoryResponse } from '../../../core/models/category.model';
 import {
-  CategoryEnum,
-  CATEGORY_LABELS,
   ProductRequest,
   ProductResponse,
 } from '../../../core/models/product.model';
@@ -81,14 +81,14 @@ import {
 export class ProductsComponent implements OnInit {
   private readonly productService = inject(ProductService);
   private readonly stockService = inject(StockTransactionService);
+  private readonly categoryService = inject(CategoryService);
   private readonly fb = inject(FormBuilder);
 
   // Active Tab: 0 = Products, 1 = Stock Transactions
   activeTab = signal<number>(0);
 
-  // Category constants
-  readonly categories = Object.values(CategoryEnum);
-  readonly categoryLabels = CATEGORY_LABELS;
+  // Category dynamic list
+  availableCategories = signal<CategoryResponse[]>([]);
   readonly stockTypeLabels = STOCK_TRANSACTION_TYPE_LABELS;
   readonly stockTypeColors = STOCK_TRANSACTION_TYPE_COLORS;
 
@@ -96,7 +96,7 @@ export class ProductsComponent implements OnInit {
   products = signal<ProductResponse[]>([]);
   productLoading = signal<boolean>(false);
   productKeyword = signal<string>('');
-  productCategory = signal<CategoryEnum | ''>('');
+  productCategory = signal<string>('');
   productPage = signal<number>(0);
   productPageSize = signal<number>(10);
   productTotalElements = signal<number>(0);
@@ -134,16 +134,24 @@ export class ProductsComponent implements OnInit {
 
   ngOnInit(): void {
     this.initForms();
+    this.loadCategories();
     this.loadProducts();
     this.loadStockTransactions();
     this.loadAllProductsForDropdown();
+  }
+
+  loadCategories(): void {
+    this.categoryService.getActiveCategories().subscribe({
+      next: (cats) => this.availableCategories.set(cats || []),
+      error: () => {},
+    });
   }
 
   initForms(): void {
     this.productForm = this.fb.group({
       name: ['', [Validators.required, Validators.minLength(2)]],
       price: [0, [Validators.required, Validators.min(0)]],
-      category: [CategoryEnum.PHONE, [Validators.required]],
+      categoryId: ['', [Validators.required]],
       rate: [5.0, [Validators.min(0), Validators.max(5)]],
       image: [''],
       description: [''],
@@ -161,9 +169,8 @@ export class ProductsComponent implements OnInit {
 
   loadProducts(): void {
     this.productLoading.set(true);
-    const cat = this.productCategory() ? (this.productCategory() as CategoryEnum) : undefined;
     this.productService
-      .searchProducts(this.productPage(), this.productPageSize(), this.productKeyword(), cat)
+      .searchProducts(this.productPage(), this.productPageSize(), this.productKeyword(), this.productCategory())
       .subscribe({
         next: (res) => {
           this.productLoading.set(false);
@@ -183,8 +190,8 @@ export class ProductsComponent implements OnInit {
     this.loadProducts();
   }
 
-  onProductCategoryChange(cat: CategoryEnum | ''): void {
-    this.productCategory.set(cat);
+  onProductCategoryChange(catId: string): void {
+    this.productCategory.set(catId);
     this.productPage.set(0);
     this.loadProducts();
   }
@@ -213,10 +220,11 @@ export class ProductsComponent implements OnInit {
   }
 
   openCreateProductModal(): void {
+    const firstCatId = this.availableCategories()[0]?.id || '';
     this.productForm.reset({
       name: '',
       price: 0,
-      category: CategoryEnum.PHONE,
+      categoryId: firstCatId,
       rate: 5.0,
       image: '',
       description: '',
@@ -229,7 +237,7 @@ export class ProductsComponent implements OnInit {
     this.productForm.patchValue({
       name: product.name,
       price: product.price,
-      category: product.category,
+      categoryId: product.categoryId || '',
       rate: product.rate,
       image: product.image || '',
       description: product.description || '',
@@ -249,7 +257,7 @@ export class ProductsComponent implements OnInit {
     const req: ProductRequest = {
       name: formVal.name,
       price: Number(formVal.price),
-      category: formVal.category,
+      categoryId: formVal.categoryId,
       rate: Number(formVal.rate) || 0,
       image: formVal.image || '',
       description: formVal.description || '',
@@ -278,7 +286,7 @@ export class ProductsComponent implements OnInit {
     const req: ProductRequest = {
       name: formVal.name,
       price: Number(formVal.price),
-      category: formVal.category,
+      categoryId: formVal.categoryId,
       rate: Number(formVal.rate) || 0,
       image: formVal.image || '',
       description: formVal.description || '',

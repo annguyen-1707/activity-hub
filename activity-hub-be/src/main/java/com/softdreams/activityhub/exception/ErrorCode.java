@@ -24,6 +24,9 @@ public enum ErrorCode {
     PRODUCT_IN_USE(1014, "Product has existing orders or stock history and cannot be deleted", HttpStatus.BAD_REQUEST),
     INSUFFICIENT_STOCK(1015, "Insufficient stock for product", HttpStatus.BAD_REQUEST),
     INVALID_STOCK_TRANSACTION_TYPE(1016, "This transaction type cannot be created manually", HttpStatus.BAD_REQUEST),
+    CATEGORY_NOT_EXISTED(1017, "Category not existed", HttpStatus.NOT_FOUND),
+    CATEGORY_ALREADY_EXISTS(1018, "Category code or name already exists", HttpStatus.BAD_REQUEST),
+    CATEGORY_IN_USE(1019, "Category has associated products and cannot be deleted", HttpStatus.BAD_REQUEST),
     ;
 
     ErrorCode(int code, String message, HttpStatusCode statusCode) {

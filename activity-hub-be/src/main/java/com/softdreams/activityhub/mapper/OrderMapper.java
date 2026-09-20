@@ -22,7 +22,7 @@ public interface OrderMapper {
     @Mapping(
             target = "customerName",
             expression =
-                    "java(order.getUser() != null ? ((order.getUser().getFirstName() != null ? order.getUser().getFirstName() + \" \" : \"\") + (order.getUser().getLastName() != null ? order.getUser().getLastName() : \"\")).trim() : null)")
+                    "java(order.getUser() != null ? ((order.getUser().getFirstName() != null ? order.getUser().getFirstName() + \" \" : \"\") + (order.getUser().getLastName() != null ? order.getUser().getLastName() : \"\")).trim() : null)").
     @Mapping(target = "orderLines", ignore = true)
             OrderResponse toOrderResponse(Order order);
 

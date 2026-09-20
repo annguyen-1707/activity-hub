@@ -25,8 +25,8 @@ public class ProductRequest {
     @PositiveOrZero
     BigDecimal price;
 
-    @NotNull
-    CategoryEnum category;
+    @NotBlank
+    String categoryId;
 
     double rate;
 

@@ -10,6 +10,7 @@ public enum TargetType {
     ORDER("ORDER"),
     ROLE("ROLE"),
     PRODUCT("PRODUCT"),
-    PRODUCT_REVIEW("PRODUCT_REVIEW");
+    PRODUCT_REVIEW("PRODUCT_REVIEW"),
+    CATEGORY("CATEGORY");
     private final String label;
 }

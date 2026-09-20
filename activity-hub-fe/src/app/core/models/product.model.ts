@@ -20,8 +20,11 @@ export interface ProductResponse {
   id: string;
   name: string;
   price: number;
-  category: CategoryEnum;
+  categoryId?: string;
+  categoryCode?: string;
+  categoryName?: string;
   categoryLabel?: string;
+  category?: string;
   rate: number;
   quantity: number;
   description?: string;
@@ -33,7 +36,7 @@ export interface ProductResponse {
 export interface ProductRequest {
   name: string;
   price: number;
-  category: CategoryEnum;
+  categoryId: string;
   rate?: number;
   description?: string;
   image?: string;

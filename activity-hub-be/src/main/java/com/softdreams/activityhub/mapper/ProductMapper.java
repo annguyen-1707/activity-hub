@@ -12,17 +12,22 @@ import com.softdreams.activityhub.entity.Product;
 public interface ProductMapper {
 
     @Mapping(target = "id", ignore = true)
+    @Mapping(target = "category", ignore = true)
     @Mapping(target = "quantity", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
     Product toProduct(ProductRequest request);
 
     @Mapping(target = "id", ignore = true)
+    @Mapping(target = "category", ignore = true)
     @Mapping(target = "quantity", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
     void updateProduct(@MappingTarget Product product, ProductRequest request);
 
-    @Mapping(target = "categoryLabel", source = "category.label")
+    @Mapping(target = "categoryId", source = "category.id")
+    @Mapping(target = "categoryCode", source = "category.code")
+    @Mapping(target = "categoryName", source = "category.name")
+    @Mapping(target = "categoryLabel", source = "category.name")
     ProductResponse toProductResponse(Product product);
 }

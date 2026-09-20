@@ -108,8 +108,8 @@
                 (ngModelChange)="onProductCategoryChange($event)"
               >
                 <option value="">Tất cả danh mục</option>
-                @for (cat of categories; track cat) {
-                  <option [value]="cat">{{ categoryLabels[cat] }}</option>
+                @for (cat of availableCategories(); track cat.id) {
+                  <option [value]="cat.id">{{ cat.name }} ({{ cat.code }})</option>
                 }
               </select>
 
@@ -197,7 +197,7 @@
                       <!-- Category -->
                       <td>
                         <c-badge color="light" class="text-body border px-2 py-1">
-                          {{ prod.categoryLabel || categoryLabels[prod.category] || prod.category }}
+                          {{ prod.categoryName || prod.categoryLabel || prod.category || '—' }}
                         </c-badge>
                       </td>
 
@@ -502,9 +502,9 @@
         </c-col>
         <c-col md="6">
           <label cLabel class="fw-semibold">Danh mục <span class="text-danger">*</span></label>
-          <select cSelect formControlName="category">
-            @for (cat of categories; track cat) {
-              <option [value]="cat">{{ categoryLabels[cat] }}</option>
+          <select cSelect formControlName="categoryId">
+            @for (cat of availableCategories(); track cat.id) {
+              <option [value]="cat.id">{{ cat.name }} ({{ cat.code }})</option>
             }
           </select>
         </c-col>
@@ -561,9 +561,9 @@
         </c-col>
         <c-col md="6">
           <label cLabel class="fw-semibold">Danh mục <span class="text-danger">*</span></label>
-          <select cSelect formControlName="category">
-            @for (cat of categories; track cat) {
-              <option [value]="cat">{{ categoryLabels[cat] }}</option>
+          <select cSelect formControlName="categoryId">
+            @for (cat of availableCategories(); track cat.id) {
+              <option [value]="cat.id">{{ cat.name }} ({{ cat.code }})</option>
             }
           </select>
         </c-col>

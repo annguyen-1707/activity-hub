@@ -18,7 +18,7 @@ export class ProductService {
     page: number = 0,
     size: number = 10,
     keyword: string = '',
-    category?: CategoryEnum
+    categoryId?: string
   ): Observable<PageResponse<ProductResponse>> {
     let params = new HttpParams()
       .set('page', page.toString())
@@ -28,8 +28,8 @@ export class ProductService {
       params = params.set('keyword', keyword.trim());
     }
 
-    if (category) {
-      params = params.set('category', category);
+    if (categoryId && categoryId.trim()) {
+      params = params.set('categoryId', categoryId.trim());
     }
 
     return this.http
