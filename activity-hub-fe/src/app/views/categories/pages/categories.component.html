@@ -26,51 +26,6 @@
     </div>
   </div>
 
-  <!-- KPI SUMMARY CARDS -->
-  <c-row class="g-3 mb-4">
-    <c-col sm="6" lg="4">
-      <c-card class="border-0 shadow-sm h-100">
-        <c-card-body class="d-flex align-items-center gap-3 p-3">
-          <div class="p-3 bg-primary-subtle text-primary rounded-3">
-            <svg cIcon name="cilGrid" size="xl"></svg>
-          </div>
-          <div>
-            <div class="text-body-secondary small text-uppercase fw-semibold">Tổng Danh Mục</div>
-            <div class="fs-4 fw-bold text-body">{{ totalCount() }}</div>
-          </div>
-        </c-card-body>
-      </c-card>
-    </c-col>
-
-    <c-col sm="6" lg="4">
-      <c-card class="border-0 shadow-sm h-100">
-        <c-card-body class="d-flex align-items-center gap-3 p-3">
-          <div class="p-3 bg-success-subtle text-success rounded-3">
-            <svg cIcon name="cilCheckCircle" size="xl"></svg>
-          </div>
-          <div>
-            <div class="text-body-secondary small text-uppercase fw-semibold">Đang Hoạt Động</div>
-            <div class="fs-4 fw-bold text-success">{{ activeCount() }}</div>
-          </div>
-        </c-card-body>
-      </c-card>
-    </c-col>
-
-    <c-col sm="6" lg="4">
-      <c-card class="border-0 shadow-sm h-100">
-        <c-card-body class="d-flex align-items-center gap-3 p-3">
-          <div class="p-3 bg-info-subtle text-info rounded-3">
-            <svg cIcon name="cilTags" size="xl"></svg>
-          </div>
-          <div>
-            <div class="text-body-secondary small text-uppercase fw-semibold">Sản Phẩm Trong Trang</div>
-            <div class="fs-4 fw-bold text-info">{{ totalProductsSum() }} mặt hàng</div>
-          </div>
-        </c-card-body>
-      </c-card>
-    </c-col>
-  </c-row>
-
   <!-- TABLE CARD -->
   <c-card class="border-0 shadow-sm mb-4">
     <c-card-header class="bg-body d-flex flex-wrap justify-content-between align-items-center py-3 border-bottom">
@@ -222,17 +177,17 @@
             Trang {{ page() + 1 }} / {{ totalPages() }} (Tổng số {{ totalElements() }} danh mục)
           </div>
           <c-pagination align="end" class="mb-0">
-            <li cPageItem [disabled]="page() === 0">
+            <c-page-item [disabled]="page() === 0">
               <a cPageLink (click)="goToPage(page() - 1)">‹ Trước</a>
-            </li>
+            </c-page-item>
             @for (p of getPageNumbers(); track p) {
-              <li cPageItem [active]="p === page()">
+              <c-page-item [active]="p === page()">
                 <a cPageLink (click)="goToPage(p)">{{ p + 1 }}</a>
-              </li>
+              </c-page-item>
             }
-            <li cPageItem [disabled]="page() >= totalPages() - 1">
+            <c-page-item [disabled]="page() >= totalPages() - 1">
               <a cPageLink (click)="goToPage(page() + 1)">Sau ›</a>
-            </li>
+            </c-page-item>
           </c-pagination>
         </div>
       }
@@ -240,7 +195,7 @@
   </c-card>
 
   <!-- CREATE / EDIT MODAL -->
-  <c-modal [visible]="createModalVisible() || editModalVisible()" (visibleChange)="$event ? null : (createModalVisible.set(false); editModalVisible.set(false))">
+  <c-modal [visible]="createModalVisible() || editModalVisible()" (visibleChange)="closeFormModal($event)">
     <c-modal-header>
       <h5 cModalTitle>
         <svg cIcon [name]="editModalVisible() ? 'cilPencil' : 'cilPlus'" class="me-1"></svg>

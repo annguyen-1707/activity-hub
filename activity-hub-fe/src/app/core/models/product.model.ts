@@ -1,30 +1,8 @@
-export enum CategoryEnum {
-  PHONE = 'PHONE',
-  LAPTOP = 'LAPTOP',
-  AUDIO = 'AUDIO',
-  ACCESSORY = 'ACCESSORY',
-  MONITOR = 'MONITOR',
-  WATCH = 'WATCH',
-}
-
-export const CATEGORY_LABELS: Record<CategoryEnum, string> = {
-  [CategoryEnum.PHONE]: 'Điện thoại',
-  [CategoryEnum.LAPTOP]: 'Laptop',
-  [CategoryEnum.AUDIO]: 'Âm thanh',
-  [CategoryEnum.ACCESSORY]: 'Phụ kiện',
-  [CategoryEnum.MONITOR]: 'Màn hình',
-  [CategoryEnum.WATCH]: 'Đồng hồ',
-};
-
 export interface ProductResponse {
   id: string;
   name: string;
   price: number;
-  categoryId?: string;
-  categoryCode?: string;
-  categoryName?: string;
-  categoryLabel?: string;
-  category?: string;
+  category: CategoryResponse;
   rate: number;
   quantity: number;
   description?: string;
@@ -40,4 +18,15 @@ export interface ProductRequest {
   rate?: number;
   description?: string;
   image?: string;
+}
+
+export interface CategoryResponse {
+  id: string;
+  code: string;
+  name: string;
+  description?: string;
+  active: boolean;
+  productCount?: number;
+  createdAt?: string;
+  updatedAt?: string;
 }

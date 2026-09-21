@@ -19,13 +19,14 @@ public interface ProductRepository extends JpaRepository<Product, String> {
 
     @Query(
             """
-            SELECT p FROM Product p
-            LEFT JOIN FETCH p.category c
-            WHERE (:keyword IS NULL OR :keyword = ''
-                OR LOWER(p.name) LIKE LOWER(CONCAT('%', :keyword, '%'))
-                OR LOWER(p.description) LIKE LOWER(CONCAT('%', :keyword, '%')))
-            AND (:categoryId IS NULL OR :categoryId = '' OR c.id = :categoryId OR c.code = :categoryId)
-            """)
+                    SELECT p FROM Product p
+                    LEFT JOIN FETCH p.category c
+                    WHERE (:keyword IS NULL OR :keyword = ''
+                        OR LOWER(p.name) LIKE LOWER(CONCAT('%', :keyword, '%'))
+                        OR LOWER(p.description) LIKE LOWER(CONCAT('%', :keyword, '%')))
+                    AND (:categoryId IS NULL
+                         OR c.id = :categoryId)
+                    """)
     Page<Product> search(@Param("keyword") String keyword, @Param("categoryId") String categoryId, Pageable pageable);
 
     boolean existsByCategoryId(String categoryId);

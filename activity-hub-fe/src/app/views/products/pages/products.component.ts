@@ -237,7 +237,7 @@ export class ProductsComponent implements OnInit {
     this.productForm.patchValue({
       name: product.name,
       price: product.price,
-      categoryId: product.categoryId || '',
+      categoryId: product.category.id || '',
       rate: product.rate,
       image: product.image || '',
       description: product.description || '',

@@ -17,10 +17,7 @@ public class ProductResponse {
     String id;
     String name;
     BigDecimal price;
-    String categoryId;
-    String categoryCode;
-    String categoryName;
-    String categoryLabel;
+    CategoryResponse category;
     double rate;
     int quantity;
     String description;

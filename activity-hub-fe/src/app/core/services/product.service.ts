@@ -4,7 +4,7 @@ import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import { ApiResponse, PageResponse } from '../models/api-response.model';
-import { CategoryEnum, ProductRequest, ProductResponse } from '../models/product.model';
+import { ProductRequest, ProductResponse } from '../models/product.model';
 import { Product } from '../models/order.model';
 
 @Injectable({
@@ -39,20 +39,26 @@ export class ProductService {
       .pipe(map((res) => res.result));
   }
 
-  getProducts(): Observable<Product[]> {
-    return this.searchProducts(0, 100).pipe(
-      map((page) =>
-        (page?.content || []).map((p) => ({
+  getProducts(
+    page: number = 0,
+    size: number = 12,
+    keyword: string = '',
+    categoryId?: string
+  ): Observable<PageResponse<Product>> {
+    return this.searchProducts(page, size, keyword, categoryId).pipe(
+      map((res) => ({
+        ...res,
+        content: (res?.content || []).map((p) => ({
           id: p.id,
           name: p.name,
           price: p.price,
-          category: p.categoryLabel || p.category,
+          category: p.category?.name || '',
           image: p.image || '',
           description: p.description || '',
           stock: p.quantity,
           rating: p.rate,
-        }))
-      )
+        })),
+      }))
     );
   }
 

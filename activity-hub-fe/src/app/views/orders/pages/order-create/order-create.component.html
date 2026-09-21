@@ -19,10 +19,10 @@
               <svg cIcon name="cilMagnifyingGlass" class="text-body-secondary"></svg>
             </span>
             <input cFormControl placeholder="Tìm sản phẩm (iPhone, Mac, tai nghe, phụ kiện...)" class="border-start-0"
-              [ngModel]="searchKeyword()" (ngModelChange)="searchKeyword.set($event)" />
+              [ngModel]="searchKeyword()" (ngModelChange)="onKeywordChange($event)" />
             @if (searchKeyword()) {
             <button class="btn btn-outline-secondary border-start-0 bg-transparent" type="button"
-              (click)="searchKeyword.set('')">
+              (click)="onKeywordChange('')">
               <svg cIcon name="cilX" size="sm"></svg>
             </button>
             }
@@ -32,10 +32,10 @@
         <!-- Category Pills -->
         <c-col md="6" lg="7" xs="12">
           <div class="category-pills d-flex flex-wrap gap-1 justify-content-md-end">
-            @for (cat of categories(); track cat) {
-            <button type="button" class="category-pill-btn" [class.active]="selectedCategory() === cat"
-              (click)="selectCategory(cat)">
-              {{ cat }}
+            @for (cat of categoryPills(); track cat.id) {
+            <button type="button" class="category-pill-btn" [class.active]="selectedCategoryId() === cat.id"
+              (click)="selectCategory(cat.id)">
+              {{ cat.name }}
             </button>
             }
           </div>
@@ -46,7 +46,12 @@
 
   <!-- Full-Width Products Grid (12 Columns) -->
   <div class="product-grid mb-5">
-    @if (filteredProducts().length === 0) {
+    @if (loadingProducts()) {
+    <div class="text-center py-5 bg-body rounded-4 border">
+      <c-spinner color="primary" class="me-2"></c-spinner>
+      <span class="text-body-secondary">Đang tải sản phẩm...</span>
+    </div>
+    } @else if (products().length === 0) {
     <div class="empty-products text-center py-5 bg-body rounded-4 border">
       <div class="empty-icon-circle mx-auto mb-3">
         <svg cIcon name="cilBasket" size="2xl" class="text-body-tertiary"></svg>
@@ -54,13 +59,13 @@
       <h5 class="fw-bold">Không tìm thấy sản phẩm phù hợp</h5>
       <p class="text-body-secondary small mb-3">Thử tìm kiếm với từ khóa khác hoặc chọn danh mục "Tất cả".</p>
       <button cButton color="primary" variant="outline" size="sm" class="rounded-pill px-4"
-        (click)="searchKeyword.set(''); selectCategory('Tất cả')">
+        (click)="resetFilters()">
         Xem tất cả sản phẩm
       </button>
     </div>
     } @else {
     <c-row class="g-3">
-      @for (product of filteredProducts(); track product.id) {
+      @for (product of products(); track product.id) {
       <c-col sm="6" md="4" lg="3" xs="12">
         <c-card class="product-card h-100 border-0 shadow-sm rounded-4 overflow-hidden">
           <!-- Image & Badges -->
@@ -136,6 +141,28 @@
     </c-row>
     }
   </div>
+
+  <!-- Pagination -->
+  @if (!loadingProducts() && totalPages() > 1) {
+  <div class="d-flex justify-content-between align-items-center mb-5 flex-wrap gap-2">
+    <div class="text-body-secondary small">
+      Trang {{ page() + 1 }} / {{ totalPages() }} (Tổng số {{ totalElements() }} sản phẩm)
+    </div>
+    <c-pagination align="end" class="mb-0">
+      <c-page-item [disabled]="page() === 0">
+        <a cPageLink (click)="goToPage(page() - 1)">‹ Trước</a>
+      </c-page-item>
+      @for (p of getPageNumbers(); track p) {
+      <c-page-item [active]="p === page()">
+        <a cPageLink (click)="goToPage(p)">{{ p + 1 }}</a>
+      </c-page-item>
+      }
+      <c-page-item [disabled]="page() >= totalPages() - 1">
+        <a cPageLink (click)="goToPage(page() + 1)">Sau ›</a>
+      </c-page-item>
+    </c-pagination>
+  </div>
+  }
 
   <!-- FLOATING BOTTOM BAR WHEN CART HAS ITEMS -->
   @if (totalCartQuantity() > 0) {

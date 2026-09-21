@@ -3,7 +3,6 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import {
   AlertComponent,
-  BadgeComponent,
   ButtonDirective,
   CardBodyComponent,
   CardComponent,
@@ -49,7 +48,6 @@ import { CategoryService } from '../../../core/services/category.service';
     CardBodyComponent,
     TableDirective,
     ButtonDirective,
-    BadgeComponent,
     SpinnerComponent,
     AlertComponent,
     FormControlDirective,
@@ -169,6 +167,13 @@ export class CategoriesComponent implements OnInit {
       pages.push(i);
     }
     return pages;
+  }
+
+  closeFormModal(visible: boolean): void {
+    if (!visible) {
+      this.createModalVisible.set(false);
+      this.editModalVisible.set(false);
+    }
   }
 
   openCreateModal(): void {

@@ -41,23 +41,23 @@ public class CategoryService {
         Category category = categoryMapper.toCategory(request);
         category.setCode(code);
         Category saved = categoryRepository.save(category);
-        return toResponseWithCount(saved);
+        return categoryMapper.toCategoryResponse(saved);
     }
 
     public List<CategoryResponse> getAllActive() {
         return categoryRepository.findByActiveTrueOrderByCreatedAtDesc().stream()
-                .map(this::toResponseWithCount)
+                .map(categoryMapper::toCategoryResponse)
                 .toList();
     }
 
     public Page<CategoryResponse> search(String keyword, Pageable pageable) {
-        return categoryRepository.search(keyword, pageable).map(this::toResponseWithCount);
+        return categoryRepository.searchWithCount(keyword, pageable);
     }
 
     public CategoryResponse getById(String id) {
         Category category =
                 categoryRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.CATEGORY_NOT_EXISTED));
-        return toResponseWithCount(category);
+        return categoryMapper.toCategoryResponse(category);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -73,7 +73,7 @@ public class CategoryService {
         categoryMapper.updateCategory(category, request);
         category.setCode(code);
         Category saved = categoryRepository.save(category);
-        return toResponseWithCount(saved);
+        return categoryMapper.toCategoryResponse(saved);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -89,9 +89,4 @@ public class CategoryService {
         categoryRepository.deleteById(id);
     }
 
-    private CategoryResponse toResponseWithCount(Category category) {
-        CategoryResponse response = categoryMapper.toCategoryResponse(category);
-        response.setProductCount(productRepository.countByCategoryId(category.getId()));
-        return response;
-    }
 }

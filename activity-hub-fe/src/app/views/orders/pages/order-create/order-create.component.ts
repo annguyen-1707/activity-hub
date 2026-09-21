@@ -20,6 +20,9 @@ import {
   ModalFooterComponent,
   ModalHeaderComponent,
   ModalTitleDirective,
+  PageItemComponent,
+  PageLinkDirective,
+  PaginationComponent,
   RowComponent,
   SpinnerComponent,
 } from '@coreui/angular';
@@ -27,6 +30,7 @@ import { IconDirective } from '@coreui/icons-angular';
 import { CartItem, OrderRequest, PaymentMethod, Product } from '../../../../core/models/order.model';
 import { OrderService } from '../../services/order.service';
 import { ProductService } from '../../../../core/services/product.service';
+import { CategoryService } from '../../../../core/services/category.service';
 
 @Component({
   selector: 'app-order-create',
@@ -46,21 +50,36 @@ import { ProductService } from '../../../../core/services/product.service';
     FormControlDirective,
     InputGroupComponent,
     InputGroupTextDirective,
+    PaginationComponent,
+    PageItemComponent,
+    PageLinkDirective,
+    SpinnerComponent,
     IconDirective,
   ],
 })
 export class OrderCreateComponent implements OnInit {
   private readonly orderService = inject(OrderService);
   private readonly productService = inject(ProductService);
+  private readonly categoryService = inject(CategoryService);
   private readonly router = inject(Router);
 
   // Data signals
   products = signal<Product[]>([]);
+  loadingProducts = signal<boolean>(false);
   cart = this.orderService.cart;
   totalCartQuantity = this.orderService.totalCartQuantity;
   totalCartAmount = this.orderService.totalCartAmount;
-  selectedCategory = signal<string>('Tất cả');
+
+  // Filters ('' categoryId means "Tất cả")
+  categoryOptions = signal<{ id: string; name: string }[]>([]);
+  selectedCategoryId = signal<string>('');
   searchKeyword = signal<string>('');
+
+  // Pagination
+  page = signal<number>(0);
+  pageSize = signal<number>(12);
+  totalElements = signal<number>(0);
+  totalPages = signal<number>(1);
 
   // Checkout Form signals
   shippingAddress = signal<string>('Tòa nhà Softdreams, Cầu Giấy, Hà Nội');
@@ -76,40 +95,73 @@ export class OrderCreateComponent implements OnInit {
   createdOrderAmount = signal<number>(0);
   createdOrderItemsCount = signal<number>(0);
 
-  // Computed properties
-  categories = computed(() => {
-    const all = this.products().map((p) => p.category);
-    return ['Tất cả', ...Array.from(new Set(all))];
-  });
-
-  filteredProducts = computed(() => {
-    const cat = this.selectedCategory();
-    const kw = this.searchKeyword().trim().toLowerCase();
-
-    return this.products().filter((p) => {
-      const matchCat = cat === 'Tất cả' || p.category === cat;
-      const matchKw =
-        !kw ||
-        p.name.toLowerCase().includes(kw) ||
-        p.description.toLowerCase().includes(kw) ||
-        p.category.toLowerCase().includes(kw);
-      return matchCat && matchKw;
-    });
-  });
+  // "Tất cả" (All) plus every active category fetched from the server
+  categoryPills = computed(() => [{ id: '', name: 'Tất cả' }, ...this.categoryOptions()]);
 
   ngOnInit(): void {
+    this.loadCategories();
     this.loadProducts();
   }
 
-  loadProducts(): void {
-    this.productService.getProducts().subscribe({
-      next: (products) => this.products.set(products),
-      error: () => this.showAlert('Không thể tải danh sách sản phẩm. Vui lòng kiểm tra lại backend!', 'danger'),
+  loadCategories(): void {
+    this.categoryService.getActiveCategories().subscribe({
+      next: (list) => this.categoryOptions.set(list.map((c) => ({ id: c.id, name: c.name }))),
+      error: () => {},
     });
   }
 
-  selectCategory(category: string): void {
-    this.selectedCategory.set(category);
+  loadProducts(): void {
+    this.loadingProducts.set(true);
+    this.productService
+      .getProducts(this.page(), this.pageSize(), this.searchKeyword(), this.selectedCategoryId())
+      .subscribe({
+        next: (res) => {
+          this.loadingProducts.set(false);
+          this.products.set(res?.content || []);
+          this.totalElements.set(res?.totalElements || 0);
+          this.totalPages.set(res?.totalPages || 1);
+        },
+        error: () => {
+          this.loadingProducts.set(false);
+          this.showAlert('Không thể tải danh sách sản phẩm. Vui lòng kiểm tra lại backend!', 'danger');
+        },
+      });
+  }
+
+  onKeywordChange(keyword: string): void {
+    this.searchKeyword.set(keyword);
+    this.page.set(0);
+    this.loadProducts();
+  }
+
+  selectCategory(categoryId: string): void {
+    this.selectedCategoryId.set(categoryId);
+    this.page.set(0);
+    this.loadProducts();
+  }
+
+  resetFilters(): void {
+    this.searchKeyword.set('');
+    this.selectedCategoryId.set('');
+    this.page.set(0);
+    this.loadProducts();
+  }
+
+  goToPage(p: number): void {
+    if (p >= 0 && p < this.totalPages()) {
+      this.page.set(p);
+      this.loadProducts();
+    }
+  }
+
+  getPageNumbers(): number[] {
+    const total = this.totalPages();
+    const current = this.page();
+    const pages: number[] = [];
+    const start = Math.max(0, current - 2);
+    const end = Math.min(total - 1, current + 2);
+    for (let i = start; i <= end; i++) pages.push(i);
+    return pages;
   }
 
   selectPaymentMethod(method: PaymentMethod): void {
