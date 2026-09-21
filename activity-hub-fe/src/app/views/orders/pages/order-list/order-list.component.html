@@ -1,5 +1,12 @@
 <div class="order-list-page">
 
+  @if (alertMessage()) {
+  <c-alert [color]="alertType()" [dismissible]="true" class="mb-3 d-flex align-items-center shadow-sm">
+    <svg cIcon [name]="alertType() === 'success' ? 'cilCheck' : 'cilWarning'" class="me-2" size="lg"></svg>
+    <div>{{ alertMessage() }}</div>
+  </c-alert>
+  }
+
   <!-- FILTERS & TABLE CARD -->
   <c-card class="border-0 shadow-sm rounded-4 overflow-hidden mb-4">
     <!-- Toolbar Header -->
@@ -291,7 +298,10 @@
               <th scope="col">Sản Phẩm</th>
               <th scope="col" class="text-center">Số Lượng</th>
               <th scope="col" class="text-end">Đơn Giá</th>
-              <th scope="col" class="text-end pe-3">Thành Tiền</th>
+              <th scope="col" class="text-end">Thành Tiền</th>
+              @if (canReviewOrder(selectedOrder())) {
+              <th scope="col" class="text-center pe-3">Đánh Giá</th>
+              }
             </tr>
           </thead>
           <tbody>
@@ -306,7 +316,23 @@
                 </span>
               </td>
               <td class="text-end text-body-secondary">{{ formatCurrency(item.unitPrice) }}</td>
-              <td class="text-end fw-bold text-primary pe-3">{{ formatCurrency(item.subtotal) }}</td>
+              <td class="text-end fw-bold text-primary">{{ formatCurrency(item.subtotal) }}</td>
+              @if (canReviewOrder(selectedOrder())) {
+              <td class="text-center pe-3">
+                @if (getReviewForLine(item.id); as review) {
+                <button cButton color="warning" variant="outline" size="sm" class="rounded-pill px-2"
+                  (click)="openReviewModal(item.id, item.productName)">
+                  <svg cIcon name="cilStar" size="sm" class="me-1"></svg>
+                  {{ review.rating }}/5 · Cập nhật
+                </button>
+                } @else {
+                <button cButton color="primary" variant="outline" size="sm" class="rounded-pill px-2"
+                  (click)="openReviewModal(item.id, item.productName)">
+                  Đánh giá
+                </button>
+                }
+              </td>
+              }
             </tr>
             }
             } @else {
@@ -342,6 +368,53 @@
   <c-modal-footer class="border-top-0 pt-0">
     <button cButton color="secondary" class="rounded-pill px-4" (click)="closeDetailModal()">
       Đóng
+    </button>
+  </c-modal-footer>
+</c-modal>
+
+<!-- REVIEW MODAL -->
+<c-modal [visible]="reviewModalVisible()" (visibleChange)="reviewModalVisible.set($event)" backdrop="static">
+  <c-modal-header>
+    <h5 cModalTitle>
+      <svg cIcon name="cilStar" class="me-1"></svg>
+      Đánh Giá Sản Phẩm
+    </h5>
+  </c-modal-header>
+
+  <c-modal-body>
+    <div class="fw-semibold mb-3">{{ reviewingProductName() }}</div>
+
+    <div class="mb-3">
+      <label class="form-label fw-semibold">Số sao</label>
+      <div class="d-flex gap-1">
+        @for (star of [1, 2, 3, 4, 5]; track star) {
+        <button type="button" class="btn btn-sm p-1 border-0 bg-transparent" (click)="reviewRating.set(star)">
+          <svg cIcon name="cilStar" [class.text-warning]="star <= reviewRating()"
+            [class.text-body-tertiary]="star > reviewRating()" size="lg"></svg>
+        </button>
+        }
+        <span class="align-self-center ms-1 fw-bold text-warning">{{ reviewRating() }}/5</span>
+      </div>
+    </div>
+
+    <div class="mb-1">
+      <label cLabel for="reviewComment" class="form-label fw-semibold">Nhận xét (không bắt buộc)</label>
+      <textarea cFormControl id="reviewComment" rows="3" placeholder="Chia sẻ cảm nhận của bạn về sản phẩm..."
+        [ngModel]="reviewComment()" (ngModelChange)="reviewComment.set($event)"></textarea>
+    </div>
+  </c-modal-body>
+
+  <c-modal-footer>
+    <button cButton color="secondary" variant="ghost" (click)="closeReviewModal()">
+      Hủy
+    </button>
+    <button cButton color="primary" (click)="saveReview()" [disabled]="savingReview()">
+      @if (savingReview()) {
+      <c-spinner size="sm" class="me-1"></c-spinner>
+      <span>Đang lưu...</span>
+      } @else {
+      <span>Gửi đánh giá</span>
+      }
     </button>
   </c-modal-footer>
 </c-modal>

@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import {
+  AlertComponent,
   BadgeComponent,
   ButtonDirective,
   CardBodyComponent,
@@ -27,7 +28,9 @@ import {
 } from '@coreui/angular';
 import { IconDirective } from '@coreui/icons-angular';
 import { OrderResponse, OrderStatus, PaymentMethod } from '../../../../core/models/order.model';
+import { ReviewRequest, ReviewResponse } from '../../../../core/models/review.model';
 import { OrderService } from '../../services/order.service';
+import { ReviewService } from '../../../../core/services/review.service';
 
 @Component({
   selector: 'app-order-list',
@@ -47,6 +50,7 @@ import { OrderService } from '../../services/order.service';
     ButtonDirective,
     BadgeComponent,
     SpinnerComponent,
+    AlertComponent,
     FormControlDirective,
     FormSelectDirective,
     InputGroupComponent,
@@ -64,6 +68,7 @@ import { OrderService } from '../../services/order.service';
 })
 export class OrderListComponent implements OnInit {
   private readonly orderService = inject(OrderService);
+  private readonly reviewService = inject(ReviewService);
 
   orders = signal<OrderResponse[]>([]);
   loading = signal<boolean>(false);
@@ -80,6 +85,20 @@ export class OrderListComponent implements OnInit {
   selectedOrder = signal<OrderResponse | null>(null);
   detailModalVisible = signal<boolean>(false);
   copiedId = signal<string>('');
+
+  // Reviews for the order currently open in the detail modal, keyed by orderLineId
+  reviewsByLineId = signal<Record<string, ReviewResponse>>({});
+
+  // Review Modal
+  reviewModalVisible = signal<boolean>(false);
+  reviewingLineId = signal<string>('');
+  reviewingProductName = signal<string>('');
+  reviewRating = signal<number>(5);
+  reviewComment = signal<string>('');
+  savingReview = signal<boolean>(false);
+
+  alertMessage = signal<string>('');
+  alertType = signal<'success' | 'danger'>('success');
 
   // Computed KPI Metrics
   totalOrdersCount = computed(() => this.totalElements());
@@ -211,11 +230,92 @@ export class OrderListComponent implements OnInit {
   openDetailModal(order: OrderResponse): void {
     this.selectedOrder.set(order);
     this.detailModalVisible.set(true);
+    this.reviewsByLineId.set({});
+
+    if (order.status === 'COMPLETED') {
+      this.reviewService.getReviewsForOrder(order.id).subscribe({
+        next: (reviews) => {
+          const map: Record<string, ReviewResponse> = {};
+          for (const r of reviews) {
+            map[r.orderLineId] = r;
+          }
+          this.reviewsByLineId.set(map);
+        },
+        error: () => {},
+      });
+    }
   }
 
   closeDetailModal(): void {
     this.detailModalVisible.set(false);
     this.selectedOrder.set(null);
+  }
+
+  /** Reviews are only allowed for a COMPLETED order, and only within 30 days of delivery. */
+  canReviewOrder(order: OrderResponse | null): boolean {
+    if (!order || order.status !== 'COMPLETED' || !order.completedAt) {
+      return false;
+    }
+    const deliveredAt = new Date(order.completedAt).getTime();
+    const daysSince = (Date.now() - deliveredAt) / (1000 * 60 * 60 * 24);
+    return daysSince <= 30;
+  }
+
+  getReviewForLine(orderLineId: string): ReviewResponse | undefined {
+    return this.reviewsByLineId()[orderLineId];
+  }
+
+  openReviewModal(orderLineId: string, productName: string): void {
+    const existing = this.getReviewForLine(orderLineId);
+    this.reviewingLineId.set(orderLineId);
+    this.reviewingProductName.set(productName);
+    this.reviewRating.set(existing?.rating || 5);
+    this.reviewComment.set(existing?.comment || '');
+    this.reviewModalVisible.set(true);
+  }
+
+  closeReviewModal(): void {
+    this.reviewModalVisible.set(false);
+    this.reviewingLineId.set('');
+  }
+
+  saveReview(): void {
+    const orderLineId = this.reviewingLineId();
+    if (!orderLineId) return;
+
+    const request: ReviewRequest = {
+      rating: this.reviewRating(),
+      comment: this.reviewComment().trim() || undefined,
+    };
+
+    const existing = this.getReviewForLine(orderLineId);
+    const save$ = existing
+      ? this.reviewService.updateReview(orderLineId, request)
+      : this.reviewService.createReview(orderLineId, request);
+
+    this.savingReview.set(true);
+    save$.subscribe({
+      next: (review) => {
+        this.savingReview.set(false);
+        this.reviewsByLineId.set({ ...this.reviewsByLineId(), [orderLineId]: review });
+        this.closeReviewModal();
+        this.showAlert(existing ? 'Đã cập nhật đánh giá!' : 'Cảm ơn bạn đã đánh giá sản phẩm!', 'success');
+      },
+      error: (err) => {
+        this.savingReview.set(false);
+        this.showAlert(err?.error?.message || 'Có lỗi xảy ra khi lưu đánh giá!', 'danger');
+      },
+    });
+  }
+
+  showAlert(message: string, type: 'success' | 'danger'): void {
+    this.alertMessage.set(message);
+    this.alertType.set(type);
+    setTimeout(() => {
+      if (this.alertMessage() === message) {
+        this.alertMessage.set('');
+      }
+    }, 4000);
   }
 
   copyOrderId(id: string): void {

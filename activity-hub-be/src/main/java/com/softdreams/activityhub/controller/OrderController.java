@@ -15,6 +15,7 @@ import com.softdreams.activityhub.dto.request.ApiResponse;
 import com.softdreams.activityhub.dto.request.OrderRequest;
 import com.softdreams.activityhub.dto.response.OrderResponse;
 import com.softdreams.activityhub.dto.response.OrderStatisticsResponse;
+import com.softdreams.activityhub.dto.response.ReviewResponse;
 import com.softdreams.activityhub.enums.EventType;
 import com.softdreams.activityhub.enums.TargetType;
 import com.softdreams.activityhub.service.OrderService;
@@ -93,6 +94,13 @@ public class OrderController {
             @RequestParam(required = false) LocalDateTime toDate) {
         return ApiResponse.<Page<OrderResponse>>builder()
                 .result(orderService.searchAdminOrders(keyword, status, paymentMethod, fromDate, toDate, pageable))
+                .build();
+    }
+
+    @GetMapping("/{orderId}/reviews")
+    ApiResponse<List<ReviewResponse>> getOrderReviews(@PathVariable String orderId) {
+        return ApiResponse.<List<ReviewResponse>>builder()
+                .result(orderService.getReviewsForOrder(orderId))
                 .build();
     }
 

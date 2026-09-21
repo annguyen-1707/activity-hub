@@ -16,12 +16,16 @@ public class SecurityService {
     private final UserRepository userRepository;
 
     public boolean isOrderOwner(String orderId, Authentication authentication) {
-        String userId = authentication.getName();
-        return orderRepository.existsByIdAndUserId(orderId, userId);
+        return userRepository
+                .findByUsername(authentication.getName())
+                .map(user -> orderRepository.existsByIdAndUserId(orderId, user.getId()))
+                .orElse(false);
     }
 
     public boolean isUserOwner(String userId, Authentication authentication) {
-        String userIdAuth = authentication.getName();
-        return userIdAuth.equals(userId);
+        return userRepository
+                .findByUsername(authentication.getName())
+                .map(user -> user.getId().equals(userId))
+                .orElse(false);
     }
 }

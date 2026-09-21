@@ -1,7 +1,10 @@
 package com.softdreams.activityhub.repository;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
+import com.softdreams.activityhub.dto.projection.ProductRatingProjection;
 import jakarta.persistence.LockModeType;
 
 import org.springframework.data.domain.Page;
@@ -36,4 +39,5 @@ public interface ProductRepository extends JpaRepository<Product, String> {
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT p FROM Product p WHERE p.id = :id")
     Optional<Product> findByIdForUpdate(@Param("id") String id);
+
 }

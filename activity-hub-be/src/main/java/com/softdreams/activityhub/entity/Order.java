@@ -42,6 +42,9 @@ public class Order {
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
+    @Column(name = "completed_at")
+    private LocalDateTime completedAt;
+
     @Column(name = "payment_method", length = 30)
     PaymentMethodEnum paymentMethod;
 

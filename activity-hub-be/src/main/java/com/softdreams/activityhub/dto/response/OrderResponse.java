@@ -22,6 +22,7 @@ public class OrderResponse {
     BigDecimal totalAmount;
     String status;
     LocalDateTime createdAt;
+    LocalDateTime completedAt;
     PaymentMethodEnum paymentMethod;
     String shippingAddress;
     String note;

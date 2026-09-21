@@ -5,8 +5,6 @@ import java.time.LocalDateTime;
 
 import jakarta.persistence.*;
 
-import com.softdreams.activityhub.enums.CategoryEnum;
-
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -33,8 +31,6 @@ public class Product {
     @JoinColumn(name = "category_id")
     Category category;
 
-    double rate;
-
     @Column(nullable = false)
     int quantity;
 
@@ -59,4 +55,5 @@ public class Product {
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();
     }
+
 }

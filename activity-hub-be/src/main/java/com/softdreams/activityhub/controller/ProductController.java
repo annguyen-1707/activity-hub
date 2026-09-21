@@ -10,9 +10,10 @@ import com.softdreams.activityhub.anotation.ActivityLog;
 import com.softdreams.activityhub.dto.request.ApiResponse;
 import com.softdreams.activityhub.dto.request.ProductRequest;
 import com.softdreams.activityhub.dto.response.ProductResponse;
-import com.softdreams.activityhub.enums.CategoryEnum;
+import com.softdreams.activityhub.dto.response.ReviewResponse;
 import com.softdreams.activityhub.enums.EventType;
 import com.softdreams.activityhub.enums.TargetType;
+import com.softdreams.activityhub.service.ReviewService;
 import com.softdreams.activityhub.service.ProductService;
 
 import lombok.AccessLevel;
@@ -25,6 +26,7 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class ProductController {
     ProductService productService;
+    ReviewService reviewService;
 
     @PostMapping
     @ActivityLog(eventType = EventType.CREATED, targetType = TargetType.PRODUCT, targetId = "#result.result.id")
@@ -64,5 +66,12 @@ public class ProductController {
     ApiResponse<Void> delete(@PathVariable String productId) {
         productService.delete(productId);
         return ApiResponse.<Void>builder().build();
+    }
+
+    @GetMapping("/{productId}/reviews")
+    ApiResponse<Page<ReviewResponse>> getReviews(@PathVariable String productId, Pageable pageable) {
+        return ApiResponse.<Page<ReviewResponse>>builder()
+                .result(reviewService.getByProduct(productId, pageable))
+                .build();
     }
 }

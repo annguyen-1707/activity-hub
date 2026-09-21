@@ -10,7 +10,8 @@ export interface Product {
   image: string;
   description: string;
   stock: number;
-  rating?: number;
+  rate?: number;
+  totalReviews?: number;
 }
 
 export interface CartItem {
@@ -48,6 +49,7 @@ export interface OrderResponse {
   totalAmount: number;
   status: OrderStatus;
   createdAt: string;
+  completedAt?: string;
   paymentMethod: PaymentMethod;
   shippingAddress: string;
   note?: string;

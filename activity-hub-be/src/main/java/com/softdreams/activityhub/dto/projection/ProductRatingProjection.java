@@ -1,4 +1,9 @@
 package com.softdreams.activityhub.dto.projection;
 
-public class ProductRatingProjection {
+public interface ProductRatingProjection {
+    String getProductId();
+
+    Double getAverageRating();
+
+    Long getTotalReviews();
 }

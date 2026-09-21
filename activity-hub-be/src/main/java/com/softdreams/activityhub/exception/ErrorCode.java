@@ -27,6 +27,11 @@ public enum ErrorCode {
     CATEGORY_NOT_EXISTED(1017, "Category not existed", HttpStatus.NOT_FOUND),
     CATEGORY_ALREADY_EXISTS(1018, "Category code or name already exists", HttpStatus.BAD_REQUEST),
     CATEGORY_IN_USE(1019, "Category has associated products and cannot be deleted", HttpStatus.BAD_REQUEST),
+    ORDER_LINE_NOT_EXISTED(1020, "Order line not existed", HttpStatus.NOT_FOUND),
+    ORDER_NOT_COMPLETED(1021, "Order must be completed before it can be reviewed", HttpStatus.BAD_REQUEST),
+    REVIEW_WINDOW_EXPIRED(1022, "Reviews are only allowed within 30 days of delivery", HttpStatus.BAD_REQUEST),
+    REVIEW_ALREADY_EXISTS(1023, "This order line has already been reviewed", HttpStatus.BAD_REQUEST),
+    REVIEW_NOT_EXISTED(1024, "Review not existed", HttpStatus.NOT_FOUND),
     ;
 
     ErrorCode(int code, String message, HttpStatusCode statusCode) {

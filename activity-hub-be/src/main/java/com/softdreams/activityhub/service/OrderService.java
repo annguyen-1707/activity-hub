@@ -21,6 +21,7 @@ import com.softdreams.activityhub.dto.request.OrderRequest;
 import com.softdreams.activityhub.dto.response.OrderLineResponse;
 import com.softdreams.activityhub.dto.response.OrderResponse;
 import com.softdreams.activityhub.dto.response.OrderStatisticsResponse;
+import com.softdreams.activityhub.dto.response.ReviewResponse;
 import com.softdreams.activityhub.entity.Order;
 import com.softdreams.activityhub.entity.OrderLine;
 import com.softdreams.activityhub.entity.Product;
@@ -29,9 +30,11 @@ import com.softdreams.activityhub.enums.OrderStatus;
 import com.softdreams.activityhub.exception.AppException;
 import com.softdreams.activityhub.exception.ErrorCode;
 import com.softdreams.activityhub.mapper.OrderMapper;
+import com.softdreams.activityhub.mapper.ReviewMapper;
 import com.softdreams.activityhub.repository.OrderLineRepository;
 import com.softdreams.activityhub.repository.OrderRepository;
 import com.softdreams.activityhub.repository.ProductRepository;
+import com.softdreams.activityhub.repository.ReviewRepository;
 import com.softdreams.activityhub.repository.UserRepository;
 
 import lombok.AccessLevel;
@@ -50,6 +53,8 @@ public class OrderService {
     OrderLineRepository orderLineRepository;
     ProductRepository productRepository;
     StockTransactionService stockTransactionService;
+    ReviewRepository reviewRepository;
+    ReviewMapper reviewMapper;
 
     private User getMyUser() {
         User user;
@@ -228,6 +233,7 @@ public class OrderService {
                 .orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_EXISTED));
 
         order.setStatus(OrderStatus.COMPLETED);
+        order.setCompletedAt(LocalDateTime.now());
         return orderMapper.toOrderResponse(orderRepository.save(order));
     }
 
@@ -284,6 +290,24 @@ public class OrderService {
                 yield orderMapper.toOrderResponse(orderRepository.save(order));
             }
         };
+    }
+
+    @PreAuthorize("hasRole('ADMIN') or @security.isOrderOwner(#orderId, authentication)")
+    public List<ReviewResponse> getReviewsForOrder(String orderId) {
+        Order order = orderRepository
+                .findByIdWithLines(orderId)
+                .orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_EXISTED));
+
+        List<String> lineIds =
+                order.getOrderLines().stream().map(OrderLine::getId).toList();
+
+        if (lineIds.isEmpty()) {
+            return List.of();
+        }
+
+        return reviewRepository.findByOrderLine_IdIn(lineIds).stream()
+                .map(reviewMapper::toResponse)
+                .toList();
     }
 
     @PreAuthorize("hasRole('ADMIN') or @security.isOrderOwner(#orderId, authentication)")
