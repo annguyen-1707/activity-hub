@@ -4,6 +4,7 @@ export interface ProductResponse {
   price: number;
   category: CategoryResponse;
   rate: number;
+  totalReviews: number;
   quantity: number;
   description?: string;
   image?: string;
@@ -15,7 +16,6 @@ export interface ProductRequest {
   name: string;
   price: number;
   categoryId: string;
-  rate?: number;
   description?: string;
   image?: string;
 }

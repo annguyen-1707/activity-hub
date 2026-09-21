@@ -1,0 +1,165 @@
+<div class="sales-product-detail-page pb-5">
+  <!-- TOP BACK BUTTON & HEADER -->
+  <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
+    <a routerLink="/orders/create" class="btn btn-outline-secondary btn-sm rounded-pill px-3 d-flex align-items-center gap-1 shadow-sm">
+      <svg cIcon name="cilArrowLeft" size="sm"></svg>
+      <span>Quay lại cửa hàng</span>
+    </a>
+    <span class="text-body-secondary small">Xem chi tiết sản phẩm và đánh giá</span>
+  </div>
+
+  @if (loading()) {
+    <div class="text-center py-5">
+      <c-spinner color="primary"></c-spinner>
+      <div class="text-body-secondary mt-3">Đang tải thông tin sản phẩm...</div>
+    </div>
+  } @else if (errorMessage()) {
+    <div class="alert alert-danger shadow-sm rounded-4 p-4 text-center my-4">
+      <svg cIcon name="cilBug" size="xl" class="mb-2 text-danger"></svg>
+      <h5 class="fw-bold">Không tìm thấy thông tin sản phẩm</h5>
+      <p class="mb-3 text-body-secondary">{{ errorMessage() }}</p>
+      <a routerLink="/orders/create" class="btn btn-primary rounded-pill px-4">
+        Quay về cửa hàng
+      </a>
+    </div>
+  } @else if (product(); as prod) {
+    <!-- PRODUCT DETAIL CARD -->
+    <c-card class="border-0 shadow-sm rounded-4 overflow-hidden mb-4">
+      <c-card-body class="p-4 p-md-5">
+        <c-row class="g-4 align-items-start">
+          <!-- Product Image Column -->
+          <c-col md="5" lg="4">
+            <div class="product-image-container rounded-4 overflow-hidden bg-body-tertiary border d-flex align-items-center justify-content-center p-3">
+              @if (prod.image) {
+                <img [src]="prod.image" [alt]="prod.name" class="img-fluid rounded-3 product-detail-img" />
+              } @else {
+                <div class="py-5 text-center text-body-secondary">
+                  <svg cIcon name="cilTags" size="xxl" class="opacity-50 mb-2"></svg>
+                  <div class="small">Chưa có hình ảnh</div>
+                </div>
+              }
+            </div>
+          </c-col>
+
+          <!-- Product Info Column -->
+          <c-col md="7" lg="8">
+            <div class="d-flex flex-column h-100 justify-content-between">
+              <div>
+                <!-- Category & Stock Badges -->
+                <div class="d-flex align-items-center gap-2 mb-2 flex-wrap">
+                  <span class="badge bg-body-secondary text-body border px-3 py-2 rounded-pill small">
+                    {{ prod.category?.name || 'Chưa phân loại' }}
+                  </span>
+                  @if (prod.quantity > 0) {
+                    <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2 rounded-pill small">
+                      Còn hàng ({{ prod.quantity }})
+                    </span>
+                  } @else {
+                    <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-3 py-2 rounded-pill small">
+                      Hết hàng
+                    </span>
+                  }
+                </div>
+
+                <!-- Product Name -->
+                <h2 class="fw-bold mb-3 text-body">{{ prod.name }}</h2>
+
+                <!-- Rating Stats -->
+                <div class="d-flex align-items-center gap-2 mb-3">
+                  <div class="d-flex align-items-center text-warning">
+                    @for (s of stars; track s) {
+                      <svg cIcon name="cilStar" size="sm" [class.text-body-tertiary]="s > prod.rate"></svg>
+                    }
+                  </div>
+                  <span class="fw-bold text-body">{{ prod.rate ? (prod.rate | number:'1.1-1') : '5.0' }}</span>
+                  <span class="text-body-secondary small">
+                    ({{ prod.totalReviews || 0 }} lượt đánh giá)
+                  </span>
+                </div>
+
+                <!-- Price -->
+                <div class="mb-4">
+                  <span class="fs-3 fw-bold text-primary">{{ formatCurrency(prod.price) }}</span>
+                </div>
+
+                <!-- Description -->
+                <div class="mb-4">
+                  <h6 class="fw-bold text-body-secondary text-uppercase small">Mô tả sản phẩm:</h6>
+                  <div class="p-3 bg-body-tertiary rounded-3 border text-body" style="white-space: pre-line;">
+                    {{ prod.description || 'Chưa có mô tả chi tiết cho sản phẩm này.' }}
+                  </div>
+                </div>
+              </div>
+
+              <!-- Action / Add to Cart Section -->
+              <div class="pt-3 border-top mt-2">
+                @if (prod.quantity > 0) {
+                  @if (inCartQuantity() > 0) {
+                    <div class="d-flex align-items-center gap-3 flex-wrap">
+                      <div class="d-flex align-items-center bg-body-secondary rounded-pill p-1 border">
+                        <button type="button" class="btn btn-sm btn-light rounded-circle p-0 stepper-btn shadow-sm"
+                                (click)="updateQuantity(-1)" title="Giảm số lượng">
+                          -
+                        </button>
+                        <span class="fw-bold px-3 text-primary fs-6">
+                          {{ inCartQuantity() }}
+                        </span>
+                        <button type="button" class="btn btn-sm btn-primary rounded-circle p-0 stepper-btn shadow-sm"
+                                (click)="updateQuantity(1)" title="Tăng số lượng"
+                                [disabled]="inCartQuantity() >= prod.quantity">
+                          +
+                        </button>
+                      </div>
+                      <span class="text-success small fw-semibold d-flex align-items-center gap-1">
+                        <svg cIcon name="cilCheck"></svg> Đã có trong giỏ hàng
+                      </span>
+                    </div>
+                  } @else {
+                    <button cButton color="primary" class="rounded-pill px-4 py-2 d-inline-flex align-items-center gap-2 shadow-sm fs-6"
+                            (click)="addToCart()">
+                      <svg cIcon name="cilBasket"></svg>
+                      <span>Thêm Vào Giỏ Hàng</span>
+                    </button>
+                  }
+                } @else {
+                  <button cButton color="secondary" disabled class="rounded-pill px-4 py-2">
+                    Tạm Thời Hết Hàng
+                  </button>
+                }
+              </div>
+            </div>
+          </c-col>
+        </c-row>
+      </c-card-body>
+    </c-card>
+
+    <!-- REVIEWS SECTION -->
+    <app-product-review-list [productId]="prod.id"></app-product-review-list>
+  }
+
+  <!-- FLOATING BOTTOM BAR WHEN CART HAS ITEMS -->
+  @if (totalCartQuantity() > 0) {
+    <div
+      class="floating-cart-bar position-fixed bottom-0 start-50 translate-middle-x mb-4 shadow-lg rounded-pill p-2 px-4 bg-dark text-white d-flex align-items-center justify-content-between gap-4 border border-secondary"
+      style="z-index: 1040; max-width: 90%; min-width: 320px;">
+      <div class="d-flex align-items-center gap-3">
+        <div
+          class="floating-cart-badge bg-primary text-white rounded-circle d-flex align-items-center justify-content-center fw-bold"
+          style="width: 38px; height: 38px;">
+          {{ totalCartQuantity() }}
+        </div>
+        <div>
+          <div class="small text-white-50">Tổng thanh toán:</div>
+          <div class="fw-bold text-white fs-6">{{ formatCurrency(totalCartAmount()) }}</div>
+        </div>
+      </div>
+
+      <a routerLink="/orders/checkout"
+         class="btn btn-primary rounded-pill px-4 py-2 fw-bold d-flex align-items-center gap-2 shadow-sm text-nowrap">
+        <span>Xem Giỏ Hàng & Thanh Toán</span>
+        <svg cIcon name="cilArrowRight" size="sm"></svg>
+      </a>
+    </div>
+  }
+</div>
+

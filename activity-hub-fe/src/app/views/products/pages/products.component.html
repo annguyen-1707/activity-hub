@@ -184,8 +184,15 @@
                       <!-- Name & SKU -->
                       <td>
                         <div class="fw-semibold text-truncate" style="max-width: 280px;" [title]="prod.name">
+                        <a
+                          [routerLink]="['/products', prod.id]"
+                          class="fw-semibold text-truncate text-decoration-none text-body d-inline-block"
+                          style="max-width: 280px;"
+                          [title]="prod.name"
+                        >
                           {{ prod.name }}
                         </div>
+                        </a>
                         <div class="d-flex align-items-center gap-1 text-body-secondary small">
                           <code>{{ prod.id.substring(0, 8) }}...</code>
                           <button class="btn btn-sm btn-link p-0 text-body-secondary" (click)="copyId(prod.id)" title="Copy mã ID">
@@ -227,6 +234,17 @@
 
                       <!-- Actions -->
                       <td class="text-center">
+                        <a
+                          cButton
+                          color="info"
+                          variant="outline"
+                          size="sm"
+                          class="me-1"
+                          [routerLink]="['/products', prod.id]"
+                          title="Xem chi tiết & đánh giá"
+                        >
+                          <svg cIcon name="cilDescription"></svg>
+                        </a>
                         <button
                           cButton
                           color="primary"
@@ -511,11 +529,6 @@
       </c-row>
 
       <div class="mb-3">
-        <label cLabel class="fw-semibold">Đánh giá (sao: 0 - 5)</label>
-        <input cFormControl type="number" step="0.1" formControlName="rate" min="0" max="5" placeholder="5.0" />
-      </div>
-
-      <div class="mb-3">
         <label cLabel class="fw-semibold">Đường dẫn hình ảnh (URL)</label>
         <input cFormControl formControlName="image" placeholder="https://example.com/product.jpg" />
       </div>
@@ -568,11 +581,6 @@
           </select>
         </c-col>
       </c-row>
-
-      <div class="mb-3">
-        <label cLabel class="fw-semibold">Đánh giá (0 - 5)</label>
-        <input cFormControl type="number" step="0.1" formControlName="rate" min="0" max="5" />
-      </div>
 
       <div class="mb-3">
         <label cLabel class="fw-semibold">Đường dẫn hình ảnh (URL)</label>

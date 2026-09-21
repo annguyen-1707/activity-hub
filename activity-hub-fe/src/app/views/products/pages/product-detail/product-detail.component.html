@@ -1,0 +1,236 @@
+<div class="management-product-detail-page pb-5">
+  <!-- TOP TOOLBAR & HEADER -->
+  <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
+    <div class="d-flex align-items-center gap-3">
+      <a routerLink="/products" class="btn btn-outline-secondary btn-sm rounded-pill px-3 d-flex align-items-center gap-1 shadow-sm">
+        <svg cIcon name="cilArrowLeft" size="sm"></svg>
+        <span>Quay lại danh sách</span>
+      </a>
+      <h4 class="mb-0 fw-bold text-body">Chi Tiết Sản Phẩm</h4>
+    </div>
+
+    @if (product(); as prod) {
+      <div class="d-flex align-items-center gap-2">
+        <button cButton color="primary" size="sm" class="rounded-pill px-3 d-flex align-items-center gap-1 shadow-sm"
+                (click)="openEditModal()">
+          <svg cIcon name="cilPencil"></svg>
+          <span>Sửa Thông Tin</span>
+        </button>
+        <button cButton color="danger" variant="outline" size="sm" class="rounded-pill px-3 d-flex align-items-center gap-1"
+                (click)="openDeleteModal()">
+          <svg cIcon name="cilTrash"></svg>
+          <span>Xóa Sản Phẩm</span>
+        </button>
+      </div>
+    }
+  </div>
+
+  <!-- ALERT -->
+  @if (alertMessage()) {
+    <c-alert [color]="alertType()" dismissible class="d-flex align-items-center gap-2 mb-4 shadow-sm">
+      <svg cIcon [name]="alertType() === 'success' ? 'cilCheck' : 'cilBug'"></svg>
+      <span>{{ alertMessage() }}</span>
+    </c-alert>
+  }
+
+  @if (loading()) {
+    <div class="text-center py-5">
+      <c-spinner color="primary"></c-spinner>
+      <div class="text-body-secondary mt-3">Đang tải thông tin sản phẩm...</div>
+    </div>
+  } @else if (errorMessage()) {
+    <div class="alert alert-danger shadow-sm rounded-4 p-4 text-center my-4">
+      <svg cIcon name="cilBug" size="xl" class="mb-2 text-danger"></svg>
+      <h5 class="fw-bold">Không tìm thấy thông tin sản phẩm</h5>
+      <p class="mb-3 text-body-secondary">{{ errorMessage() }}</p>
+      <a routerLink="/products" class="btn btn-primary rounded-pill px-4">
+        Quay lại danh sách
+      </a>
+    </div>
+  } @else if (product(); as prod) {
+    <!-- MAIN PRODUCT DETAIL CARD -->
+    <c-card class="border-0 shadow-sm rounded-4 overflow-hidden mb-4">
+      <c-card-body class="p-4 p-md-5">
+        <c-row class="g-4 align-items-start">
+          <!-- Thumbnail Column -->
+          <c-col md="4" lg="3">
+            <div class="product-thumb-box rounded-4 overflow-hidden bg-body-tertiary border d-flex align-items-center justify-content-center p-3 mb-3">
+              @if (prod.image) {
+                <img [src]="prod.image" [alt]="prod.name" class="img-fluid rounded-3 product-img" />
+              } @else {
+                <div class="py-5 text-center text-body-secondary">
+                  <svg cIcon name="cilTags" size="xxl" class="opacity-50 mb-2"></svg>
+                  <div class="small">Chưa có hình ảnh</div>
+                </div>
+              }
+            </div>
+
+            <!-- Stock Status Box -->
+            <div class="p-3 bg-body-tertiary rounded-3 border text-center">
+              <div class="text-body-secondary small mb-1">Số lượng tồn kho</div>
+              @if (prod.quantity > 10) {
+                <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2 fs-6 rounded-pill">
+                  Còn hàng: {{ prod.quantity }}
+                </span>
+              } @else if (prod.quantity > 0) {
+                <span class="badge bg-warning-subtle text-warning border border-warning-subtle px-3 py-2 fs-6 rounded-pill">
+                  Sắp hết: {{ prod.quantity }}
+                </span>
+              } @else {
+                <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-3 py-2 fs-6 rounded-pill">
+                  Hết hàng (0)
+                </span>
+              }
+            </div>
+          </c-col>
+
+          <!-- Information Column -->
+          <c-col md="8" lg="9">
+            <div class="d-flex flex-column h-100">
+              <!-- Header tags -->
+              <div class="d-flex align-items-center gap-2 mb-2 flex-wrap">
+                <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-2 rounded-pill small">
+                  {{ prod.category?.name || 'Chưa phân loại' }}
+                </span>
+                <div class="d-flex align-items-center gap-1 text-body-secondary small ms-auto">
+                  <span>Mã SKU/ID:</span>
+                  <code>{{ prod.id }}</code>
+                  <button class="btn btn-sm btn-link p-0 text-body-secondary" (click)="copyId(prod.id)" title="Copy mã ID">
+                    <svg cIcon name="cilPaperclip" size="sm"></svg>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Product Name -->
+              <h2 class="fw-bold mb-3 text-body">{{ prod.name }}</h2>
+
+              <!-- Rating summary -->
+              <div class="d-flex align-items-center gap-2 mb-3">
+                <div class="d-flex align-items-center text-warning">
+                  @for (s of stars; track s) {
+                    <svg cIcon name="cilStar" size="sm" [class.text-body-tertiary]="s > prod.rate"></svg>
+                  }
+                </div>
+                <span class="fw-bold text-body">{{ prod.rate ? (prod.rate | number:'1.1-1') : '5.0' }}</span>
+                <span class="text-body-secondary small">
+                  ({{ prod.totalReviews || 0 }} lượt đánh giá)
+                </span>
+              </div>
+
+              <!-- Price -->
+              <div class="mb-4">
+                <span class="fs-3 fw-bold text-primary">{{ formatCurrency(prod.price) }}</span>
+              </div>
+
+              <!-- Meta dates -->
+              <div class="row g-2 small text-body-secondary mb-4 pb-3 border-bottom">
+                <div class="col-sm-6">
+                  <strong>Ngày tạo:</strong> {{ formatDate(prod.createdAt) }}
+                </div>
+                <div class="col-sm-6">
+                  <strong>Cập nhật lần cuối:</strong> {{ formatDate(prod.updatedAt) }}
+                </div>
+              </div>
+
+              <!-- Description -->
+              <div>
+                <h6 class="fw-bold text-body-secondary text-uppercase small mb-2">Mô tả sản phẩm:</h6>
+                <div class="p-3 bg-body-tertiary rounded-3 border text-body" style="white-space: pre-line;">
+                  {{ prod.description || 'Chưa có thông tin mô tả cho sản phẩm này.' }}
+                </div>
+              </div>
+            </div>
+          </c-col>
+        </c-row>
+      </c-card-body>
+    </c-card>
+
+    <!-- REVIEWS SECTION -->
+    <app-product-review-list [productId]="prod.id"></app-product-review-list>
+  }
+</div>
+
+<!-- EDIT PRODUCT MODAL -->
+<c-modal [visible]="editModalVisible()" (visibleChange)="editModalVisible.set($event)" backdrop="static">
+  <c-modal-header class="bg-primary text-white">
+    <h5 cModalTitle class="d-flex align-items-center gap-2">
+      <svg cIcon name="cilPencil"></svg>
+      Chỉnh Sửa Thông Tin Sản Phẩm
+    </h5>
+    <button (click)="editModalVisible.set(false)" class="btn-close btn-close-white"></button>
+  </c-modal-header>
+  <c-modal-body class="p-4">
+    <form [formGroup]="editForm" (ngSubmit)="saveEdit()">
+      <div class="mb-3">
+        <label cLabel class="fw-semibold">Tên sản phẩm <span class="text-danger">*</span></label>
+        <input cFormControl formControlName="name" />
+      </div>
+
+      <c-row class="g-3 mb-3">
+        <c-col md="6">
+          <label cLabel class="fw-semibold">Giá bán (VND) <span class="text-danger">*</span></label>
+          <input cFormControl type="number" formControlName="price" min="0" />
+        </c-col>
+        <c-col md="6">
+          <label cLabel class="fw-semibold">Danh mục <span class="text-danger">*</span></label>
+          <select cSelect formControlName="categoryId">
+            <option value="" disabled>-- Chọn danh mục --</option>
+            @for (cat of categoryOptions(); track cat.id) {
+              <option [value]="cat.id">{{ cat.name }} ({{ cat.code }})</option>
+            }
+          </select>
+        </c-col>
+      </c-row>
+
+      <div class="mb-3">
+        <label cLabel class="fw-semibold">Đường dẫn hình ảnh (URL)</label>
+        <input cFormControl formControlName="image" />
+      </div>
+
+      <div class="mb-3">
+        <label cLabel class="fw-semibold">Mô tả sản phẩm</label>
+        <textarea cFormControl formControlName="description" rows="3"></textarea>
+      </div>
+    </form>
+  </c-modal-body>
+  <c-modal-footer>
+    <button cButton color="secondary" variant="outline" (click)="editModalVisible.set(false)" [disabled]="saving()">Hủy bỏ</button>
+    <button cButton color="primary" (click)="saveEdit()" [disabled]="saving() || editForm.invalid">
+      @if (saving()) {
+        <c-spinner size="sm" class="me-1"></c-spinner> Đang lưu...
+      } @else {
+        <svg cIcon name="cilCheck" class="me-1"></svg> Lưu Thay Đổi
+      }
+    </button>
+  </c-modal-footer>
+</c-modal>
+
+<!-- DELETE CONFIRMATION MODAL -->
+<c-modal [visible]="deleteModalVisible()" (visibleChange)="deleteModalVisible.set($event)">
+  <c-modal-header class="bg-danger text-white">
+    <h5 cModalTitle class="d-flex align-items-center gap-2">
+      <svg cIcon name="cilTrash"></svg>
+      Xác Nhận Xóa Sản Phẩm
+    </h5>
+    <button (click)="deleteModalVisible.set(false)" class="btn-close btn-close-white"></button>
+  </c-modal-header>
+  <c-modal-body class="p-4">
+    <p class="mb-2">Bạn có chắc chắn muốn xóa vĩnh viễn sản phẩm sau không?</p>
+    <div class="p-3 bg-body-secondary rounded-3">
+      <div class="fw-bold">{{ product()?.name }}</div>
+      <div class="small text-body-secondary">Mã ID: <code>{{ product()?.id }}</code></div>
+      <div class="small text-danger mt-1">Lưu ý: Thao tác này không thể hoàn tác!</div>
+    </div>
+  </c-modal-body>
+  <c-modal-footer>
+    <button cButton color="secondary" variant="outline" (click)="deleteModalVisible.set(false)" [disabled]="deleting()">Hủy</button>
+    <button cButton color="danger" (click)="confirmDelete()" [disabled]="deleting()">
+      @if (deleting()) {
+        <c-spinner size="sm" class="me-1"></c-spinner> Đang xóa...
+      } @else {
+        <svg cIcon name="cilTrash" class="me-1"></svg> Xóa Sản Phẩm
+      }
+    </button>
+  </c-modal-footer>
+</c-modal>
+

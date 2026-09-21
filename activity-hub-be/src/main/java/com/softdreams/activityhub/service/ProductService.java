@@ -1,12 +1,16 @@
 package com.softdreams.activityhub.service;
 
-import com.softdreams.activityhub.dto.projection.ProductRatingProjection;
-import com.softdreams.activityhub.repository.*;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
+import com.softdreams.activityhub.dto.projection.ProductRatingProjection;
 import com.softdreams.activityhub.dto.request.ProductRequest;
 import com.softdreams.activityhub.dto.response.ProductResponse;
 import com.softdreams.activityhub.entity.Category;
@@ -14,16 +18,12 @@ import com.softdreams.activityhub.entity.Product;
 import com.softdreams.activityhub.exception.AppException;
 import com.softdreams.activityhub.exception.ErrorCode;
 import com.softdreams.activityhub.mapper.ProductMapper;
+import com.softdreams.activityhub.repository.*;
 
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
-
-import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -53,36 +53,35 @@ public class ProductService {
         List<String> productIds = products.stream().map(Product::getId).toList();
         List<ProductRatingProjection> ratings = reviewRepository.getProductRatings(productIds);
         Map<String, ProductRatingProjection> ratingMap =
-                ratings.stream()
-                        .collect(Collectors.toMap(
-                                ProductRatingProjection::getProductId,
-                                Function.identity()
-                        ));
+                ratings.stream().collect(Collectors.toMap(ProductRatingProjection::getProductId, Function.identity()));
         return products.map(product -> {
-            ProductResponse response =
-                    productMapper.toProductResponse(product);
+            ProductResponse response = productMapper.toProductResponse(product);
 
-            ProductRatingProjection rating =
-                    ratingMap.get(product.getId());
+            ProductRatingProjection rating = ratingMap.get(product.getId());
 
-            response.setRate(
-                    rating != null
-                            ? rating.getAverageRating()
-                            : 0.0
-            );
-            response.setTotalReviews(
-                    rating != null
-                            ? rating.getTotalReviews()
-                            : 0L
-            );
+            response.setRate(rating != null ? rating.getAverageRating() : 0.0);
+            response.setTotalReviews(rating != null ? rating.getTotalReviews() : 0L);
             return response;
         });
     }
 
     public ProductResponse getById(String productId) {
-        return productMapper.toProductResponse(productRepository
+        Product product = productRepository
                 .findById(productId)
-                .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_EXISTED)));
+                .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_EXISTED));
+
+        ProductResponse response = productMapper.toProductResponse(product);
+
+        reviewRepository.getProductRating(productId).ifPresent(rating -> {
+            if (rating.getAverageRating() != null) {
+                response.setRate(rating.getAverageRating());
+            }
+            if (rating.getTotalReviews() != null) {
+                response.setTotalReviews(rating.getTotalReviews());
+            }
+        });
+
+        return response;
     }
 
     @PreAuthorize("hasRole('ADMIN')")

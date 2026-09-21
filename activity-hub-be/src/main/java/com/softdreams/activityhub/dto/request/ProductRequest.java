@@ -6,8 +6,6 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
 
-import com.softdreams.activityhub.enums.CategoryEnum;
-
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -27,11 +25,6 @@ public class ProductRequest {
 
     @NotBlank
     String categoryId;
-
-    double rate;
-
-    @PositiveOrZero
-    int quantity;
 
     String description;
 

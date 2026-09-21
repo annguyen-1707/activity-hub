@@ -1,0 +1,23 @@
+.sales-product-detail-page {
+  .product-image-container {
+    min-height: 280px;
+    max-height: 380px;
+  }
+
+  .product-detail-img {
+    max-height: 340px;
+    object-fit: contain;
+  }
+
+  .stepper-btn {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 1rem;
+    line-height: 1;
+  }
+}
+

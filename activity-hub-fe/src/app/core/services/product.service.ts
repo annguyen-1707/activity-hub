@@ -56,7 +56,8 @@ export class ProductService {
           image: p.image || '',
           description: p.description || '',
           stock: p.quantity,
-          rating: p.rate,
+          rate: p.rate,
+          totalReviews: p.totalReviews,
         })),
       }))
     );

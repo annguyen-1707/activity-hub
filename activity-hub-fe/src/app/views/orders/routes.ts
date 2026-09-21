@@ -36,5 +36,15 @@ export const routes: Routes = [
       title: 'Danh sách đơn hàng',
     },
   },
+  {
+    path: 'products/:id',
+    loadComponent: () =>
+      import('./pages/product-detail/product-detail.component').then(
+        (m) => m.ProductDetailComponent
+      ),
+    data: {
+      title: 'Chi tiết sản phẩm',
+    },
+  },
 ];
 

@@ -9,4 +9,14 @@ export const routes: Routes = [
       title: 'Quản lý sản phẩm & Kho',
     },
   },
+  {
+    path: ':id',
+    loadComponent: () =>
+      import('./pages/product-detail/product-detail.component').then(
+        (m) => m.ProductDetailComponent
+      ),
+    data: {
+      title: 'Chi tiết sản phẩm',
+    },
+  },
 ];

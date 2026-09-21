@@ -1,5 +1,6 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterLink } from '@angular/router';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import {
   AlertComponent,
@@ -50,6 +51,7 @@ import {
   styleUrls: ['./products.component.scss'],
   imports: [
     CommonModule,
+    RouterLink,
     FormsModule,
     ReactiveFormsModule,
     RowComponent,
@@ -152,7 +154,6 @@ export class ProductsComponent implements OnInit {
       name: ['', [Validators.required, Validators.minLength(2)]],
       price: [0, [Validators.required, Validators.min(0)]],
       categoryId: ['', [Validators.required]],
-      rate: [5.0, [Validators.min(0), Validators.max(5)]],
       image: [''],
       description: [''],
     });
@@ -238,7 +239,6 @@ export class ProductsComponent implements OnInit {
       name: product.name,
       price: product.price,
       categoryId: product.category.id || '',
-      rate: product.rate,
       image: product.image || '',
       description: product.description || '',
     });
@@ -258,7 +258,6 @@ export class ProductsComponent implements OnInit {
       name: formVal.name,
       price: Number(formVal.price),
       categoryId: formVal.categoryId,
-      rate: Number(formVal.rate) || 0,
       image: formVal.image || '',
       description: formVal.description || '',
     };
@@ -287,7 +286,6 @@ export class ProductsComponent implements OnInit {
       name: formVal.name,
       price: Number(formVal.price),
       categoryId: formVal.categoryId,
-      rate: Number(formVal.rate) || 0,
       image: formVal.image || '',
       description: formVal.description || '',
     };
