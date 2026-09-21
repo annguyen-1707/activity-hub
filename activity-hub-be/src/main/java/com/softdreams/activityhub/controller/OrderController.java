@@ -139,12 +139,4 @@ public class OrderController {
                 .result(orderService.done(orderId))
                 .build();
     }
-
-    //    @PatchMapping("/{orderId}/status")
-    //    @PreAuthorize("hasRole('ADMIN')")
-    //    ApiResponse<OrderResponse> updateStatus(@PathVariable String orderId, @RequestParam OrderStatus status) {
-    //        return ApiResponse.<OrderResponse>builder()
-    //                .result(orderService.updateStatus(orderId, status))
-    //                .build();
-    //    }
 }

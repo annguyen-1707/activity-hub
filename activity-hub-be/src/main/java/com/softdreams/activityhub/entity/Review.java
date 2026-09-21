@@ -27,7 +27,7 @@ public class ProductReview {
     User user;
 
     @Column(nullable = false)
-    Integer rating;
+    Double rating;
 
     @Column(columnDefinition = "NVARCHAR(1000)")
     String comment;
