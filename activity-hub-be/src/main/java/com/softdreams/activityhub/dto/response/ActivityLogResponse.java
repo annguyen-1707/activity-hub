@@ -26,4 +26,38 @@ public class ActivityLogResponse {
     String targetId;
     String ipAddress;
     LocalDateTime createdAt;
+
+
+    public ActivityLogResponse(
+            String id,
+            String eventId,
+            String userId,
+            String username,
+            String fullName,
+            EventType eventType,
+            TargetType targetType,
+            String targetId,
+            String ipAddress,
+            LocalDateTime createdAt
+    ) {
+        this.id = id;
+        this.eventId = eventId;
+        this.userId = userId;
+        this.username = username;
+        this.fullName = fullName;
+        this.eventType = eventType;
+        this.targetType = targetType;
+        this.targetId = targetId;
+        this.ipAddress = ipAddress;
+        this.createdAt = createdAt;
+
+        // Gán label sau hoặc sử dụng getter để xử lý
+        this.eventTypeLabel = eventType != null
+                ? eventType.getLabel()
+                : null;
+
+        this.targetTypeLabel = targetType != null
+                ? targetType.getLabel()
+                : null;
+    }
 }

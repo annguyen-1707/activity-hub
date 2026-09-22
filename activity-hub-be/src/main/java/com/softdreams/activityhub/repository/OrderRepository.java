@@ -120,4 +120,47 @@ public interface OrderRepository extends JpaRepository<Order, String> {
 			""")
     java.util.List<com.softdreams.activityhub.dto.projection.OrderRevenueProjection> findOrderRevenueSince(
             @Param("fromDate") LocalDateTime fromDate);
+
+    @Query(
+            """
+			SELECT o
+			FROM Order o
+			INNER JOIN FETCH o.user u
+			WHERE
+			(
+				:keyword IS NULL
+				OR :keyword = ''
+				OR u.username LIKE CONCAT('%', :keyword, '%')
+				OR u.firstName LIKE CONCAT('%', :keyword, '%')
+				OR u.lastName LIKE CONCAT('%', :keyword, '%')
+			)
+			AND (
+				:status IS NULL
+				OR o.status = :status
+			)
+			AND (
+				:paymentMethod IS NULL
+				OR o.paymentMethod = :paymentMethod
+			)
+			AND (
+				CAST(:fromDate AS timestamp) IS NULL
+				OR o.createdAt >= :fromDate
+			)
+			AND (
+				CAST(:toDate AS timestamp) IS NULL
+				OR o.createdAt <= :toDate
+			)
+			AND (
+				:userId IS NULL
+				OR u.id = :userId
+			)
+			ORDER BY o.createdAt DESC
+			""")
+    java.util.List<Order> findOrdersForExport(
+            @Param("keyword") String keyword,
+            @Param("status") String status,
+            @Param("paymentMethod") String paymentMethod,
+            @Param("fromDate") LocalDateTime fromDate,
+            @Param("toDate") LocalDateTime toDate,
+            @Param("userId") String userId);
 }

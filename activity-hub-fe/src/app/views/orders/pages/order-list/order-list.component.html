@@ -11,9 +11,9 @@
   <c-card class="border-0 shadow-sm rounded-4 overflow-hidden mb-4">
     <!-- Toolbar Header -->
     <c-card-header class="bg-body py-3 px-4 border-bottom">
-      <c-row class="g-3 align-items-center justify-content-between">
+      <c-row class="g-2 align-items-center">
         <!-- Search Input -->
-        <c-col md="5" xs="12">
+        <c-col lg="3" md="4" xs="12">
           <c-input-group size="sm">
             <span cInputGroupText class="bg-body-secondary border-end-0">
               <svg cIcon name="cilMagnifyingGlass" class="text-body-secondary" size="sm"></svg>
@@ -29,47 +29,83 @@
           </c-input-group>
         </c-col>
 
-        <!-- Dropdown Filters -->
-        <c-col md="7" xs="12">
-          <div class="d-flex flex-wrap gap-2 justify-content-md-end align-items-center">
-            <!-- Status Filter -->
-            <select cSelect size="sm" class="form-select-sm w-auto rounded-3" [ngModel]="statusFilter()"
-              (ngModelChange)="onStatusChange($event)">
-              <option value="ALL">Tất cả trạng thái</option>
-              <option value="CREATED">Mới tạo</option>
-              <option value="CONFIRMED">Đang chuẩn bị</option>
-              <option value="COMPLETED">Hoàn thành</option>
-              <option value="CANCELLED">Đã hủy</option>
-            </select>
+        <!-- Status Filter -->
+        <c-col lg="2" md="4" xs="6">
+          <select cSelect size="sm" class="form-select-sm w-100 rounded-3" [ngModel]="statusFilter()"
+            (ngModelChange)="onStatusChange($event)">
+            <option value="ALL">Tất cả trạng thái</option>
+            <option value="CREATED">Mới tạo</option>
+            <option value="CONFIRMED">Đang chuẩn bị</option>
+            <option value="COMPLETED">Hoàn thành</option>
+            <option value="CANCELLED">Đã hủy</option>
+          </select>
+        </c-col>
 
-            <!-- Payment Filter -->
-            <select cSelect size="sm" class="form-select-sm w-auto rounded-3" [ngModel]="paymentFilter()"
-              (ngModelChange)="onPaymentChange($event)">
-              <option value="ALL">Tất cả thanh toán</option>
-              <option value="BANK">Chuyển khoản</option>
-              <option value="CASH">Tiền mặt (COD)</option>
-            </select>
+        <!-- Payment Filter -->
+        <c-col lg="2" md="4" xs="6">
+          <select cSelect size="sm" class="form-select-sm w-100 rounded-3" [ngModel]="paymentFilter()"
+            (ngModelChange)="onPaymentChange($event)">
+            <option value="ALL">Tất cả thanh toán</option>
+            <option value="BANK">Chuyển khoản</option>
+            <option value="CASH">Tiền mặt (COD)</option>
+          </select>
+        </c-col>
 
-            <!-- Page Size Selector -->
-            <div class="d-flex align-items-center gap-1 ms-auto ms-md-0">
-              <span class="text-body-secondary small text-nowrap d-none d-sm-inline">Hiển thị:</span>
-              <select cSelect size="sm" class="form-select-sm w-auto rounded-3" [ngModel]="pageSize()"
-                (ngModelChange)="onPageSizeChange($event)">
-                <option [value]="5">5 dòng</option>
-                <option [value]="10">10 dòng</option>
-                <option [value]="20">20 dòng</option>
-                <option [value]="50">50 dòng</option>
-              </select>
-            </div>
-
-            <!-- Refresh Button -->
-            <button cButton color="secondary" variant="outline" size="sm"
-              class="rounded-3 d-flex align-items-center gap-1" (click)="loadOrders()" title="Tải lại dữ liệu"
-              [disabled]="loading()">
-              <svg cIcon name="cilSpeedometer" size="sm"></svg>
-              <span>Làm mới</span>
-            </button>
+        <!-- From Date -->
+        <c-col lg="2" md="3" xs="6">
+          <div class="input-group input-group-sm">
+            <span class="input-group-text bg-light text-body-secondary">Từ</span>
+            <input
+              type="date"
+              class="form-control"
+              [ngModel]="fromDate()"
+              (ngModelChange)="fromDate.set($event); onDateChange()"
+            />
           </div>
+        </c-col>
+
+        <!-- To Date -->
+        <c-col lg="2" md="3" xs="6">
+          <div class="input-group input-group-sm">
+            <span class="input-group-text bg-light text-body-secondary">Đến</span>
+            <input
+              type="date"
+              class="form-control"
+              [ngModel]="toDate()"
+              (ngModelChange)="toDate.set($event); onDateChange()"
+            />
+          </div>
+        </c-col>
+
+        <!-- Action Buttons -->
+        <c-col lg="1" md="6" xs="12" class="d-flex justify-content-md-end align-items-center gap-2">
+          @if (keyword() || statusFilter() !== 'ALL' || paymentFilter() !== 'ALL' || fromDate() || toDate()) {
+            <button cButton color="light" size="sm" class="border text-body-secondary" (click)="resetFilters()" title="Xóa bộ lọc">
+              <svg cIcon name="cilReload"></svg>
+            </button>
+          }
+          <button
+            cButton
+            color="danger"
+            variant="outline"
+            size="sm"
+            class="rounded-3 text-nowrap"
+            (click)="exportPdf()"
+            [disabled]="exporting() || loading() || totalElements() === 0"
+            title="Xuất báo cáo PDF"
+          >
+            @if (exporting()) {
+              <c-spinner size="sm"></c-spinner>
+            } @else {
+              <svg cIcon name="cilCloudDownload" class="me-1"></svg>
+              <span>PDF</span>
+            }
+          </button>
+          <button cButton color="secondary" variant="outline" size="sm"
+            class="rounded-3 d-flex align-items-center gap-1" (click)="loadOrders()" title="Tải lại dữ liệu"
+            [disabled]="loading()">
+            <svg cIcon name="cilSpeedometer" size="sm"></svg>
+          </button>
         </c-col>
       </c-row>
     </c-card-header>

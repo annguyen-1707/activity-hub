@@ -24,7 +24,9 @@ export class ActivityLogService {
     size: number = 10,
     keyword: string = '',
     eventType: ActivityEventType | 'ALL' = 'ALL',
-    targetType: ActivityTargetType | 'ALL' = 'ALL'
+    targetType: ActivityTargetType | 'ALL' = 'ALL',
+    fromDate?: string,
+    toDate?: string
   ): Observable<PageResponse<ActivityLog>> {
     let params = new HttpParams().set('page', page.toString()).set('size', size.toString());
 
@@ -37,9 +39,50 @@ export class ActivityLogService {
     if (targetType && targetType !== 'ALL') {
       params = params.set('targetType', targetType);
     }
+    if (fromDate && fromDate.trim()) {
+      const formattedFrom = fromDate.length === 10 ? `${fromDate}T00:00:00` : fromDate;
+      params = params.set('fromDate', formattedFrom);
+    }
+    if (toDate && toDate.trim()) {
+      const formattedTo = toDate.length === 10 ? `${toDate}T23:59:59` : toDate;
+      params = params.set('toDate', formattedTo);
+    }
 
     return this.http
       .get<ApiResponse<PageResponse<ActivityLog>>>(`${this.baseUrl}/activity-logs`, { params })
       .pipe(map((res) => res.result));
+  }
+
+  exportPdf(
+    keyword: string = '',
+    eventType: ActivityEventType | 'ALL' = 'ALL',
+    targetType: ActivityTargetType | 'ALL' = 'ALL',
+    fromDate?: string,
+    toDate?: string
+  ): Observable<Blob> {
+    let params = new HttpParams();
+
+    if (keyword && keyword.trim()) {
+      params = params.set('keyword', keyword.trim());
+    }
+    if (eventType && eventType !== 'ALL') {
+      params = params.set('eventType', eventType);
+    }
+    if (targetType && targetType !== 'ALL') {
+      params = params.set('targetType', targetType);
+    }
+    if (fromDate && fromDate.trim()) {
+      const formattedFrom = fromDate.length === 10 ? `${fromDate}T00:00:00` : fromDate;
+      params = params.set('fromDate', formattedFrom);
+    }
+    if (toDate && toDate.trim()) {
+      const formattedTo = toDate.length === 10 ? `${toDate}T23:59:59` : toDate;
+      params = params.set('toDate', formattedTo);
+    }
+
+    return this.http.get(`${this.baseUrl}/activity-logs/export/pdf`, {
+      params,
+      responseType: 'blob',
+    });
   }
 }

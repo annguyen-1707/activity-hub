@@ -1,9 +1,13 @@
 package com.softdreams.activityhub.service;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -14,6 +18,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import com.softdreams.activityhub.dto.ActivityLogEvent;
+import com.softdreams.activityhub.dto.report.ActivityLogReportItem;
 import com.softdreams.activityhub.dto.response.ActivityLogResponse;
 import com.softdreams.activityhub.dto.response.TargetTypeResponse;
 import com.softdreams.activityhub.entity.ActivityLog;
@@ -42,6 +47,7 @@ public class ActivityLogService {
     UserRepository userRepository;
     ActivityLogMapper activityLogMapper;
     HttpServletRequest request;
+    JasperReportService jasperReportService;
 
     public void save(ActivityLogEvent event) {
 
@@ -94,10 +100,68 @@ public class ActivityLogService {
 
     @PreAuthorize("hasRole('ADMIN')")
     public Page<ActivityLogResponse> search(
-            Pageable pageable, String keyword, EventType eventType, TargetType targetType) {
+            Pageable pageable, String keyword, EventType eventType, TargetType targetType, LocalDateTime fromDate, LocalDateTime toDate) {
         return activityLogRepository
-                .search(keyword, eventType, targetType, pageable)
+                .search(keyword, eventType, targetType, fromDate, toDate, pageable);
+                .search(keyword, eventType, targetType, fromDate, toDate, pageable)
                 .map(activityLogMapper::toResponse);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    public List<ActivityLogResponse> getLogsForExport(
+            String keyword, EventType eventType, TargetType targetType, LocalDateTime fromDate, LocalDateTime toDate) {
+        return activityLogRepository
+                .findForExport(keyword, eventType, targetType, fromDate, toDate)
+                .stream()
+                .map(activityLogMapper::toResponse)
+                .toList();
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    public byte[] exportPdf(
+            String keyword, EventType eventType, TargetType targetType, LocalDateTime fromDate, LocalDateTime toDate) {
+        List<ActivityLogResponse> list = getLogsForExport(keyword, eventType, targetType, fromDate, toDate);
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
+        DateTimeFormatter displayDtf = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
+        AtomicInteger counter = new AtomicInteger(1);
+        List<ActivityLogReportItem> reportItems = list.stream().map(log -> {
+            String eventLabel = log.getEventTypeLabel() != null ? log.getEventTypeLabel() : (log.getEventType() != null ? log.getEventType().getLabel() : "");
+            String targetLabel = log.getTargetTypeLabel() != null ? log.getTargetTypeLabel() : (log.getTargetType() != null ? log.getTargetType().getLabel() : "");
+
+            return ActivityLogReportItem.builder()
+                    .stt(counter.getAndIncrement())
+                    .username(log.getUsername() != null ? log.getUsername() : "—")
+                    .fullName(log.getFullName() != null && !log.getFullName().isBlank() ? log.getFullName() : "—")
+                    .eventTypeLabel(eventLabel)
+                    .targetTypeLabel(targetLabel)
+                    .targetId(log.getTargetId() != null ? log.getTargetId() : "—")
+                    .ipAddress(log.getIpAddress() != null ? log.getIpAddress() : "—")
+                    .createdAt(log.getCreatedAt() != null ? log.getCreatedAt().format(dtf) : "")
+                    .build();
+        }).toList();
+
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("reportTitle", "NHẬT KÝ HOẠT ĐỘNG HỆ THỐNG");
+
+        String timeFilter = "Khoảng thời gian: ";
+        if (fromDate != null && toDate != null) {
+            timeFilter += "Từ " + fromDate.format(displayDtf) + " đến " + toDate.format(displayDtf);
+        } else if (fromDate != null) {
+            timeFilter += "Từ " + fromDate.format(displayDtf);
+        } else if (toDate != null) {
+            timeFilter += "Đến " + toDate.format(displayDtf);
+        } else {
+            timeFilter += "Toàn bộ thời gian";
+        }
+        parameters.put("filterInfo", timeFilter);
+
+        User currentUser = getMyUser();
+        parameters.put("printedBy", currentUser != null ? currentUser.getUsername() : "Admin");
+        parameters.put("printedAt", LocalDateTime.now().format(dtf));
+        parameters.put("totalRecords", reportItems.size());
+
+        return jasperReportService.exportToPdf("activity_logs_report", parameters, reportItems);
     }
 
     @PreAuthorize("hasRole('ADMIN')")

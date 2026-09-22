@@ -68,6 +68,7 @@ export class AdminOrdersComponent implements OnInit {
   orders = signal<OrderResponse[]>([]);
   statistics = signal<OrderStatistics | null>(null);
   loading = signal<boolean>(false);
+  exporting = signal<boolean>(false);
   updatingStatus = signal<boolean>(false);
   deleting = signal<boolean>(false);
 
@@ -75,6 +76,8 @@ export class AdminOrdersComponent implements OnInit {
   keyword = signal<string>('');
   statusFilter = signal<string>('ALL');
   paymentFilter = signal<string>('ALL');
+  fromDate = signal<string>('');
+  toDate = signal<string>('');
 
   // Pagination
   page = signal<number>(0);
@@ -121,7 +124,9 @@ export class AdminOrdersComponent implements OnInit {
         this.pageSize(),
         this.keyword(),
         this.statusFilter(),
-        this.paymentFilter()
+        this.paymentFilter(),
+        this.fromDate(),
+        this.toDate()
       )
       .subscribe({
         next: (res) => {
@@ -136,6 +141,49 @@ export class AdminOrdersComponent implements OnInit {
         },
         error: () => {
           this.fallbackLoadAll();
+        },
+      });
+  }
+
+  onDateChange(): void {
+    this.page.set(0);
+    this.loadOrders();
+  }
+
+  resetFilters(): void {
+    this.keyword.set('');
+    this.statusFilter.set('ALL');
+    this.paymentFilter.set('ALL');
+    this.fromDate.set('');
+    this.toDate.set('');
+    this.page.set(0);
+    this.loadOrders();
+  }
+
+  exportPdf(): void {
+    this.exporting.set(true);
+    this.orderService
+      .exportAdminOrdersPdf(
+        this.keyword(),
+        this.statusFilter(),
+        this.paymentFilter(),
+        this.fromDate(),
+        this.toDate()
+      )
+      .subscribe({
+        next: (blob) => {
+          this.exporting.set(false);
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `bao-cao-don-hang-admin-${new Date().getTime()}.pdf`;
+          a.click();
+          window.URL.revokeObjectURL(url);
+          this.showAlert('Xuất báo cáo PDF đơn hàng thành công!', 'success');
+        },
+        error: () => {
+          this.exporting.set(false);
+          this.showAlert('Lỗi khi xuất file PDF đơn hàng admin!', 'danger');
         },
       });
   }

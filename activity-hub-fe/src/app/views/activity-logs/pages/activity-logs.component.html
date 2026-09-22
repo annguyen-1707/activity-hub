@@ -1,15 +1,45 @@
 <div class="activity-logs-page">
+  @if (alertMessage()) {
+    <c-alert [color]="alertType()" [dismissible]="true" class="mb-3 d-flex align-items-center shadow-sm">
+      <svg cIcon [name]="alertType() === 'success' ? 'cilCheck' : 'cilWarning'" class="me-2" size="lg"></svg>
+      <div>{{ alertMessage() }}</div>
+    </c-alert>
+  }
+
   <!-- Header Banner -->
-  <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 pb-2 border-bottom">
+  <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 pb-2 border-bottom gap-2">
     <div>
       <h3 class="fw-bold text-primary mb-1 d-flex align-items-center">
         <svg cIcon name="cilListNumbered" class="me-2"></svg>
         Nhật Ký Hoạt Động
       </h3>
       <p class="text-body-secondary mb-0 small">
-        Theo dõi và kiểm toán toàn bộ thao tác của người dùng trong hệ thống (Đăng nhập, Tạo đơn, Sửa thông tin, Thêm
-        vai trò).
+        Theo dõi và kiểm toán toàn bộ thao tác của người dùng trong hệ thống (Đăng nhập, Tạo đơn, Sửa thông tin, Thêm vai trò).
       </p>
+    </div>
+
+    <div class="d-flex align-items-center gap-2">
+      <button
+        cButton
+        color="danger"
+        variant="outline"
+        size="sm"
+        (click)="exportPdf()"
+        [disabled]="exporting() || loading() || totalElements() === 0"
+        title="Xuất báo cáo PDF"
+      >
+        @if (exporting()) {
+          <c-spinner size="sm" class="me-1"></c-spinner>
+          Đang xuất PDF...
+        } @else {
+          <svg cIcon name="cilCloudDownload" class="me-1"></svg>
+          Xuất PDF
+        }
+      </button>
+      <button cButton color="secondary" variant="outline" size="sm" (click)="loadLogs()" [disabled]="loading()" title="Làm mới">
+        <svg cIcon name="cilSpeedometer" class="me-1"></svg>
+        Làm mới
+      </button>
     </div>
   </div>
 
@@ -18,36 +48,41 @@
       <!-- Filter Toolbar -->
       <c-row class="g-2 align-items-center">
         <!-- Search Keyword -->
-        <c-col lg="4" md="5" xs="12">
-          <c-input-group>
+        <c-col lg="3" md="4" xs="12">
+          <c-input-group size="sm">
             <span cInputGroupText>
               <svg cIcon name="cilMagnifyingGlass"></svg>
             </span>
-            <input cFormControl placeholder="Tìm theo Username, Event ID, Target ID..." [ngModel]="keyword()"
+            <input cFormControl placeholder="Tìm Username, Target ID..." [ngModel]="keyword()"
               (ngModelChange)="onKeywordChange($event)" (keyup.enter)="onSearch()" />
+            @if (keyword()) {
+              <button class="btn btn-outline-secondary border-start-0 bg-transparent" (click)="keyword.set(''); onSearch()">
+                <svg cIcon name="cilX" size="sm"></svg>
+              </button>
+            }
           </c-input-group>
         </c-col>
 
         <!-- Filter Event Type -->
-        <c-col lg="3" md="3" xs="6">
-          <select cSelect class="form-select" [ngModel]="selectedEventType()"
+        <c-col lg="2" md="4" xs="6">
+          <select cSelect size="sm" class="form-select-sm w-100" [ngModel]="selectedEventType()"
             (ngModelChange)="selectedEventType.set($event); onFilterChange()">
-            <option value="ALL">Tất cả loại sự kiện</option>
+            <option value="ALL">Tất cả sự kiện</option>
             <option value="LOGIN">Đăng nhập</option>
             <option value="LOGOUT">Đăng xuất</option>
             <option value="CREATED">Tạo mới</option>
             <option value="UPDATED">Cập nhật</option>
             <option value="DELETED">Xóa</option>
-            <option value="APPROVED">Phê duyệt (APPROVED)</option>
-            <option value="REJECTED">Từ chối (REJECTED)</option>
-            <option value="CANCEL">Hủy bỏ (CANCEL)</option>
-            <option value="DONE">Hoàn thành (DONE)</option>
+            <option value="APPROVED">Phê duyệt</option>
+            <option value="REJECTED">Từ chối</option>
+            <option value="CANCEL">Hủy bỏ</option>
+            <option value="DONE">Hoàn thành</option>
           </select>
         </c-col>
 
         <!-- Filter Target Type -->
-        <c-col lg="3" md="2" xs="6">
-          <select cSelect class="form-select" [ngModel]="selectedTargetType()"
+        <c-col lg="2" md="4" xs="6">
+          <select cSelect size="sm" class="form-select-sm w-100" [ngModel]="selectedTargetType()"
             (ngModelChange)="selectedTargetType.set($event); onFilterChange()">
             <option value="ALL">Tất cả đối tượng</option>
             @for (t of targetTypes(); track t.name) {
@@ -56,14 +91,44 @@
           </select>
         </c-col>
 
-        <!-- Page Size Selector -->
-        <c-col lg="2" md="2" xs="12" class="d-flex justify-content-md-end align-items-center gap-1">
-          <span class="text-body-secondary small text-nowrap d-none d-lg-inline">Hiển thị:</span>
-          <select cSelect class="form-select w-auto" [ngModel]="pageSize()" (ngModelChange)="onPageSizeChange($event)">
-            <option [value]="5">5 dòng</option>
-            <option [value]="10">10 dòng</option>
-            <option [value]="20">20 dòng</option>
-            <option [value]="50">50 dòng</option>
+        <!-- From Date -->
+        <c-col lg="2" md="3" xs="6">
+          <div class="input-group input-group-sm">
+            <span class="input-group-text bg-light text-body-secondary">Từ</span>
+            <input
+              type="date"
+              class="form-control"
+              [ngModel]="fromDate()"
+              (ngModelChange)="fromDate.set($event); onDateChange()"
+            />
+          </div>
+        </c-col>
+
+        <!-- To Date -->
+        <c-col lg="2" md="3" xs="6">
+          <div class="input-group input-group-sm">
+            <span class="input-group-text bg-light text-body-secondary">Đến</span>
+            <input
+              type="date"
+              class="form-control"
+              [ngModel]="toDate()"
+              (ngModelChange)="toDate.set($event); onDateChange()"
+            />
+          </div>
+        </c-col>
+
+        <!-- Action / Page Size -->
+        <c-col lg="1" md="6" xs="12" class="d-flex justify-content-md-end align-items-center gap-2">
+          @if (keyword() || selectedEventType() !== 'ALL' || selectedTargetType() !== 'ALL' || fromDate() || toDate()) {
+            <button cButton color="light" size="sm" class="border text-body-secondary" (click)="resetFilters()" title="Xóa bộ lọc">
+              <svg cIcon name="cilReload"></svg>
+            </button>
+          }
+          <select cSelect size="sm" class="form-select-sm w-auto" [ngModel]="pageSize()" (ngModelChange)="onPageSizeChange($event)" title="Số dòng hiển thị">
+            <option [value]="5">5</option>
+            <option [value]="10">10</option>
+            <option [value]="20">20</option>
+            <option [value]="50">50</option>
           </select>
         </c-col>
       </c-row>

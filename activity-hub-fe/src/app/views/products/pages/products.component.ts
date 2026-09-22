@@ -107,7 +107,10 @@ export class ProductsComponent implements OnInit {
   // STOCK STATE
   stockTransactions = signal<StockTransactionResponse[]>([]);
   stockLoading = signal<boolean>(false);
+  stockExporting = signal<boolean>(false);
   stockType = signal<StockTransactionType | ''>('');
+  stockFromDate = signal<string>('');
+  stockToDate = signal<string>('');
   stockPage = signal<number>(0);
   stockPageSize = signal<number>(10);
   stockTotalElements = signal<number>(0);
@@ -330,18 +333,27 @@ export class ProductsComponent implements OnInit {
   loadStockTransactions(): void {
     this.stockLoading.set(true);
     const t = this.stockType() ? (this.stockType() as StockTransactionType) : undefined;
-    this.stockService.searchTransactions(this.stockPage(), this.stockPageSize(), t).subscribe({
-      next: (res) => {
-        this.stockLoading.set(false);
-        this.stockTransactions.set(res.content || []);
-        this.stockTotalElements.set(res.totalElements || 0);
-        this.stockTotalPages.set(res.totalPages || 1);
-      },
-      error: () => {
-        this.stockLoading.set(false);
-        this.showAlert('Không thể tải lịch sử biến động kho!', 'danger');
-      },
-    });
+    this.stockService
+      .searchTransactions(
+        this.stockPage(),
+        this.stockPageSize(),
+        t,
+        undefined,
+        this.stockFromDate(),
+        this.stockToDate()
+      )
+      .subscribe({
+        next: (res) => {
+          this.stockLoading.set(false);
+          this.stockTransactions.set(res.content || []);
+          this.stockTotalElements.set(res.totalElements || 0);
+          this.stockTotalPages.set(res.totalPages || 1);
+        },
+        error: () => {
+          this.stockLoading.set(false);
+          this.showAlert('Không thể tải lịch sử biến động kho!', 'danger');
+        },
+      });
   }
 
   loadAllProductsForDropdown(): void {
@@ -355,6 +367,42 @@ export class ProductsComponent implements OnInit {
     this.stockType.set(type);
     this.stockPage.set(0);
     this.loadStockTransactions();
+  }
+
+  onStockDateChange(): void {
+    this.stockPage.set(0);
+    this.loadStockTransactions();
+  }
+
+  resetStockFilters(): void {
+    this.stockType.set('');
+    this.stockFromDate.set('');
+    this.stockToDate.set('');
+    this.stockPage.set(0);
+    this.loadStockTransactions();
+  }
+
+  exportStockPdf(): void {
+    this.stockExporting.set(true);
+    const t = this.stockType() ? (this.stockType() as StockTransactionType) : undefined;
+    this.stockService
+      .exportPdf(t, undefined, this.stockFromDate(), this.stockToDate())
+      .subscribe({
+        next: (blob) => {
+          this.stockExporting.set(false);
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `bao-cao-bien-dong-kho-${new Date().getTime()}.pdf`;
+          a.click();
+          window.URL.revokeObjectURL(url);
+          this.showAlert('Xuất báo cáo PDF thành công!', 'success');
+        },
+        error: () => {
+          this.stockExporting.set(false);
+          this.showAlert('Lỗi khi xuất file PDF báo cáo biến động kho!', 'danger');
+        },
+      });
   }
 
   onStockPageSizeChange(size: number): void {

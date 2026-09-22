@@ -88,22 +88,41 @@
   <!-- TABLE & FILTERS CARD -->
   <c-card class="border-0 shadow-sm mb-4">
     <!-- Card Header -->
-    <c-card-header class="bg-body d-flex flex-wrap justify-content-between align-items-center py-3 border-bottom">
+    <c-card-header class="bg-body d-flex flex-wrap justify-content-between align-items-center py-3 border-bottom gap-2">
       <div class="fw-bold text-body">
         Danh sách đơn hàng ({{ totalElements() }} đơn hàng)
       </div>
 
-      <button cButton color="secondary" variant="outline" size="sm" (click)="loadOrders()" [disabled]="loading()" title="Làm mới">
-        <svg cIcon name="cilSpeedometer" class="me-1"></svg>
-        Làm mới
-      </button>
+      <div class="d-flex align-items-center gap-2">
+        <button
+          cButton
+          color="danger"
+          variant="outline"
+          size="sm"
+          (click)="exportPdf()"
+          [disabled]="exporting() || loading() || totalElements() === 0"
+          title="Xuất báo cáo PDF"
+        >
+          @if (exporting()) {
+            <c-spinner size="sm" class="me-1"></c-spinner>
+            Đang xuất PDF...
+          } @else {
+            <svg cIcon name="cilCloudDownload" class="me-1"></svg>
+            Xuất PDF
+          }
+        </button>
+        <button cButton color="secondary" variant="outline" size="sm" (click)="loadOrders()" [disabled]="loading()" title="Làm mới">
+          <svg cIcon name="cilSpeedometer" class="me-1"></svg>
+          Làm mới
+        </button>
+      </div>
     </c-card-header>
 
     <c-card-body>
       <!-- Search & Filter Toolbar -->
-      <c-row class="mb-3 g-2 align-items-center justify-content-between">
-        <c-col md="5" xs="12">
-          <c-input-group>
+      <c-row class="mb-3 g-2 align-items-center">
+        <c-col lg="3" md="4" xs="12">
+          <c-input-group size="sm">
             <span cInputGroupText>
               <svg cIcon name="cilMagnifyingGlass"></svg>
             </span>
@@ -122,48 +141,84 @@
           </c-input-group>
         </c-col>
 
-        <c-col md="7" xs="12">
-          <div class="d-flex flex-wrap gap-2 justify-content-md-end align-items-center">
-            <!-- Status Filter -->
-            <select
-              cSelect
-              class="form-select w-auto"
-              [ngModel]="statusFilter()"
-              (ngModelChange)="onStatusChange($event)"
-            >
-              <option value="ALL">Tất cả trạng thái</option>
-              <option value="CREATED">Mới tạo (CREATED)</option>
-              <option value="CONFIRMED">Đang chuẩn bị (CONFIRMED)</option>
-              <option value="COMPLETED">Hoàn thành (COMPLETED)</option>
-              <option value="CANCELLED">Đã hủy (CANCELLED)</option>
-            </select>
+        <!-- Status Filter -->
+        <c-col lg="2" md="4" xs="6">
+          <select
+            cSelect
+            size="sm"
+            class="form-select-sm w-100"
+            [ngModel]="statusFilter()"
+            (ngModelChange)="onStatusChange($event)"
+          >
+            <option value="ALL">Tất cả trạng thái</option>
+            <option value="CREATED">Mới tạo (CREATED)</option>
+            <option value="CONFIRMED">Đang chuẩn bị (CONFIRMED)</option>
+            <option value="COMPLETED">Hoàn thành (COMPLETED)</option>
+            <option value="CANCELLED">Đã hủy (CANCELLED)</option>
+          </select>
+        </c-col>
 
-            <!-- Payment Filter -->
-            <select
-              cSelect
-              class="form-select w-auto"
-              [ngModel]="paymentFilter()"
-              (ngModelChange)="onPaymentChange($event)"
-            >
-              <option value="ALL">Tất cả thanh toán</option>
-              <option value="BANK">Chuyển khoản</option>
-              <option value="CASH">Tiền mặt (COD)</option>
-            </select>
+        <!-- Payment Filter -->
+        <c-col lg="2" md="4" xs="6">
+          <select
+            cSelect
+            size="sm"
+            class="form-select-sm w-100"
+            [ngModel]="paymentFilter()"
+            (ngModelChange)="onPaymentChange($event)"
+          >
+            <option value="ALL">Tất cả thanh toán</option>
+            <option value="BANK">Chuyển khoản</option>
+            <option value="CASH">Tiền mặt (COD)</option>
+          </select>
+        </c-col>
 
-            <!-- Page Size -->
-            <span class="text-body-secondary small text-nowrap">Hiển thị:</span>
-            <select
-              cSelect
-              class="form-select w-auto"
-              [ngModel]="pageSize()"
-              (ngModelChange)="onPageSizeChange($event)"
-            >
-              <option [value]="5">5 dòng</option>
-              <option [value]="10">10 dòng</option>
-              <option [value]="20">20 dòng</option>
-              <option [value]="50">50 dòng</option>
-            </select>
+        <!-- From Date -->
+        <c-col lg="2" md="3" xs="6">
+          <div class="input-group input-group-sm">
+            <span class="input-group-text bg-light text-body-secondary">Từ</span>
+            <input
+              type="date"
+              class="form-control"
+              [ngModel]="fromDate()"
+              (ngModelChange)="fromDate.set($event); onDateChange()"
+            />
           </div>
+        </c-col>
+
+        <!-- To Date -->
+        <c-col lg="2" md="3" xs="6">
+          <div class="input-group input-group-sm">
+            <span class="input-group-text bg-light text-body-secondary">Đến</span>
+            <input
+              type="date"
+              class="form-control"
+              [ngModel]="toDate()"
+              (ngModelChange)="toDate.set($event); onDateChange()"
+            />
+          </div>
+        </c-col>
+
+        <!-- Action / Page Size -->
+        <c-col lg="1" md="6" xs="12" class="d-flex justify-content-md-end align-items-center gap-2">
+          @if (keyword() || statusFilter() !== 'ALL' || paymentFilter() !== 'ALL' || fromDate() || toDate()) {
+            <button cButton color="light" size="sm" class="border text-body-secondary" (click)="resetFilters()" title="Xóa bộ lọc">
+              <svg cIcon name="cilReload"></svg>
+            </button>
+          }
+          <select
+            cSelect
+            size="sm"
+            class="form-select-sm w-auto"
+            [ngModel]="pageSize()"
+            (ngModelChange)="onPageSizeChange($event)"
+            title="Số dòng hiển thị"
+          >
+            <option [value]="5">5</option>
+            <option [value]="10">10</option>
+            <option [value]="20">20</option>
+            <option [value]="50">50</option>
+          </select>
         </c-col>
       </c-row>
 

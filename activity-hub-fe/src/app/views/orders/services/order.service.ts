@@ -58,7 +58,9 @@ export class OrderService {
     size: number = 10,
     keyword: string = '',
     status?: string,
-    paymentMethod?: string
+    paymentMethod?: string,
+    fromDate?: string,
+    toDate?: string
   ): Observable<PageResponse<OrderResponse>> {
     let params = new HttpParams()
       .set('page', page.toString())
@@ -73,12 +75,53 @@ export class OrderService {
     if (paymentMethod && paymentMethod !== 'ALL') {
       params = params.set('paymentMethod', paymentMethod);
     }
+    if (fromDate && fromDate.trim()) {
+      const formattedFrom = fromDate.length === 10 ? `${fromDate}T00:00:00` : fromDate;
+      params = params.set('fromDate', formattedFrom);
+    }
+    if (toDate && toDate.trim()) {
+      const formattedTo = toDate.length === 10 ? `${toDate}T23:59:59` : toDate;
+      params = params.set('toDate', formattedTo);
+    }
 
     return this.http
       .get<ApiResponse<PageResponse<OrderResponse>>>(`${this.baseUrl}/orders/me`, {
         params,
       })
       .pipe(map((res) => res.result));
+  }
+
+  exportMyOrdersPdf(
+    keyword: string = '',
+    status?: string,
+    paymentMethod?: string,
+    fromDate?: string,
+    toDate?: string
+  ): Observable<Blob> {
+    let params = new HttpParams();
+
+    if (keyword && keyword.trim()) {
+      params = params.set('keyword', keyword.trim());
+    }
+    if (status && status !== 'ALL') {
+      params = params.set('status', status);
+    }
+    if (paymentMethod && paymentMethod !== 'ALL') {
+      params = params.set('paymentMethod', paymentMethod);
+    }
+    if (fromDate && fromDate.trim()) {
+      const formattedFrom = fromDate.length === 10 ? `${fromDate}T00:00:00` : fromDate;
+      params = params.set('fromDate', formattedFrom);
+    }
+    if (toDate && toDate.trim()) {
+      const formattedTo = toDate.length === 10 ? `${toDate}T23:59:59` : toDate;
+      params = params.set('toDate', formattedTo);
+    }
+
+    return this.http.get(`${this.baseUrl}/orders/me/export/pdf`, {
+      params,
+      responseType: 'blob',
+    });
   }
 
   getAllOrders(): Observable<OrderResponse[]> {
@@ -104,7 +147,9 @@ export class OrderService {
     size: number = 10,
     keyword: string = '',
     status?: string,
-    paymentMethod?: string
+    paymentMethod?: string,
+    fromDate?: string,
+    toDate?: string
   ): Observable<PageResponse<OrderResponse>> {
     let params = new HttpParams()
       .set('page', page.toString())
@@ -119,12 +164,53 @@ export class OrderService {
     if (paymentMethod && paymentMethod !== 'ALL') {
       params = params.set('paymentMethod', paymentMethod);
     }
+    if (fromDate && fromDate.trim()) {
+      const formattedFrom = fromDate.length === 10 ? `${fromDate}T00:00:00` : fromDate;
+      params = params.set('fromDate', formattedFrom);
+    }
+    if (toDate && toDate.trim()) {
+      const formattedTo = toDate.length === 10 ? `${toDate}T23:59:59` : toDate;
+      params = params.set('toDate', formattedTo);
+    }
 
     return this.http
       .get<ApiResponse<PageResponse<OrderResponse>>>(`${this.baseUrl}/orders/admin`, {
         params,
       })
       .pipe(map((res) => res.result));
+  }
+
+  exportAdminOrdersPdf(
+    keyword: string = '',
+    status?: string,
+    paymentMethod?: string,
+    fromDate?: string,
+    toDate?: string
+  ): Observable<Blob> {
+    let params = new HttpParams();
+
+    if (keyword && keyword.trim()) {
+      params = params.set('keyword', keyword.trim());
+    }
+    if (status && status !== 'ALL') {
+      params = params.set('status', status);
+    }
+    if (paymentMethod && paymentMethod !== 'ALL') {
+      params = params.set('paymentMethod', paymentMethod);
+    }
+    if (fromDate && fromDate.trim()) {
+      const formattedFrom = fromDate.length === 10 ? `${fromDate}T00:00:00` : fromDate;
+      params = params.set('fromDate', formattedFrom);
+    }
+    if (toDate && toDate.trim()) {
+      const formattedTo = toDate.length === 10 ? `${toDate}T23:59:59` : toDate;
+      params = params.set('toDate', formattedTo);
+    }
+
+    return this.http.get(`${this.baseUrl}/orders/admin/export/pdf`, {
+      params,
+      responseType: 'blob',
+    });
   }
 
   getAdminStatistics(): Observable<OrderStatistics> {

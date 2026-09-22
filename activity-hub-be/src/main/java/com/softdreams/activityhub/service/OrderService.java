@@ -1,10 +1,15 @@
 package com.softdreams.activityhub.service;
 
 import java.math.BigDecimal;
+import java.text.NumberFormat;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import jakarta.transaction.Transactional;
@@ -17,6 +22,7 @@ import org.springframework.stereotype.Service;
 
 import com.softdreams.activityhub.dto.projection.OrderLineProjection;
 import com.softdreams.activityhub.dto.projection.OrderStatisticsProjection;
+import com.softdreams.activityhub.dto.report.OrderReportItem;
 import com.softdreams.activityhub.dto.request.OrderRequest;
 import com.softdreams.activityhub.dto.response.OrderLineResponse;
 import com.softdreams.activityhub.dto.response.OrderResponse;
@@ -55,6 +61,7 @@ public class OrderService {
     StockTransactionService stockTransactionService;
     ReviewRepository reviewRepository;
     ReviewMapper reviewMapper;
+    JasperReportService jasperReportService;
 
     private User getMyUser() {
         User user;
@@ -155,6 +162,118 @@ public class OrderService {
         Page<Order> orderPages =
                 orderRepository.searchAllOrders(keyword, status, paymentMethod, fromDate, toDate, pageable);
         return mapOrdersWithOrderLines(orderPages);
+    }
+
+    public byte[] exportMyOrdersPdf(
+            String keyword,
+            String status,
+            String paymentMethod,
+            LocalDateTime fromDate,
+            LocalDateTime toDate) {
+        User user = getMyUser();
+        List<Order> orders = orderRepository.findOrdersForExport(
+                keyword, status, paymentMethod, fromDate, toDate, user.getId());
+        return generateOrdersReport(orders, "LỊCH SỬ ĐƠN HÀNG CỦA TÔI", fromDate, toDate);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    public byte[] exportAdminOrdersPdf(
+            String keyword,
+            String status,
+            String paymentMethod,
+            LocalDateTime fromDate,
+            LocalDateTime toDate) {
+        List<Order> orders = orderRepository.findOrdersForExport(
+                keyword, status, paymentMethod, fromDate, toDate, null);
+        return generateOrdersReport(orders, "BÁO CÁO QUẢN LÝ ĐƠN HÀNG", fromDate, toDate);
+    }
+
+    private byte[] generateOrdersReport(
+            List<Order> orders,
+            String title,
+            LocalDateTime fromDate,
+            LocalDateTime toDate) {
+        List<String> orderIds = orders.stream().map(Order::getId).toList();
+        Map<String, List<OrderLineResponse>> linesByOrderId = orderIds.isEmpty()
+                ? Map.of()
+                : orderLineRepository.getOrderLinesByOrderIds(orderIds).stream()
+                        .collect(Collectors.groupingBy(
+                                OrderLineProjection::getOrderId,
+                                Collectors.mapping(
+                                        p -> new OrderLineResponse(
+                                                p.getId(),
+                                                p.getProductId(),
+                                                p.getProductName(),
+                                                p.getQuantity(),
+                                                p.getUnitPrice(),
+                                                p.getSubtotal()),
+                                        Collectors.toList())));
+
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+        DateTimeFormatter displayDtf = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        NumberFormat currencyFormat = NumberFormat.getNumberInstance(Locale.forLanguageTag("vi-VN"));
+
+        AtomicInteger counter = new AtomicInteger(1);
+        List<OrderReportItem> reportItems = orders.stream().map(order -> {
+            List<OrderLineResponse> lines = linesByOrderId.getOrDefault(order.getId(), List.of());
+            String productSummary = lines.stream()
+                    .map(l -> l.getProductName() + " (x" + l.getQuantity() + ")")
+                    .collect(Collectors.joining(", "));
+
+            String statusLabel = order.getStatus() != null ? switch (order.getStatus()) {
+                case CREATED -> "Chờ xác nhận";
+                case CONFIRMED -> "Đã xác nhận";
+                case COMPLETED -> "Hoàn thành";
+                case CANCELLED -> "Đã hủy";
+            } : "";
+
+            String customerName = order.getCustomerName();
+            if ((customerName == null || customerName.isBlank()) && order.getUser() != null) {
+            String customerName = "";
+            if (order.getUser() != null) {
+                customerName = (order.getUser().getFirstName() != null ? order.getUser().getFirstName() + " " : "")
+                        + (order.getUser().getLastName() != null ? order.getUser().getLastName() : "");
+                if (customerName.isBlank() && order.getUser().getUsername() != null) {
+                    customerName = order.getUser().getUsername();
+                }
+            }
+
+            return OrderReportItem.builder()
+                    .stt(counter.getAndIncrement())
+                    .orderId("#" + order.getId().substring(0, Math.min(8, order.getId().length())))
+                    .customerName(customerName != null ? customerName.trim() : "")
+                    .customerName(customerName.trim())
+                    .productSummary(productSummary.isEmpty() ? "—" : productSummary)
+                    .totalAmount(order.getTotalAmount() != null ? currencyFormat.format(order.getTotalAmount()) + " đ" : "0 đ")
+                    .paymentMethod(order.getPaymentMethod() != null ? order.getPaymentMethod() : "COD")
+                    .paymentMethod(order.getPaymentMethod() != null ? order.getPaymentMethod().name() : "COD")
+                    .statusLabel(statusLabel)
+                    .createdAt(order.getCreatedAt() != null ? order.getCreatedAt().format(dtf) : "")
+                    .shippingAddress(order.getShippingAddress() != null ? order.getShippingAddress() : "")
+                    .build();
+        }).toList();
+
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("reportTitle", title);
+
+        String timeFilter = "Khoảng thời gian: ";
+        if (fromDate != null && toDate != null) {
+            timeFilter += "Từ " + fromDate.format(displayDtf) + " đến " + toDate.format(displayDtf);
+        } else if (fromDate != null) {
+            timeFilter += "Từ " + fromDate.format(displayDtf);
+        } else if (toDate != null) {
+            timeFilter += "Đến " + toDate.format(displayDtf);
+        } else {
+            timeFilter += "Toàn bộ thời gian";
+        }
+        parameters.put("filterInfo", timeFilter);
+
+        User currentUser = getMyUser();
+        parameters.put("printedBy", currentUser != null ? currentUser.getUsername() : "Hệ thống");
+        parameters.put("printedAt", LocalDateTime.now().format(dtf));
+        parameters.put("totalRecords", reportItems.size());
+
+        return jasperReportService.exportToPdf("orders_report", parameters, reportItems);
     }
 
     @PreAuthorize("hasRole('ADMIN')")

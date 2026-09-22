@@ -10,9 +10,6 @@ import com.softdreams.activityhub.entity.User;
 @Mapper(componentModel = "spring")
 public interface ActivityLogMapper {
 
-    @Mapping(target = "userId", source = "user.id")
-    @Mapping(target = "username", source = "user.username")
-    @Mapping(target = "fullName", expression = "java(fullName(activityLog.getUser()))")
     @Mapping(target = "eventTypeLabel", source = "eventType.label")
     @Mapping(target = "targetTypeLabel", source = "targetType.label")
     ActivityLogResponse toResponse(ActivityLog activityLog);

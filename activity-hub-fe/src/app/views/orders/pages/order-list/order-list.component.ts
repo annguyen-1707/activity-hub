@@ -72,9 +72,12 @@ export class OrderListComponent implements OnInit {
 
   orders = signal<OrderResponse[]>([]);
   loading = signal<boolean>(false);
+  exporting = signal<boolean>(false);
   keyword = signal<string>('');
   statusFilter = signal<string>('ALL');
   paymentFilter = signal<string>('ALL');
+  fromDate = signal<string>('');
+  toDate = signal<string>('');
 
   page = signal<number>(0);
   pageSize = signal<number>(10);
@@ -132,7 +135,9 @@ export class OrderListComponent implements OnInit {
         this.pageSize(),
         this.keyword(),
         this.statusFilter(),
-        this.paymentFilter()
+        this.paymentFilter(),
+        this.fromDate(),
+        this.toDate()
       )
       .subscribe({
         next: (res) => {
@@ -161,6 +166,49 @@ export class OrderListComponent implements OnInit {
     this.paymentFilter.set(val);
     this.page.set(0);
     this.loadOrders();
+  }
+
+  onDateChange(): void {
+    this.page.set(0);
+    this.loadOrders();
+  }
+
+  resetFilters(): void {
+    this.keyword.set('');
+    this.statusFilter.set('ALL');
+    this.paymentFilter.set('ALL');
+    this.fromDate.set('');
+    this.toDate.set('');
+    this.page.set(0);
+    this.loadOrders();
+  }
+
+  exportPdf(): void {
+    this.exporting.set(true);
+    this.orderService
+      .exportMyOrdersPdf(
+        this.keyword(),
+        this.statusFilter(),
+        this.paymentFilter(),
+        this.fromDate(),
+        this.toDate()
+      )
+      .subscribe({
+        next: (blob) => {
+          this.exporting.set(false);
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `don-hang-cua-toi-${new Date().getTime()}.pdf`;
+          a.click();
+          window.URL.revokeObjectURL(url);
+          this.showAlert('Xuất báo cáo PDF thành công!', 'success');
+        },
+        error: () => {
+          this.exporting.set(false);
+          this.showAlert('Lỗi khi xuất file PDF đơn hàng!', 'danger');
+        },
+      });
   }
 
   private fallbackLoadAllOrders(): void {

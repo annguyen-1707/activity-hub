@@ -2,6 +2,7 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {
+  AlertComponent,
   BadgeComponent,
   ButtonDirective,
   CardBodyComponent,
@@ -45,6 +46,7 @@ import { ActivityLogService } from '../services/activity-log.service';
     ButtonDirective,
     BadgeComponent,
     SpinnerComponent,
+    AlertComponent,
     FormControlDirective,
     FormSelectDirective,
     InputGroupComponent,
@@ -65,12 +67,15 @@ export class ActivityLogsComponent implements OnInit {
 
   logs = signal<ActivityLog[]>([]);
   loading = signal<boolean>(false);
+  exporting = signal<boolean>(false);
   targetTypes = signal<TargetTypeItem[]>([]);
 
   // Filters
   keyword = signal<string>('');
   selectedEventType = signal<ActivityEventType | 'ALL'>('ALL');
   selectedTargetType = signal<ActivityTargetType | 'ALL'>('ALL');
+  fromDate = signal<string>('');
+  toDate = signal<string>('');
 
   // Server-driven pagination
   page = signal<number>(0);
@@ -81,6 +86,9 @@ export class ActivityLogsComponent implements OnInit {
   // Modal
   selectedLog = signal<ActivityLog | null>(null);
   detailModalVisible = signal<boolean>(false);
+
+  alertMessage = signal<string>('');
+  alertType = signal<'success' | 'danger'>('success');
 
   ngOnInit(): void {
     this.loadTargetTypes();
@@ -106,7 +114,15 @@ export class ActivityLogsComponent implements OnInit {
   loadLogs(): void {
     this.loading.set(true);
     this.activityLogService
-      .getLogs(this.page(), this.pageSize(), this.keyword(), this.selectedEventType(), this.selectedTargetType())
+      .getLogs(
+        this.page(),
+        this.pageSize(),
+        this.keyword(),
+        this.selectedEventType(),
+        this.selectedTargetType(),
+        this.fromDate(),
+        this.toDate()
+      )
       .subscribe({
         next: (res) => {
           this.loading.set(false);
@@ -135,6 +151,59 @@ export class ActivityLogsComponent implements OnInit {
   onFilterChange(): void {
     this.page.set(0);
     this.loadLogs();
+  }
+
+  onDateChange(): void {
+    this.page.set(0);
+    this.loadLogs();
+  }
+
+  resetFilters(): void {
+    this.keyword.set('');
+    this.selectedEventType.set('ALL');
+    this.selectedTargetType.set('ALL');
+    this.fromDate.set('');
+    this.toDate.set('');
+    this.page.set(0);
+    this.loadLogs();
+  }
+
+  exportPdf(): void {
+    this.exporting.set(true);
+    this.activityLogService
+      .exportPdf(
+        this.keyword(),
+        this.selectedEventType(),
+        this.selectedTargetType(),
+        this.fromDate(),
+        this.toDate()
+      )
+      .subscribe({
+        next: (blob) => {
+          this.exporting.set(false);
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `nhat-ky-hoat-dong-${new Date().getTime()}.pdf`;
+          a.click();
+          window.URL.revokeObjectURL(url);
+          this.showAlert('Xuất báo cáo PDF nhật ký thành công!', 'success');
+        },
+        error: () => {
+          this.exporting.set(false);
+          this.showAlert('Lỗi khi xuất file PDF nhật ký hoạt động!', 'danger');
+        },
+      });
+  }
+
+  showAlert(message: string, type: 'success' | 'danger'): void {
+    this.alertMessage.set(message);
+    this.alertType.set(type);
+    setTimeout(() => {
+      if (this.alertMessage() === message) {
+        this.alertMessage.set('');
+      }
+    }, 4000);
   }
 
   goToPage(p: number): void {

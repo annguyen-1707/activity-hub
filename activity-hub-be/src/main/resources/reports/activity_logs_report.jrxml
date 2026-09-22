@@ -1,0 +1,220 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports"
+              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+              xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd"
+              name="activity_logs_report"
+              pageWidth="842" pageHeight="595" orientation="Landscape"
+              columnWidth="802" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20">
+
+    <parameter name="reportTitle" class="java.lang.String"/>
+    <parameter name="filterInfo" class="java.lang.String"/>
+    <parameter name="printedBy" class="java.lang.String"/>
+    <parameter name="printedAt" class="java.lang.String"/>
+    <parameter name="totalRecords" class="java.lang.Integer"/>
+
+    <field name="stt" class="java.lang.Integer"/>
+    <field name="username" class="java.lang.String"/>
+    <field name="fullName" class="java.lang.String"/>
+    <field name="eventTypeLabel" class="java.lang.String"/>
+    <field name="targetTypeLabel" class="java.lang.String"/>
+    <field name="targetId" class="java.lang.String"/>
+    <field name="ipAddress" class="java.lang.String"/>
+    <field name="createdAt" class="java.time.LocalDateTime"/>
+
+    <title>
+        <band height="90">
+            <staticText>
+                <reportElement x="0" y="0" width="300" height="20"/>
+                <textElement verticalAlignment="Middle">
+                    <font fontName="DejaVu Sans" size="11" isBold="true"/>
+                </textElement>
+                <text><![CDATA[HỆ THỐNG ACTIVITY HUB]]></text>
+            </staticText>
+            <textField>
+                <reportElement x="0" y="24" width="802" height="26"/>
+                <textElement textAlignment="Center" verticalAlignment="Middle">
+                    <font fontName="DejaVu Sans" size="18" isBold="true"/>
+                </textElement>
+                <textFieldExpression><![CDATA[$P{reportTitle}]]></textFieldExpression>
+            </textField>
+            <textField>
+                <reportElement x="0" y="52" width="802" height="16"/>
+                <textElement textAlignment="Center" verticalAlignment="Middle">
+                    <font fontName="DejaVu Sans" size="10" isItalic="true"/>
+                </textElement>
+                <textFieldExpression><![CDATA[$P{filterInfo}]]></textFieldExpression>
+            </textField>
+            <textField>
+                <reportElement x="0" y="70" width="400" height="15"/>
+                <textElement verticalAlignment="Middle">
+                    <font fontName="DejaVu Sans" size="9"/>
+                </textElement>
+                <textFieldExpression><![CDATA["Người lập: " + $P{printedBy}]]></textFieldExpression>
+            </textField>
+            <textField>
+                <reportElement x="402" y="70" width="400" height="15"/>
+                <textElement textAlignment="Right" verticalAlignment="Middle">
+                    <font fontName="DejaVu Sans" size="9"/>
+                </textElement>
+                <textFieldExpression><![CDATA["Ngày xuất: " + $P{printedAt}]]></textFieldExpression>
+            </textField>
+        </band>
+    </title>
+
+    <columnHeader>
+        <band height="28">
+            <staticText>
+                <reportElement mode="Opaque" backcolor="#E9ECEF" x="0" y="0" width="35" height="28"/>
+                <box><pen lineWidth="0.5" lineColor="#CCCCCC"/></box>
+                <textElement textAlignment="Center" verticalAlignment="Middle">
+                    <font fontName="DejaVu Sans" size="9" isBold="true"/>
+                </textElement>
+                <text><![CDATA[STT]]></text>
+            </staticText>
+            <staticText>
+                <reportElement mode="Opaque" backcolor="#E9ECEF" x="35" y="0" width="95" height="28"/>
+                <box><pen lineWidth="0.5" lineColor="#CCCCCC"/></box>
+                <textElement textAlignment="Center" verticalAlignment="Middle">
+                    <font fontName="DejaVu Sans" size="9" isBold="true"/>
+                </textElement>
+                <text><![CDATA[Tài Khoản]]></text>
+            </staticText>
+            <staticText>
+                <reportElement mode="Opaque" backcolor="#E9ECEF" x="130" y="0" width="120" height="28"/>
+                <box><pen lineWidth="0.5" lineColor="#CCCCCC"/></box>
+                <textElement textAlignment="Left" verticalAlignment="Middle">
+                    <font fontName="DejaVu Sans" size="9" isBold="true"/>
+                </textElement>
+                <text><![CDATA[ Họ Và Tên]]></text>
+            </staticText>
+            <staticText>
+                <reportElement mode="Opaque" backcolor="#E9ECEF" x="250" y="0" width="95" height="28"/>
+                <box><pen lineWidth="0.5" lineColor="#CCCCCC"/></box>
+                <textElement textAlignment="Center" verticalAlignment="Middle">
+                    <font fontName="DejaVu Sans" size="9" isBold="true"/>
+                </textElement>
+                <text><![CDATA[Hành Động]]></text>
+            </staticText>
+            <staticText>
+                <reportElement mode="Opaque" backcolor="#E9ECEF" x="345" y="0" width="95" height="28"/>
+                <box><pen lineWidth="0.5" lineColor="#CCCCCC"/></box>
+                <textElement textAlignment="Center" verticalAlignment="Middle">
+                    <font fontName="DejaVu Sans" size="9" isBold="true"/>
+                </textElement>
+                <text><![CDATA[Đối Tượng]]></text>
+            </staticText>
+            <staticText>
+                <reportElement mode="Opaque" backcolor="#E9ECEF" x="440" y="0" width="147" height="28"/>
+                <box><pen lineWidth="0.5" lineColor="#CCCCCC"/></box>
+                <textElement textAlignment="Left" verticalAlignment="Middle">
+                    <font fontName="DejaVu Sans" size="9" isBold="true"/>
+                </textElement>
+                <text><![CDATA[ Mã Đối Tượng]]></text>
+            </staticText>
+            <staticText>
+                <reportElement mode="Opaque" backcolor="#E9ECEF" x="587" y="0" width="95" height="28"/>
+                <box><pen lineWidth="0.5" lineColor="#CCCCCC"/></box>
+                <textElement textAlignment="Center" verticalAlignment="Middle">
+                    <font fontName="DejaVu Sans" size="9" isBold="true"/>
+                </textElement>
+                <text><![CDATA[Địa Chỉ IP]]></text>
+            </staticText>
+            <staticText>
+                <reportElement mode="Opaque" backcolor="#E9ECEF" x="682" y="0" width="120" height="28"/>
+                <box><pen lineWidth="0.5" lineColor="#CCCCCC"/></box>
+                <textElement textAlignment="Center" verticalAlignment="Middle">
+                    <font fontName="DejaVu Sans" size="9" isBold="true"/>
+                </textElement>
+                <text><![CDATA[Thời Gian]]></text>
+            </staticText>
+        </band>
+    </columnHeader>
+
+    <detail>
+        <band height="24">
+            <textField isStretchWithOverflow="true" isBlankWhenNull="true">
+                <reportElement stretchType="RelativeToTallestObject" x="0" y="0" width="35" height="24"/>
+                <box><pen lineWidth="0.5" lineColor="#E0E0E0"/></box>
+                <textElement textAlignment="Center" verticalAlignment="Middle">
+                    <font fontName="DejaVu Sans" size="9"/>
+                </textElement>
+                <textFieldExpression><![CDATA[$F{stt}]]></textFieldExpression>
+            </textField>
+            <textField isStretchWithOverflow="true" isBlankWhenNull="true">
+                <reportElement stretchType="RelativeToTallestObject" x="35" y="0" width="95" height="24"/>
+                <box leftPadding="4"><pen lineWidth="0.5" lineColor="#E0E0E0"/></box>
+                <textElement verticalAlignment="Middle">
+                    <font fontName="DejaVu Sans" size="8"/>
+                </textElement>
+                <textFieldExpression><![CDATA[$F{username}]]></textFieldExpression>
+            </textField>
+            <textField isStretchWithOverflow="true" isBlankWhenNull="true">
+                <reportElement stretchType="RelativeToTallestObject" x="130" y="0" width="120" height="24"/>
+                <box leftPadding="4"><pen lineWidth="0.5" lineColor="#E0E0E0"/></box>
+                <textElement verticalAlignment="Middle">
+                    <font fontName="DejaVu Sans" size="8"/>
+                </textElement>
+                <textFieldExpression><![CDATA[$F{fullName}]]></textFieldExpression>
+            </textField>
+            <textField isStretchWithOverflow="true" isBlankWhenNull="true">
+                <reportElement stretchType="RelativeToTallestObject" x="250" y="0" width="95" height="24"/>
+                <box><pen lineWidth="0.5" lineColor="#E0E0E0"/></box>
+                <textElement textAlignment="Center" verticalAlignment="Middle">
+                    <font fontName="DejaVu Sans" size="8" isBold="true"/>
+                </textElement>
+                <textFieldExpression><![CDATA[$F{eventTypeLabel}]]></textFieldExpression>
+            </textField>
+            <textField isStretchWithOverflow="true" isBlankWhenNull="true">
+                <reportElement stretchType="RelativeToTallestObject" x="345" y="0" width="95" height="24"/>
+                <box><pen lineWidth="0.5" lineColor="#E0E0E0"/></box>
+                <textElement textAlignment="Center" verticalAlignment="Middle">
+                    <font fontName="DejaVu Sans" size="8"/>
+                </textElement>
+                <textFieldExpression><![CDATA[$F{targetTypeLabel}]]></textFieldExpression>
+            </textField>
+            <textField isStretchWithOverflow="true" isBlankWhenNull="true">
+                <reportElement stretchType="RelativeToTallestObject" x="440" y="0" width="147" height="24"/>
+                <box leftPadding="4"><pen lineWidth="0.5" lineColor="#E0E0E0"/></box>
+                <textElement verticalAlignment="Middle">
+                    <font fontName="DejaVu Sans" size="8"/>
+                </textElement>
+                <textFieldExpression><![CDATA[$F{targetId}]]></textFieldExpression>
+            </textField>
+            <textField isStretchWithOverflow="true" isBlankWhenNull="true">
+                <reportElement stretchType="RelativeToTallestObject" x="587" y="0" width="95" height="24"/>
+                <box><pen lineWidth="0.5" lineColor="#E0E0E0"/></box>
+                <textElement textAlignment="Center" verticalAlignment="Middle">
+                    <font fontName="DejaVu Sans" size="8"/>
+                </textElement>
+                <textFieldExpression><![CDATA[$F{ipAddress}]]></textFieldExpression>
+            </textField>
+            <textField isStretchWithOverflow="true" isBlankWhenNull="true">
+                <reportElement stretchType="RelativeToTallestObject" x="682" y="0" width="120" height="24"/>
+                <box><pen lineWidth="0.5" lineColor="#E0E0E0"/></box>
+                <textElement textAlignment="Center" verticalAlignment="Middle">
+                    <font fontName="DejaVu Sans" size="8"/>
+                </textElement>
+                <textFieldExpression><![CDATA[$F{createdAt}]]></textFieldExpression>
+            </textField>
+        </band>
+    </detail>
+
+    <pageFooter>
+        <band height="24">
+            <textField>
+                <reportElement x="602" y="4" width="200" height="16"/>
+                <textElement textAlignment="Right" verticalAlignment="Middle">
+                    <font fontName="DejaVu Sans" size="8"/>
+                </textElement>
+                <textFieldExpression><![CDATA["Trang " + $V{PAGE_NUMBER}]]></textFieldExpression>
+            </textField>
+            <textField>
+                <reportElement x="0" y="4" width="300" height="16"/>
+                <textElement verticalAlignment="Middle">
+                    <font fontName="DejaVu Sans" size="8" isItalic="true"/>
+                </textElement>
+                <textFieldExpression><![CDATA["Tổng số bản ghi: " + $P{totalRecords}]]></textFieldExpression>
+            </textField>
+        </band>
+    </pageFooter>
+</jasperReport>

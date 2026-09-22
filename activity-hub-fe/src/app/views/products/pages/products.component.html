@@ -311,24 +311,43 @@
     @if (activeTab() === 1) {
       <c-card class="border-0 shadow-sm mb-4">
         <!-- Stock Card Header -->
-        <c-card-header class="bg-body d-flex flex-wrap justify-content-between align-items-center py-3 border-bottom">
+        <c-card-header class="bg-body d-flex flex-wrap justify-content-between align-items-center py-3 border-bottom gap-2">
           <div class="fw-bold text-body">
             Lịch sử biến động kho ({{ stockTotalElements() }} giao dịch)
           </div>
 
-          <button cButton color="secondary" variant="outline" size="sm" (click)="loadStockTransactions()" [disabled]="stockLoading()" title="Làm mới">
-            <svg cIcon name="cilSpeedometer" class="me-1"></svg>
-            Làm mới
-          </button>
+          <div class="d-flex align-items-center gap-2">
+            <button
+              cButton
+              color="danger"
+              variant="outline"
+              size="sm"
+              (click)="exportStockPdf()"
+              [disabled]="stockExporting() || stockLoading() || stockTotalElements() === 0"
+              title="Xuất báo cáo PDF"
+            >
+              @if (stockExporting()) {
+                <c-spinner size="sm" class="me-1"></c-spinner>
+                Đang xuất PDF...
+              } @else {
+                <svg cIcon name="cilCloudDownload" class="me-1"></svg>
+                Xuất PDF
+              }
+            </button>
+            <button cButton color="secondary" variant="outline" size="sm" (click)="loadStockTransactions()" [disabled]="stockLoading()" title="Làm mới">
+              <svg cIcon name="cilSpeedometer" class="me-1"></svg>
+              Làm mới
+            </button>
+          </div>
         </c-card-header>
 
         <c-card-body>
           <!-- Stock Filter Toolbar -->
-          <c-row class="mb-3 g-2 align-items-center justify-content-between">
-            <c-col md="6" xs="12">
+          <c-row class="mb-3 g-2 align-items-center">
+            <c-col lg="3" md="4" xs="12">
               <select
                 cSelect
-                class="form-select w-auto"
+                class="form-select w-100"
                 [ngModel]="stockType()"
                 (ngModelChange)="onStockTypeChange($event)"
               >
@@ -340,18 +359,48 @@
               </select>
             </c-col>
 
-            <c-col md="6" xs="12" class="d-flex justify-content-md-end align-items-center gap-2">
+            <c-col lg="3" md="3" xs="6">
+              <div class="input-group input-group-sm">
+                <span class="input-group-text bg-light text-body-secondary">Từ ngày</span>
+                <input
+                  type="date"
+                  class="form-control"
+                  [ngModel]="stockFromDate()"
+                  (ngModelChange)="stockFromDate.set($event); onStockDateChange()"
+                />
+              </div>
+            </c-col>
+
+            <c-col lg="3" md="3" xs="6">
+              <div class="input-group input-group-sm">
+                <span class="input-group-text bg-light text-body-secondary">Đến ngày</span>
+                <input
+                  type="date"
+                  class="form-control"
+                  [ngModel]="stockToDate()"
+                  (ngModelChange)="stockToDate.set($event); onStockDateChange()"
+                />
+              </div>
+            </c-col>
+
+            <c-col lg="3" md="2" xs="12" class="d-flex justify-content-md-end align-items-center gap-2">
+              @if (stockType() || stockFromDate() || stockToDate()) {
+                <button cButton color="light" size="sm" class="border text-body-secondary" (click)="resetStockFilters()" title="Xóa bộ lọc">
+                  <svg cIcon name="cilReload" class="me-1"></svg>
+                  Xóa lọc
+                </button>
+              }
               <span class="text-body-secondary small text-nowrap">Hiển thị:</span>
               <select
                 cSelect
-                class="form-select w-auto"
+                class="form-select form-select-sm w-auto"
                 [ngModel]="stockPageSize()"
                 (ngModelChange)="onStockPageSizeChange($event)"
               >
-                <option [value]="5">5 dòng</option>
-                <option [value]="10">10 dòng</option>
-                <option [value]="20">20 dòng</option>
-                <option [value]="50">50 dòng</option>
+                <option [value]="5">5</option>
+                <option [value]="10">10</option>
+                <option [value]="20">20</option>
+                <option [value]="50">50</option>
               </select>
             </c-col>
           </c-row>
