@@ -52,12 +52,15 @@ public class AuthenticationController {
         AuthenticationResponse authenticationResponse = authenticationService.authenticate(request);
 
         ResponseCookie cookie = createRefreshTokenCookie(
-                authenticationResponse.getRefreshToken(), authenticationService.getRefreshableDuration());
+                authenticationResponse.getRefreshToken(), authenticationService.getRefreshableDuration(request.isRememberMe()));
+                authenticationResponse.getRefreshToken(),
+                authenticationService.getRefreshableDuration(authenticationResponse.getRememberMe()));
 
         AuthenticationResponse response = AuthenticationResponse.builder()
                 .accessToken(authenticationResponse.getAccessToken())
                 .refreshToken(authenticationResponse.getRefreshToken())
                 .authenticated(true)
+                .rememberMe(authenticationResponse.getRememberMe())
                 .build();
 
         return ResponseEntity.ok()
@@ -92,13 +95,17 @@ public class AuthenticationController {
         AuthenticationResponse authenticationResponse = authenticationService.refreshToken(token);
 
         // Xoay vòng refresh token: đặt cookie mới cho trình duyệt
+        // Xoay vòng refresh token: đặt cookie mới cho trình duyệt, duy trì thời hạn rememberMe
         ResponseCookie newCookie = createRefreshTokenCookie(
-                authenticationResponse.getRefreshToken(), authenticationService.getRefreshableDuration());
+                authenticationResponse.getRefreshToken(), authenticationService.getRefreshableDuration(null));
+                authenticationResponse.getRefreshToken(),
+                authenticationService.getRefreshableDuration(authenticationResponse.getRememberMe()));
 
         AuthenticationResponse response = AuthenticationResponse.builder()
                 .accessToken(authenticationResponse.getAccessToken())
                 .refreshToken(authenticationResponse.getRefreshToken())
                 .authenticated(true)
+                .rememberMe(authenticationResponse.getRememberMe())
                 .build();
 
         return ResponseEntity.ok()

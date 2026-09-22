@@ -55,8 +55,14 @@ public class AuthenticationService {
     @Value("${jwt.refreshable-duration}")
     protected long REFRESHABLE_DURATION;
 
-    public long getRefreshableDuration() {
-        return REFRESHABLE_DURATION;
+    @NonFinal
+    @Value("${jwt.refreshable-duration-long}")
+    protected long REFRESHABLE_DURATION_LONG;
+
+    public long getRefreshableDuration(Boolean rememberMe) {
+        if (rememberMe == null || !rememberMe)
+            return REFRESHABLE_DURATION;
+        return REFRESHABLE_DURATION_LONG;
     }
 
     public IntrospectResponse introspect(IntrospectRequest request) throws JOSEException, ParseException {
@@ -82,13 +88,16 @@ public class AuthenticationService {
 
         if (!authenticated) throw new AppException(ErrorCode.UNAUTHENTICATED);
 
+        boolean rememberMe = Boolean.TRUE.equals(request.getRememberMe());
         var accessToken = generateAccessToken(user);
         var refreshToken = generateRefreshToken(user);
+        var refreshToken = generateRefreshToken(user, rememberMe);
 
         return AuthenticationResponse.builder()
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
                 .authenticated(true)
+                .rememberMe(rememberMe)
                 .build();
     }
 
@@ -133,13 +142,18 @@ public class AuthenticationService {
         var user =
                 userRepository.findByUsername(username).orElseThrow(() -> new AppException(ErrorCode.UNAUTHENTICATED));
 
+        Object rememberMeClaim = signedJWT.getJWTClaimsSet().getClaim("remember_me");
+        boolean rememberMe = Boolean.TRUE.equals(rememberMeClaim);
+
         var newAccessToken = generateAccessToken(user);
         var newRefreshToken = generateRefreshToken(user);
+        var newRefreshToken = generateRefreshToken(user, rememberMe);
 
         return AuthenticationResponse.builder()
                 .accessToken(newAccessToken)
                 .refreshToken(newRefreshToken)
                 .authenticated(true)
+                .rememberMe(rememberMe)
                 .build();
     }
 
@@ -170,7 +184,9 @@ public class AuthenticationService {
     }
 
     private String generateRefreshToken(User user) {
+    private String generateRefreshToken(User user, boolean rememberMe) {
         JWSHeader header = new JWSHeader(JWSAlgorithm.HS512);
+        long duration = rememberMe ? REFRESHABLE_DURATION_LONG : REFRESHABLE_DURATION;
 
         JWTClaimsSet jwtClaimsSet = new JWTClaimsSet.Builder()
                 .subject(user.getUsername())
@@ -178,9 +194,11 @@ public class AuthenticationService {
                 .issueTime(new Date())
                 .expirationTime(new Date(Instant.now()
                         .plus(REFRESHABLE_DURATION, ChronoUnit.SECONDS)
+                        .plus(duration, ChronoUnit.SECONDS)
                         .toEpochMilli()))
                 .jwtID(UUID.randomUUID().toString())
                 .claim("token_type", "REFRESH")
+                .claim("remember_me", rememberMe)
                 .build();
 
         Payload payload = new Payload(jwtClaimsSet.toJSONObject());
@@ -203,20 +221,25 @@ public class AuthenticationService {
         Date tokenExpiry = signedJWT.getJWTClaimsSet().getExpirationTime();
         Date expiryTime = (isRefresh)
                 ? (tokenExpiry != null
-                                && tokenExpiry
-                                        .toInstant()
-                                        .isAfter(signedJWT
-                                                .getJWTClaimsSet()
-                                                .getIssueTime()
-                                                .toInstant()
-                                                .plus(VALID_DURATION + 60, ChronoUnit.SECONDS))
-                        ? tokenExpiry
-                        : new Date(signedJWT
-                                .getJWTClaimsSet()
-                                .getIssueTime()
-                                .toInstant()
-                                .plus(REFRESHABLE_DURATION, ChronoUnit.SECONDS)
-                                .toEpochMilli()))
+                && tokenExpiry
+                .toInstant()
+                .isAfter(signedJWT
+                        .getJWTClaimsSet()
+                        .getIssueTime()
+                        .toInstant()
+                        .plus(VALID_DURATION + 60, ChronoUnit.SECONDS))
+                   ? tokenExpiry
+                   : new Date(signedJWT
+                .getJWTClaimsSet()
+                .getIssueTime()
+                .toInstant()
+                .plus(REFRESHABLE_DURATION, ChronoUnit.SECONDS)
+                .plus(
+                    Boolean.TRUE.equals(signedJWT.getJWTClaimsSet().getClaim("remember_me"))
+                        ? REFRESHABLE_DURATION_LONG
+                        : REFRESHABLE_DURATION,
+                    ChronoUnit.SECONDS)
+                .toEpochMilli()))
                 : tokenExpiry;
 
         var verified = signedJWT.verify(verifier);

@@ -1,6 +1,7 @@
 export interface LoginRequest {
   username: string;
   password: string;
+  rememberMe?: boolean;
 }
 
 export interface LoginResponse {
@@ -8,6 +9,7 @@ export interface LoginResponse {
   accessToken?: string;
   refreshToken?: string;
   authenticated?: boolean;
+  rememberMe?: boolean;
 }
 
 export interface RefreshRequest {
