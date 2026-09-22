@@ -90,7 +90,6 @@ public class AuthenticationService {
 
         boolean rememberMe = Boolean.TRUE.equals(request.getRememberMe());
         var accessToken = generateAccessToken(user);
-        var refreshToken = generateRefreshToken(user);
         var refreshToken = generateRefreshToken(user, rememberMe);
 
         return AuthenticationResponse.builder()
@@ -146,7 +145,6 @@ public class AuthenticationService {
         boolean rememberMe = Boolean.TRUE.equals(rememberMeClaim);
 
         var newAccessToken = generateAccessToken(user);
-        var newRefreshToken = generateRefreshToken(user);
         var newRefreshToken = generateRefreshToken(user, rememberMe);
 
         return AuthenticationResponse.builder()
@@ -183,7 +181,6 @@ public class AuthenticationService {
         }
     }
 
-    private String generateRefreshToken(User user) {
     private String generateRefreshToken(User user, boolean rememberMe) {
         JWSHeader header = new JWSHeader(JWSAlgorithm.HS512);
         long duration = rememberMe ? REFRESHABLE_DURATION_LONG : REFRESHABLE_DURATION;
@@ -193,7 +190,6 @@ public class AuthenticationService {
                 .issuer("devteria.com")
                 .issueTime(new Date())
                 .expirationTime(new Date(Instant.now()
-                        .plus(REFRESHABLE_DURATION, ChronoUnit.SECONDS)
                         .plus(duration, ChronoUnit.SECONDS)
                         .toEpochMilli()))
                 .jwtID(UUID.randomUUID().toString())
@@ -233,7 +229,6 @@ public class AuthenticationService {
                 .getJWTClaimsSet()
                 .getIssueTime()
                 .toInstant()
-                .plus(REFRESHABLE_DURATION, ChronoUnit.SECONDS)
                 .plus(
                     Boolean.TRUE.equals(signedJWT.getJWTClaimsSet().getClaim("remember_me"))
                         ? REFRESHABLE_DURATION_LONG
