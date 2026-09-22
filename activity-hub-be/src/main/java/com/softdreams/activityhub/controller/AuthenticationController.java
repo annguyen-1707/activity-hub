@@ -52,7 +52,8 @@ public class AuthenticationController {
         AuthenticationResponse authenticationResponse = authenticationService.authenticate(request);
 
         ResponseCookie cookie = createRefreshTokenCookie(
-                authenticationResponse.getRefreshToken(), authenticationService.getRefreshableDuration(request.getRememberMe()));
+                authenticationResponse.getRefreshToken(),
+                authenticationService.getRefreshableDuration(authenticationResponse.getRememberMe()));
 
         AuthenticationResponse response = AuthenticationResponse.builder()
                 .accessToken(authenticationResponse.getAccessToken())
