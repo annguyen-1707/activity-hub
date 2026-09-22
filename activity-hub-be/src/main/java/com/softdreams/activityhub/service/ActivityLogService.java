@@ -1,6 +1,8 @@
 package com.softdreams.activityhub.service;
 
 import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.List;
 import java.util.UUID;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -13,6 +15,7 @@ import org.springframework.stereotype.Service;
 
 import com.softdreams.activityhub.dto.ActivityLogEvent;
 import com.softdreams.activityhub.dto.response.ActivityLogResponse;
+import com.softdreams.activityhub.dto.response.TargetTypeResponse;
 import com.softdreams.activityhub.entity.ActivityLog;
 import com.softdreams.activityhub.entity.User;
 import com.softdreams.activityhub.enums.EventType;
@@ -95,6 +98,17 @@ public class ActivityLogService {
         return activityLogRepository
                 .search(keyword, eventType, targetType, pageable)
                 .map(activityLogMapper::toResponse);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    public List<TargetTypeResponse> getTargetTypes() {
+        return Arrays.stream(TargetType.values())
+                .map(t -> TargetTypeResponse.builder()
+                        .name(t.name())
+                        .value(t.name())
+                        .label(t.getLabel())
+                        .build())
+                .toList();
     }
 
     private User resolveActor(TargetType targetType, String targetId) {

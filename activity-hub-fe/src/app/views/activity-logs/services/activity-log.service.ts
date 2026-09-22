@@ -4,7 +4,7 @@ import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { environment } from '../../../../environments/environment';
 import { ApiResponse, PageResponse } from '../../../core/models/api-response.model';
-import { ActivityEventType, ActivityLog, ActivityTargetType } from '../../../core/models/activity-log.model';
+import { ActivityEventType, ActivityLog, ActivityTargetType, TargetTypeItem } from '../../../core/models/activity-log.model';
 
 @Injectable({
   providedIn: 'root',
@@ -12,6 +12,12 @@ import { ActivityEventType, ActivityLog, ActivityTargetType } from '../../../cor
 export class ActivityLogService {
   private readonly http = inject(HttpClient);
   private readonly baseUrl = environment.apiUrl;
+
+  getTargetTypes(): Observable<TargetTypeItem[]> {
+    return this.http
+      .get<ApiResponse<TargetTypeItem[]>>(`${this.baseUrl}/activity-logs/targets`)
+      .pipe(map((res) => res.result));
+  }
 
   getLogs(
     page: number = 0,

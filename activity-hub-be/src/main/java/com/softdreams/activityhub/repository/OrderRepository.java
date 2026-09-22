@@ -109,4 +109,15 @@ public interface OrderRepository extends JpaRepository<Order, String> {
 			FROM Order o
 			""")
     OrderStatisticsProjection getAdminStatistics();
+
+    @Query(
+            """
+			SELECT o.createdAt AS createdAt, o.totalAmount AS totalAmount
+			FROM Order o
+			WHERE o.status != com.softdreams.activityhub.enums.OrderStatus.CANCELLED
+			  AND o.createdAt >= :fromDate
+			ORDER BY o.createdAt ASC
+			""")
+    java.util.List<com.softdreams.activityhub.dto.projection.OrderRevenueProjection> findOrderRevenueSince(
+            @Param("fromDate") LocalDateTime fromDate);
 }

@@ -59,8 +59,11 @@ public class ProductService {
 
             ProductRatingProjection rating = ratingMap.get(product.getId());
 
-            response.setRate(rating != null ? rating.getAverageRating() : 0.0);
-            response.setTotalReviews(rating != null ? rating.getTotalReviews() : 0L);
+            double avg = rating != null && rating.getAverageRating() != null
+                    ? Math.round(rating.getAverageRating() * 10.0) / 10.0
+                    : 0.0;
+            response.setRate(avg);
+            response.setTotalReviews(rating != null && rating.getTotalReviews() != null ? rating.getTotalReviews() : 0L);
             return response;
         });
     }
@@ -74,7 +77,7 @@ public class ProductService {
 
         reviewRepository.getProductRating(productId).ifPresent(rating -> {
             if (rating.getAverageRating() != null) {
-                response.setRate(rating.getAverageRating());
+                response.setRate(Math.round(rating.getAverageRating() * 10.0) / 10.0);
             }
             if (rating.getTotalReviews() != null) {
                 response.setTotalReviews(rating.getTotalReviews());

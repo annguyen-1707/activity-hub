@@ -1,187 +1,230 @@
-import { Component, DestroyRef, DOCUMENT, effect, inject, OnInit, Renderer2, signal, WritableSignal } from '@angular/core';
-import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
-import { ChartOptions } from 'chart.js';
+import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { RouterLink } from '@angular/router';
 import {
-  AvatarComponent,
   ButtonDirective,
   ButtonGroupComponent,
   CardBodyComponent,
   CardComponent,
-  CardFooterComponent,
   CardHeaderComponent,
   ColComponent,
-  FormCheckLabelDirective,
-  GutterDirective,
-  ProgressComponent,
   RowComponent,
-  TableDirective
+  SpinnerComponent,
+  TableDirective,
 } from '@coreui/angular';
 import { ChartjsComponent } from '@coreui/angular-chartjs';
 import { IconDirective } from '@coreui/icons-angular';
-
-import { DashboardBrandComponent } from './dashboard-brand/dashboard-brand.component';
-import { WidgetsDropdownComponent } from '../widgets/widgets-dropdown/widgets-dropdown.component';
-import { DashboardChartsData, IChartProps } from './dashboard-charts-data';
-
-interface IUser {
-  name: string;
-  state: string;
-  registered: string;
-  country: string;
-  usage: number;
-  period: string;
-  payment: string;
-  activity: string;
-  avatar: string;
-  status: string;
-  color: string;
-}
+import { ChartData, ChartOptions } from 'chart.js';
+import { DashboardService } from '../../core/services/dashboard.service';
+import { DashboardOverviewResponse } from '../../core/models/dashboard.model';
 
 @Component({
-  templateUrl: 'dashboard.component.html',
-  styleUrls: ['dashboard.component.scss'],
-  imports: [WidgetsDropdownComponent, CardComponent, CardBodyComponent, RowComponent, ColComponent, ButtonDirective, IconDirective, ReactiveFormsModule, ButtonGroupComponent, FormCheckLabelDirective, ChartjsComponent, CardFooterComponent, GutterDirective, ProgressComponent, DashboardBrandComponent, CardHeaderComponent, TableDirective, AvatarComponent]
+  selector: 'app-dashboard',
+  standalone: true,
+  templateUrl: './dashboard.component.html',
+  styleUrls: ['./dashboard.component.scss'],
+  imports: [
+    CommonModule,
+    RouterLink,
+    RowComponent,
+    ColComponent,
+    CardComponent,
+    CardHeaderComponent,
+    CardBodyComponent,
+    ButtonDirective,
+    ButtonGroupComponent,
+    SpinnerComponent,
+    TableDirective,
+    ChartjsComponent,
+    IconDirective,
+  ],
 })
 export class DashboardComponent implements OnInit {
+  private readonly dashboardService = inject(DashboardService);
 
-  readonly #destroyRef: DestroyRef = inject(DestroyRef);
-  readonly #document: Document = inject(DOCUMENT);
-  readonly #renderer: Renderer2 = inject(Renderer2);
-  readonly #chartsData: DashboardChartsData = inject(DashboardChartsData);
+  readonly loading = signal<boolean>(true);
+  readonly error = signal<string>('');
+  readonly selectedDays = signal<number>(7);
+  readonly data = signal<DashboardOverviewResponse | null>(null);
 
-  public users: IUser[] = [
-    {
-      name: 'Yiorgos Avraamu',
-      state: 'New',
-      registered: 'Mar 15, 2025',
-      country: 'Us',
-      usage: 50,
-      period: 'Mar 1, 2026 - Apr 30, 2026',
-      payment: 'Mastercard',
-      activity: '10 sec ago',
-      avatar: './assets/images/avatars/1.jpg',
-      status: 'success',
-      color: 'success'
-    },
-    {
-      name: 'Avram Tarasios',
-      state: 'Recurring ',
-      registered: 'Aug 22, 2024',
-      country: 'Br',
-      usage: 10,
-      period: 'Jan 15, 2026 - Feb 14, 2026',
-      payment: 'Visa',
-      activity: '5 minutes ago',
-      avatar: './assets/images/avatars/2.jpg',
-      status: 'danger',
-      color: 'info'
-    },
-    {
-      name: 'Quintin Ed',
-      state: 'New',
-      registered: 'Nov 7, 2024',
-      country: 'In',
-      usage: 74,
-      period: 'Feb 10, 2026 - Mar 11, 2026',
-      payment: 'Stripe',
-      activity: '1 hour ago',
-      avatar: './assets/images/avatars/3.jpg',
-      status: 'warning',
-      color: 'warning'
-    },
-    {
-      name: 'Enéas Kwadwo',
-      state: 'Sleep',
-      registered: 'Jan 30, 2025',
-      country: 'Fr',
-      usage: 98,
-      period: 'Apr 1, 2026 - Apr 30, 2026',
-      payment: 'Paypal',
-      activity: 'Last month',
-      avatar: './assets/images/avatars/4.jpg',
-      status: 'secondary',
-      color: 'danger'
-    },
-    {
-      name: 'Agapetus Tadeáš',
-      state: 'New',
-      registered: 'Jun 12, 2024',
-      country: 'Es',
-      usage: 22,
-      period: 'Mar 20, 2026 - Apr 19, 2026',
-      payment: 'ApplePay',
-      activity: 'Last week',
-      avatar: './assets/images/avatars/5.jpg',
-      status: 'success',
-      color: 'primary'
-    },
-    {
-      name: 'Friderik Dávid',
-      state: 'New',
-      registered: 'Dec 3, 2025',
-      country: 'Pl',
-      usage: 43,
-      period: 'Apr 5, 2026 - May 4, 2026',
-      payment: 'Amex',
-      activity: 'Yesterday',
-      avatar: './assets/images/avatars/6.jpg',
-      status: 'info',
-      color: 'dark'
-    }
-  ];
+  readonly revenueChartData = computed<ChartData>(() => {
+    const trend = this.data()?.revenueTrend || [];
+    const labels = trend.map((t) => {
+      const parts = t.orderDate.split('-');
+      return parts.length === 3 ? `${parts[2]}/${parts[1]}` : t.orderDate;
+    });
+    const revenues = trend.map((t) => t.dailyRevenue);
+    const orders = trend.map((t) => t.dailyOrders);
 
-  public mainChart: IChartProps = { type: 'line' };
-  public mainChartRef: WritableSignal<any> = signal(undefined);
-  #mainChartRefEffect = effect(() => {
-    if (this.mainChartRef()) {
-      this.setChartStyles();
-    }
+    return {
+      labels,
+      datasets: [
+        {
+          type: 'line',
+          label: 'Doanh thu (VNĐ)',
+          backgroundColor: 'rgba(13, 110, 253, 0.15)',
+          borderColor: '#0d6efd',
+          pointBackgroundColor: '#0d6efd',
+          pointBorderColor: '#fff',
+          pointHoverBackgroundColor: '#fff',
+          pointHoverBorderColor: '#0d6efd',
+          data: revenues,
+          fill: true,
+          tension: 0.35,
+          yAxisID: 'y',
+        },
+        {
+          type: 'bar',
+          label: 'Số đơn hàng',
+          backgroundColor: 'rgba(255, 193, 7, 0.75)',
+          borderColor: '#ffc107',
+          data: orders,
+          yAxisID: 'y1',
+        },
+      ],
+    };
   });
-  public chart: Array<IChartProps> = [];
-  public trafficRadioGroup = new FormGroup({
-    trafficRadio: new FormControl('Month')
+
+  readonly revenueChartOptions: ChartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        display: true,
+        position: 'top',
+      },
+      tooltip: {
+        mode: 'index',
+        intersect: false,
+      },
+    },
+    scales: {
+      x: {
+        grid: {
+          display: false,
+        },
+      },
+      y: {
+        type: 'linear',
+        display: true,
+        position: 'left',
+        beginAtZero: true,
+        ticks: {
+          callback: (val) => {
+            if (typeof val === 'number') {
+              if (val >= 1_000_000) return (val / 1_000_000).toFixed(1) + 'M';
+              if (val >= 1_000) return (val / 1_000).toFixed(0) + 'k';
+            }
+            return val;
+          },
+        },
+      },
+      y1: {
+        type: 'linear',
+        display: true,
+        position: 'right',
+        beginAtZero: true,
+        grid: {
+          drawOnChartArea: false,
+        },
+        ticks: {
+          stepSize: 1,
+        },
+      },
+    },
+  };
+
+  readonly orderStatusChartData = computed<ChartData>(() => {
+    const d = this.data();
+    return {
+      labels: ['Mới tạo', 'Đã xác nhận', 'Hoàn thành', 'Đã hủy'],
+      datasets: [
+        {
+          data: [
+            d?.createdOrders || 0,
+            d?.confirmedOrders || 0,
+            d?.completedOrders || 0,
+            d?.cancelledOrders || 0,
+          ],
+          backgroundColor: ['#0d6efd', '#0dcaf0', '#198754', '#dc3545'],
+          hoverOffset: 4,
+        },
+      ],
+    };
+  });
+
+  readonly doughnutOptions: ChartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: 'bottom',
+      },
+    },
+  };
+
+  readonly categoryChartData = computed<ChartData>(() => {
+    const cats = this.data()?.categoryDistribution || [];
+    return {
+      labels: cats.map((c) => c.categoryName),
+      datasets: [
+        {
+          data: cats.map((c) => c.productCount),
+          backgroundColor: [
+            '#321fdb',
+            '#3399ff',
+            '#f9b115',
+            '#2eb85c',
+            '#e55353',
+            '#6f42c1',
+            '#d63384',
+            '#20c997',
+          ],
+          hoverOffset: 4,
+        },
+      ],
+    };
   });
 
   ngOnInit(): void {
-    this.initCharts();
-    this.updateChartOnColorModeChange();
+    this.loadOverview();
   }
 
-  initCharts(): void {
-    this.mainChartRef()?.stop();
-    this.mainChart = this.#chartsData.mainChart;
-  }
+  loadOverview(days: number = this.selectedDays()): void {
+    this.loading.set(true);
+    this.error.set('');
+    this.selectedDays.set(days);
 
-  setTrafficPeriod(value: string): void {
-    this.trafficRadioGroup.setValue({ trafficRadio: value });
-    this.#chartsData.initMainChart(value);
-    this.initCharts();
-  }
-
-  handleChartRef($chartRef: any) {
-    if ($chartRef) {
-      this.mainChartRef.set($chartRef);
-    }
-  }
-
-  updateChartOnColorModeChange() {
-    const unListen = this.#renderer.listen(this.#document.documentElement, 'ColorSchemeChange', () => {
-      this.setChartStyles();
-    });
-
-    this.#destroyRef.onDestroy(() => {
-      unListen();
+    this.dashboardService.getOverview(days).subscribe({
+      next: (res) => {
+        this.data.set(res);
+        this.loading.set(false);
+      },
+      error: (err) => {
+        this.error.set(
+          err?.error?.message || 'Không thể tải dữ liệu thống kê bảng điều khiển.'
+        );
+        this.loading.set(false);
+      },
     });
   }
 
-  setChartStyles() {
-    if (this.mainChartRef()) {
-      setTimeout(() => {
-        const options: ChartOptions = { ...this.mainChart.options };
-        const scales = this.#chartsData.getScales();
-        this.mainChartRef().options.scales = { ...options.scales, ...scales };
-        this.mainChartRef().update();
-      });
+  formatCurrency(value?: number): string {
+    return new Intl.NumberFormat('vi-VN', {
+      style: 'currency',
+      currency: 'VND',
+    }).format(value || 0);
+  }
+
+  formatDate(dateStr?: string): string {
+    if (!dateStr) return '—';
+    try {
+      return new Intl.DateTimeFormat('vi-VN', {
+        dateStyle: 'short',
+        timeStyle: 'short',
+      }).format(new Date(dateStr));
+    } catch {
+      return dateStr;
     }
   }
 }

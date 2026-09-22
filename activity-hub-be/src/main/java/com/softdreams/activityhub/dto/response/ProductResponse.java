@@ -19,7 +19,7 @@ public class ProductResponse {
     BigDecimal price;
     CategoryResponse category;
     double rate;
-    double totalReviews;
+    long totalReviews;
     int quantity;
     String description;
     String image;

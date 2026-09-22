@@ -50,9 +50,9 @@
           <select cSelect class="form-select" [ngModel]="selectedTargetType()"
             (ngModelChange)="selectedTargetType.set($event); onFilterChange()">
             <option value="ALL">Tất cả đối tượng</option>
-            <option value="USER">Người dùng</option>
-            <option value="ORDER">Đơn hàng</option>
-            <option value="ROLE">Vai trò</option>
+            @for (t of targetTypes(); track t.name) {
+              <option [value]="t.name">{{ t.label }}</option>
+            }
           </select>
         </c-col>
 

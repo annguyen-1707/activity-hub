@@ -25,7 +25,7 @@ import {
   TableDirective,
 } from '@coreui/angular';
 import { IconDirective } from '@coreui/icons-angular';
-import { ActivityEventType, ActivityLog, ActivityTargetType } from '../../../core/models/activity-log.model';
+import { ActivityEventType, ActivityLog, ActivityTargetType, TargetTypeItem } from '../../../core/models/activity-log.model';
 import { ActivityLogService } from '../services/activity-log.service';
 
 @Component({
@@ -65,6 +65,7 @@ export class ActivityLogsComponent implements OnInit {
 
   logs = signal<ActivityLog[]>([]);
   loading = signal<boolean>(false);
+  targetTypes = signal<TargetTypeItem[]>([]);
 
   // Filters
   keyword = signal<string>('');
@@ -82,7 +83,24 @@ export class ActivityLogsComponent implements OnInit {
   detailModalVisible = signal<boolean>(false);
 
   ngOnInit(): void {
+    this.loadTargetTypes();
     this.loadLogs();
+  }
+
+  loadTargetTypes(): void {
+    this.activityLogService.getTargetTypes().subscribe({
+      next: (types) => this.targetTypes.set(types),
+      error: () => {
+        this.targetTypes.set([
+          { name: 'USER', label: 'Người dùng' },
+          { name: 'ORDER', label: 'Đơn hàng' },
+          { name: 'ROLE', label: 'Vai trò' },
+          { name: 'PRODUCT', label: 'Sản phẩm' },
+          { name: 'CATEGORY', label: 'Danh mục' },
+          { name: 'REVIEW', label: 'Đánh giá' },
+        ]);
+      },
+    });
   }
 
   loadLogs(): void {
@@ -177,7 +195,7 @@ export class ActivityLogsComponent implements OnInit {
     }
   }
 
-  getTargetBadgeColor(type: ActivityTargetType): string {
+  getTargetBadgeColor(type: ActivityTargetType | string): string {
     switch (type) {
       case 'ORDER':
         return 'success';
@@ -185,6 +203,12 @@ export class ActivityLogsComponent implements OnInit {
         return 'primary';
       case 'ROLE':
         return 'warning';
+      case 'PRODUCT':
+        return 'info';
+      case 'CATEGORY':
+        return 'dark';
+      case 'REVIEW':
+        return 'secondary';
       default:
         return 'secondary';
     }

@@ -1,5 +1,7 @@
 package com.softdreams.activityhub.controller;
 
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -8,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 
 import com.softdreams.activityhub.dto.request.ApiResponse;
 import com.softdreams.activityhub.dto.response.ActivityLogResponse;
+import com.softdreams.activityhub.dto.response.TargetTypeResponse;
 import com.softdreams.activityhub.enums.EventType;
 import com.softdreams.activityhub.enums.TargetType;
 import com.softdreams.activityhub.service.ActivityLogService;
@@ -31,6 +34,13 @@ public class ActivityLogController {
             @RequestParam(required = false) TargetType targetType) {
         return ApiResponse.<Page<ActivityLogResponse>>builder()
                 .result(activityLogService.search(pageable, keyword, eventType, targetType))
+                .build();
+    }
+
+    @GetMapping({"/targets", "/target-types"})
+    ApiResponse<List<TargetTypeResponse>> getTargetTypes() {
+        return ApiResponse.<List<TargetTypeResponse>>builder()
+                .result(activityLogService.getTargetTypes())
                 .build();
     }
 }

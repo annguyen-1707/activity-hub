@@ -9,7 +9,19 @@ export type ActivityEventType =
   | 'LOGIN'
   | 'LOGOUT';
 
-export type ActivityTargetType = 'USER' | 'ORDER' | 'ROLE';
+export type ActivityTargetType =
+  | 'USER'
+  | 'ORDER'
+  | 'ROLE'
+  | 'PRODUCT'
+  | 'CATEGORY'
+  | 'REVIEW';
+
+export interface TargetTypeItem {
+  name: string;
+  value?: string;
+  label: string;
+}
 
 export interface ActivityLog {
   id: string;

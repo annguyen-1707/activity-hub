@@ -32,4 +32,24 @@ public interface OrderLineRepository extends JpaRepository<OrderLine, String> {
     List<OrderLineProjection> getOrderLinesByOrderIds(
             @Param("orderIds") List<String> orderIds
     );
+
+    @Query("""
+        SELECT
+            p.id AS productId,
+            p.name AS productName,
+            p.image AS productImage,
+            p.price AS price,
+            c.name AS categoryName,
+            SUM(ol.quantity) AS totalSold,
+            SUM(ol.subtotal) AS totalRevenue
+        FROM OrderLine ol
+        JOIN ol.product p
+        LEFT JOIN p.category c
+        JOIN ol.order o
+        WHERE o.status != com.softdreams.activityhub.enums.OrderStatus.CANCELLED
+        GROUP BY p.id, p.name, p.image, p.price, c.name
+        ORDER BY SUM(ol.quantity) DESC
+    """)
+    List<com.softdreams.activityhub.dto.projection.TopSellingProductProjection> getTopSellingProducts(
+            org.springframework.data.domain.Pageable pageable);
 }

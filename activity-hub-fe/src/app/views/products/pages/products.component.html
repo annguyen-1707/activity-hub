@@ -25,8 +25,7 @@
           Thêm sản phẩm mới
         </button>
       } @else {
-        <button cButton color="success" class="text-white d-flex align-items-center shadow-sm"
-                (click)="openStockModal()">
+        <button cButton color="success" class="text-white d-flex align-items-center shadow-sm" (click)="openStockModal()">
           <svg cIcon name="cilPlus" class="me-1"></svg>
           Nhập kho / Điều chỉnh
         </button>
@@ -71,8 +70,7 @@
             Danh sách sản phẩm ({{ productTotalElements() }} sản phẩm)
           </div>
 
-          <button cButton color="secondary" variant="outline" size="sm" (click)="loadProducts()"
-                  [disabled]="productLoading()" title="Làm mới">
+          <button cButton color="secondary" variant="outline" size="sm" (click)="loadProducts()" [disabled]="productLoading()" title="Làm mới">
             <svg cIcon name="cilSpeedometer" class="me-1"></svg>
             Làm mới
           </button>
@@ -94,8 +92,7 @@
                   (keyup.enter)="onProductSearch()"
                 />
                 @if (productKeyword()) {
-                  <button class="btn btn-outline-secondary border-start-0 bg-transparent"
-                          (click)="productKeyword.set(''); onProductSearch()">
+                  <button class="btn btn-outline-secondary border-start-0 bg-transparent" (click)="productKeyword.set(''); onProductSearch()">
                     <svg cIcon name="cilX" size="sm"></svg>
                   </button>
                 }
@@ -136,16 +133,16 @@
           <div class="table-responsive border rounded">
             <table cTable hover class="align-middle mb-0">
               <thead class="table-light">
-              <tr>
-                <th scope="col" class="text-center" style="width: 60px;">#</th>
-                <th scope="col" style="width: 70px;" class="text-center">Hình ảnh</th>
-                <th scope="col">Tên sản phẩm</th>
-                <th scope="col">Danh mục</th>
-                <th scope="col" class="text-end">Đơn giá</th>
-                <th scope="col" class="text-center">Tồn kho</th>
-                <th scope="col" class="text-center">Đánh giá</th>
-                <th scope="col" class="text-center" style="width: 120px;">Thao tác</th>
-              </tr>
+                <tr>
+                  <th scope="col" class="text-center" style="width: 60px;">#</th>
+                  <th scope="col" style="width: 70px;" class="text-center">Hình ảnh</th>
+                  <th scope="col">Tên sản phẩm</th>
+                  <th scope="col">Danh mục</th>
+                  <th scope="col" class="text-end">Đơn giá</th>
+                  <th scope="col" class="text-center">Tồn kho</th>
+                  <th scope="col" class="text-center">Đánh giá</th>
+                  <th scope="col" class="text-center" style="width: 120px;">Thao tác</th>
+                </tr>
               </thead>
               <tbody>
                 @if (productLoading()) {
@@ -160,8 +157,7 @@
                     <td colspan="8" class="text-center py-5">
                       <svg cIcon name="cilTags" size="3xl" class="text-secondary opacity-50 mb-2"></svg>
                       <h6>Không tìm thấy sản phẩm nào</h6>
-                      <p class="text-body-secondary small mb-0">Thử tìm kiếm với từ khóa khác hoặc bấm nút "Thêm sản
-                        phẩm mới".</p>
+                      <p class="text-body-secondary small mb-0">Thử tìm kiếm với từ khóa khác hoặc bấm nút "Thêm sản phẩm mới".</p>
                     </td>
                   </tr>
                 } @else {
@@ -176,10 +172,9 @@
                       <td class="text-center py-2">
                         <div class="product-thumb-container mx-auto">
                           @if (prod.image) {
-                            <img [src]="prod.image" [alt]="prod.name" class="product-thumb rounded-3"/>
+                            <img [src]="prod.image" [alt]="prod.name" class="product-thumb rounded-3" />
                           } @else {
-                            <div
-                              class="product-thumb-placeholder rounded-3 d-flex align-items-center justify-content-center bg-body-secondary text-body-secondary">
+                            <div class="product-thumb-placeholder rounded-3 d-flex align-items-center justify-content-center bg-body-secondary text-body-secondary">
                               <svg cIcon name="cilTags"></svg>
                             </div>
                           }
@@ -188,22 +183,19 @@
 
                       <!-- Name & SKU -->
                       <td>
-                        <div class="fw-semibold text-truncate" style="max-width: 280px;" [title]="prod.name">
-                          <a
-                            [routerLink]="['/products', prod.id]"
-                            class="fw-semibold text-truncate text-decoration-none text-body d-inline-block"
-                            style="max-width: 280px;"
-                            [title]="prod.name"
-                          >
-                            {{ prod.name }}
-                          </a>
-                          <div class="d-flex align-items-center gap-1 text-body-secondary small">
-                            <code>{{ prod.id.substring(0, 8) }}...</code>
-                            <button class="btn btn-sm btn-link p-0 text-body-secondary" (click)="copyId(prod.id)"
-                                    title="Copy mã ID">
-                              <svg cIcon name="cilPaperclip" size="sm"></svg>
-                            </button>
-                          </div>
+                        <a
+                          [routerLink]="['/products', prod.id]"
+                          class="fw-semibold text-truncate text-decoration-none text-body d-inline-block"
+                          style="max-width: 280px;"
+                          [title]="prod.name"
+                        >
+                          {{ prod.name }}
+                        </a>
+                        <div class="d-flex align-items-center gap-1 text-body-secondary small">
+                          <code>{{ prod.id.substring(0, 8) }}...</code>
+                          <button class="btn btn-sm btn-link p-0 text-body-secondary" (click)="copyId(prod.id)" title="Copy mã ID">
+                            <svg cIcon name="cilPaperclip" size="sm"></svg>
+                          </button>
                         </div>
                       </td>
 
@@ -234,7 +226,7 @@
                       <td class="text-center">
                         <div class="d-flex align-items-center justify-content-center gap-1 text-warning small">
                           <svg cIcon name="cilStar"></svg>
-                          <span class="fw-bold text-body">{{ prod.rate }}</span>
+                          <span class="fw-bold text-body">{{ (prod.rate || 0) | number:'1.1-1' }}</span>
                         </div>
                       </td>
 
@@ -284,8 +276,7 @@
           @if (!productLoading() && productTotalElements() > 0) {
             <div class="d-flex flex-wrap justify-content-between align-items-center mt-3 pt-2 gap-2">
               <div class="text-body-secondary small mb-2 mb-md-0">
-                Hiển thị <strong>{{ products().length }}</strong> trên tổng số
-                <strong>{{ productTotalElements() }}</strong> sản phẩm
+                Hiển thị <strong>{{ products().length }}</strong> trên tổng số <strong>{{ productTotalElements() }}</strong> sản phẩm
                 (Trang {{ productPage() + 1 }} / {{ productTotalPages() }})
               </div>
 
@@ -325,8 +316,7 @@
             Lịch sử biến động kho ({{ stockTotalElements() }} giao dịch)
           </div>
 
-          <button cButton color="secondary" variant="outline" size="sm" (click)="loadStockTransactions()"
-                  [disabled]="stockLoading()" title="Làm mới">
+          <button cButton color="secondary" variant="outline" size="sm" (click)="loadStockTransactions()" [disabled]="stockLoading()" title="Làm mới">
             <svg cIcon name="cilSpeedometer" class="me-1"></svg>
             Làm mới
           </button>
@@ -370,15 +360,15 @@
           <div class="table-responsive border rounded">
             <table cTable hover class="align-middle mb-0">
               <thead class="table-light">
-              <tr>
-                <th scope="col" style="width: 140px;">Mã Giao Dịch</th>
-                <th scope="col">Loại Giao Dịch</th>
-                <th scope="col">Mã Tham Chiếu</th>
-                <th scope="col">Chi Tiết Biến Động</th>
-                <th scope="col">Người Thực Hiện</th>
-                <th scope="col">Ghi Chú</th>
-                <th scope="col">Thời Gian</th>
-              </tr>
+                <tr>
+                  <!-- <th scope="col" style="width: 140px;">Mã Giao Dịch</th> -->
+                  <th scope="col">Loại Giao Dịch</th>
+                  <th scope="col">Mã Tham Chiếu</th>
+                  <th scope="col">Chi Tiết Biến Động</th>
+                  <th scope="col">Người Thực Hiện</th>
+                  <th scope="col">Ghi Chú</th>
+                  <th scope="col">Thời Gian</th>
+                </tr>
               </thead>
               <tbody>
                 @if (stockLoading()) {
@@ -393,23 +383,21 @@
                     <td colspan="7" class="text-center py-5">
                       <svg cIcon name="cilNotes" size="3xl" class="text-secondary opacity-50 mb-2"></svg>
                       <h6>Chưa có giao dịch kho nào được ghi nhận</h6>
-                      <p class="text-body-secondary small mb-0">Các thay đổi tồn kho qua nhập hàng hoặc bán hàng sẽ hiển
-                        thị tại đây.</p>
+                      <p class="text-body-secondary small mb-0">Các thay đổi tồn kho qua nhập hàng hoặc bán hàng sẽ hiển thị tại đây.</p>
                     </td>
                   </tr>
                 } @else {
                   @for (tx of stockTransactions(); track tx.id) {
                     <tr>
                       <!-- ID -->
-                      <td>
+                      <!-- <td>
                         <div class="d-flex align-items-center gap-1">
                           <code>{{ tx.id.substring(0, 8) }}...</code>
-                          <button class="btn btn-sm btn-link p-0 text-body-secondary" (click)="copyId(tx.id)"
-                                  title="Copy ID">
+                          <button class="btn btn-sm btn-link p-0 text-body-secondary" (click)="copyId(tx.id)" title="Copy ID">
                             <svg cIcon name="cilPaperclip" size="sm"></svg>
                           </button>
                         </div>
-                      </td>
+                      </td> -->
 
                       <!-- Type Badge -->
                       <td>
@@ -421,8 +409,7 @@
                       <!-- Reference ID -->
                       <td>
                         @if (tx.referenceId) {
-                          <span class="badge bg-light text-dark border">Đơn: {{ tx.referenceId.substring(0, 8) }}
-                            ...</span>
+                          <span class="badge bg-light text-dark border">Đơn: {{ tx.referenceId.substring(0, 8) }}...</span>
                         } @else {
                           <span class="text-body-secondary">—</span>
                         }
@@ -433,8 +420,7 @@
                         <div class="d-flex flex-column gap-1">
                           @for (line of tx.lines; track line.id || line.productId) {
                             <div class="small d-flex align-items-center gap-2">
-                              <span class="fw-semibold text-truncate" style="max-width: 220px;"
-                                    [title]="line.productName">
+                              <span class="fw-semibold text-truncate" style="max-width: 220px;" [title]="line.productName">
                                 {{ line.productName || 'Sản phẩm ' + line.productId.substring(0, 6) }}
                               </span>
                               @if (line.quantity > 0) {
@@ -476,8 +462,7 @@
           @if (!stockLoading() && stockTotalElements() > 0) {
             <div class="d-flex flex-wrap justify-content-between align-items-center mt-3 pt-2 gap-2">
               <div class="text-body-secondary small mb-2 mb-md-0">
-                Hiển thị <strong>{{ stockTransactions().length }}</strong> trên tổng số
-                <strong>{{ stockTotalElements() }}</strong> giao dịch
+                Hiển thị <strong>{{ stockTransactions().length }}</strong> trên tổng số <strong>{{ stockTotalElements() }}</strong> giao dịch
                 (Trang {{ stockPage() + 1 }} / {{ stockTotalPages() }})
               </div>
 
@@ -511,8 +496,7 @@
 </div>
 
 <!-- CREATE PRODUCT MODAL -->
-<c-modal [visible]="createProductModalVisible()" (visibleChange)="createProductModalVisible.set($event)"
-         backdrop="static">
+<c-modal [visible]="createProductModalVisible()" (visibleChange)="createProductModalVisible.set($event)" backdrop="static">
   <c-modal-header class="bg-primary text-white">
     <h5 cModalTitle class="d-flex align-items-center">
       <svg cIcon name="cilPlus" class="me-2"></svg>
@@ -524,13 +508,13 @@
     <form [formGroup]="productForm" (ngSubmit)="saveNewProduct()">
       <div class="mb-3">
         <label cLabel class="fw-semibold">Tên sản phẩm <span class="text-danger">*</span></label>
-        <input cFormControl formControlName="name" placeholder="Ví dụ: iPhone 15 Pro Max 256GB"/>
+        <input cFormControl formControlName="name" placeholder="Ví dụ: iPhone 15 Pro Max 256GB" />
       </div>
 
       <c-row class="g-3 mb-3">
         <c-col md="6">
           <label cLabel class="fw-semibold">Giá bán (VND) <span class="text-danger">*</span></label>
-          <input cFormControl type="number" formControlName="price" placeholder="0" min="0"/>
+          <input cFormControl type="number" formControlName="price" placeholder="0" min="0" />
         </c-col>
         <c-col md="6">
           <label cLabel class="fw-semibold">Danh mục <span class="text-danger">*</span></label>
@@ -544,20 +528,17 @@
 
       <div class="mb-3">
         <label cLabel class="fw-semibold">Đường dẫn hình ảnh (URL)</label>
-        <input cFormControl formControlName="image" placeholder="https://example.com/product.jpg"/>
+        <input cFormControl formControlName="image" placeholder="https://example.com/product.jpg" />
       </div>
 
       <div class="mb-3">
         <label cLabel class="fw-semibold">Mô tả sản phẩm</label>
-        <textarea cFormControl formControlName="description" rows="3"
-                  placeholder="Mô tả tóm tắt tính năng, cấu hình..."></textarea>
+        <textarea cFormControl formControlName="description" rows="3" placeholder="Mô tả tóm tắt tính năng, cấu hình..."></textarea>
       </div>
     </form>
   </c-modal-body>
   <c-modal-footer>
-    <button cButton color="secondary" variant="outline" (click)="createProductModalVisible.set(false)"
-            [disabled]="saving()">Hủy bỏ
-    </button>
+    <button cButton color="secondary" variant="outline" (click)="createProductModalVisible.set(false)" [disabled]="saving()">Hủy bỏ</button>
     <button cButton color="primary" (click)="saveNewProduct()" [disabled]="saving() || productForm.invalid">
       @if (saving()) {
         <c-spinner size="sm" class="me-1"></c-spinner> Đang lưu...
@@ -581,13 +562,13 @@
     <form [formGroup]="productForm" (ngSubmit)="saveEditProduct()">
       <div class="mb-3">
         <label cLabel class="fw-semibold">Tên sản phẩm <span class="text-danger">*</span></label>
-        <input cFormControl formControlName="name"/>
+        <input cFormControl formControlName="name" />
       </div>
 
       <c-row class="g-3 mb-3">
         <c-col md="6">
           <label cLabel class="fw-semibold">Giá bán (VND) <span class="text-danger">*</span></label>
-          <input cFormControl type="number" formControlName="price" min="0"/>
+          <input cFormControl type="number" formControlName="price" min="0" />
         </c-col>
         <c-col md="6">
           <label cLabel class="fw-semibold">Danh mục <span class="text-danger">*</span></label>
@@ -601,7 +582,7 @@
 
       <div class="mb-3">
         <label cLabel class="fw-semibold">Đường dẫn hình ảnh (URL)</label>
-        <input cFormControl formControlName="image"/>
+        <input cFormControl formControlName="image" />
       </div>
 
       <div class="mb-3">
@@ -611,9 +592,7 @@
     </form>
   </c-modal-body>
   <c-modal-footer>
-    <button cButton color="secondary" variant="outline" (click)="editProductModalVisible.set(false)"
-            [disabled]="saving()">Hủy bỏ
-    </button>
+    <button cButton color="secondary" variant="outline" (click)="editProductModalVisible.set(false)" [disabled]="saving()">Hủy bỏ</button>
     <button cButton color="primary" (click)="saveEditProduct()" [disabled]="saving() || productForm.invalid">
       @if (saving()) {
         <c-spinner size="sm" class="me-1"></c-spinner> Đang lưu...
@@ -642,9 +621,7 @@
     </div>
   </c-modal-body>
   <c-modal-footer>
-    <button cButton color="secondary" variant="outline" (click)="deleteProductModalVisible.set(false)"
-            [disabled]="deleting()">Hủy
-    </button>
+    <button cButton color="secondary" variant="outline" (click)="deleteProductModalVisible.set(false)" [disabled]="deleting()">Hủy</button>
     <button cButton color="danger" (click)="confirmDeleteProduct()" [disabled]="deleting()">
       @if (deleting()) {
         <c-spinner size="sm" class="me-1"></c-spinner> Đang xóa...
@@ -689,7 +666,7 @@
         <label cLabel class="fw-semibold">
           Số lượng biến động <span class="text-danger">*</span>
         </label>
-        <input cFormControl type="number" formControlName="quantity"/>
+        <input cFormControl type="number" formControlName="quantity" />
         <div class="form-text small text-body-secondary">
           @if (stockForm.get('type')?.value === 'IMPORT') {
             Nhập số lượng dương (ví dụ: 10, 50, 100) để nhập thêm vào kho.
@@ -701,17 +678,13 @@
 
       <div class="mb-3">
         <label cLabel class="fw-semibold">Ghi chú giao dịch</label>
-        <textarea cFormControl formControlName="note" rows="2"
-                  placeholder="Ví dụ: Nhập hàng đợt 1 / Kiểm kê cuối tháng..."></textarea>
+        <textarea cFormControl formControlName="note" rows="2" placeholder="Ví dụ: Nhập hàng đợt 1 / Kiểm kê cuối tháng..."></textarea>
       </div>
     </form>
   </c-modal-body>
   <c-modal-footer>
-    <button cButton color="secondary" variant="outline" (click)="stockModalVisible.set(false)" [disabled]="saving()">
-      Hủy
-    </button>
-    <button cButton color="success" class="text-white" (click)="saveStockTransaction()"
-            [disabled]="saving() || stockForm.invalid">
+    <button cButton color="secondary" variant="outline" (click)="stockModalVisible.set(false)" [disabled]="saving()">Hủy</button>
+    <button cButton color="success" class="text-white" (click)="saveStockTransaction()" [disabled]="saving() || stockForm.invalid">
       @if (saving()) {
         <c-spinner size="sm" class="me-1"></c-spinner> Đang xử lý...
       } @else {

@@ -52,4 +52,24 @@ public interface ReviewRepository extends JpaRepository<Review, String> {
     List<ProductRatingProjection> getProductRatings(
             @Param("productIds") List<String> productIds
     );
+
+    @Query("""
+        SELECT
+            p.id AS productId,
+            p.name AS productName,
+            p.image AS productImage,
+            p.price AS price,
+            c.name AS categoryName,
+            AVG(r.rating) AS averageRating,
+            COUNT(r.id) AS totalReviews
+        FROM Review r
+        JOIN r.orderLine ol
+        JOIN ol.product p
+        LEFT JOIN p.category c
+        GROUP BY p.id, p.name, p.image, p.price, c.name
+        HAVING COUNT(r.id) > 0
+        ORDER BY AVG(r.rating) DESC, COUNT(r.id) DESC
+    """)
+    List<com.softdreams.activityhub.dto.projection.TopRatedProductProjection> getTopRatedProducts(
+            Pageable pageable);
 }

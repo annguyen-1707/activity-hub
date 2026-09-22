@@ -70,4 +70,12 @@ public interface CategoryRepository extends JpaRepository<Category, String> {
             @Param("keyword") String keyword,
             Pageable pageable
     );
+
+    @Query("""
+            SELECT c.name AS categoryName, COUNT(p.id) AS productCount
+            FROM Category c
+            LEFT JOIN Product p ON p.category.id = c.id
+            GROUP BY c.id, c.name
+            """)
+    List<com.softdreams.activityhub.dto.projection.CategoryDistributionProjection> getCategoryDistribution();
 }
