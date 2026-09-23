@@ -84,23 +84,6 @@
               <svg cIcon name="cilReload"></svg>
             </button>
           }
-          <button
-            cButton
-            color="danger"
-            variant="outline"
-            size="sm"
-            class="rounded-3 text-nowrap"
-            (click)="exportPdf()"
-            [disabled]="exporting() || loading() || totalElements() === 0"
-            title="Xuất báo cáo PDF"
-          >
-            @if (exporting()) {
-              <c-spinner size="sm"></c-spinner>
-            } @else {
-              <svg cIcon name="cilCloudDownload" class="me-1"></svg>
-              <span>PDF</span>
-            }
-          </button>
           <button cButton color="secondary" variant="outline" size="sm"
             class="rounded-3 d-flex align-items-center gap-1" (click)="loadOrders()" title="Tải lại dữ liệu"
             [disabled]="loading()">

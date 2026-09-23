@@ -3,6 +3,7 @@ package com.softdreams.activityhub.repository;
 import java.util.List;
 import java.util.Optional;
 
+import com.softdreams.activityhub.dto.projection.CategoryDistributionProjection;
 import com.softdreams.activityhub.dto.response.CategoryResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -77,5 +78,5 @@ public interface CategoryRepository extends JpaRepository<Category, String> {
             LEFT JOIN Product p ON p.category.id = c.id
             GROUP BY c.id, c.name
             """)
-    List<com.softdreams.activityhub.dto.projection.CategoryDistributionProjection> getCategoryDistribution();
+    List<CategoryDistributionProjection> getCategoryDistribution();
 }

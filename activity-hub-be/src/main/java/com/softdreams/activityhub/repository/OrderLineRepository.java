@@ -1,6 +1,7 @@
 package com.softdreams.activityhub.repository;
 
 import com.softdreams.activityhub.dto.projection.OrderLineProjection;
+import com.softdreams.activityhub.dto.projection.TopSellingProductProjection;
 import com.softdreams.activityhub.dto.response.OrderLineResponse;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -50,6 +51,6 @@ public interface OrderLineRepository extends JpaRepository<OrderLine, String> {
         GROUP BY p.id, p.name, p.image, p.price, c.name
         ORDER BY SUM(ol.quantity) DESC
     """)
-    List<com.softdreams.activityhub.dto.projection.TopSellingProductProjection> getTopSellingProducts(
+    List<TopSellingProductProjection> getTopSellingProducts(
             org.springframework.data.domain.Pageable pageable);
 }

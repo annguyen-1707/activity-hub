@@ -103,18 +103,13 @@ public class ActivityLogService {
             Pageable pageable, String keyword, EventType eventType, TargetType targetType, LocalDateTime fromDate, LocalDateTime toDate) {
         return activityLogRepository
                 .search(keyword, eventType, targetType, fromDate, toDate, pageable);
-                .search(keyword, eventType, targetType, fromDate, toDate, pageable)
-                .map(activityLogMapper::toResponse);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     public List<ActivityLogResponse> getLogsForExport(
             String keyword, EventType eventType, TargetType targetType, LocalDateTime fromDate, LocalDateTime toDate) {
         return activityLogRepository
-                .findForExport(keyword, eventType, targetType, fromDate, toDate)
-                .stream()
-                .map(activityLogMapper::toResponse)
-                .toList();
+                .findForExport(keyword, eventType, targetType, fromDate, toDate);
     }
 
     @PreAuthorize("hasRole('ADMIN')")

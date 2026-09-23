@@ -147,7 +147,6 @@ public class StockTransactionService {
                     : "—";
 
             int totalQty = tx.getLines() != null
-                    ? tx.getLines().stream().mapToInt(StockTransactionResponse.LineResponse::getQuantity).sum()
                     ? tx.getLines().stream().mapToInt(com.softdreams.activityhub.dto.response.StockTransactionLineResponse::getQuantity).sum()
                     : 0;
 
@@ -168,7 +167,6 @@ public class StockTransactionService {
                     .referenceId(tx.getReferenceId() != null ? tx.getReferenceId() : "")
                     .productName(prodSummary)
                     .quantity(totalQty > 0 ? "+" + totalQty : String.valueOf(totalQty))
-                    .createdByName(tx.getCreatedBy() != null ? tx.getCreatedBy().getUsername() : "Hệ thống")
                     .createdByName(tx.getCreatedByUsername() != null ? tx.getCreatedByUsername() : "Hệ thống")
                     .createdAt(tx.getCreatedAt() != null ? tx.getCreatedAt().format(dtf) : "")
                     .note(tx.getNote() != null ? tx.getNote() : "")

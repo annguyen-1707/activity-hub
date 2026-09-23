@@ -1,220 +1,190 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports"
-              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-              xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd"
-              name="activity_logs_report"
-              pageWidth="842" pageHeight="595" orientation="Landscape"
-              columnWidth="802" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20">
-
-    <parameter name="reportTitle" class="java.lang.String"/>
-    <parameter name="filterInfo" class="java.lang.String"/>
-    <parameter name="printedBy" class="java.lang.String"/>
-    <parameter name="printedAt" class="java.lang.String"/>
-    <parameter name="totalRecords" class="java.lang.Integer"/>
-
-    <field name="stt" class="java.lang.Integer"/>
-    <field name="username" class="java.lang.String"/>
-    <field name="fullName" class="java.lang.String"/>
-    <field name="eventTypeLabel" class="java.lang.String"/>
-    <field name="targetTypeLabel" class="java.lang.String"/>
-    <field name="targetId" class="java.lang.String"/>
-    <field name="ipAddress" class="java.lang.String"/>
-    <field name="createdAt" class="java.time.LocalDateTime"/>
-
-    <title>
-        <band height="90">
-            <staticText>
-                <reportElement x="0" y="0" width="300" height="20"/>
-                <textElement verticalAlignment="Middle">
-                    <font fontName="DejaVu Sans" size="11" isBold="true"/>
-                </textElement>
-                <text><![CDATA[HỆ THỐNG ACTIVITY HUB]]></text>
-            </staticText>
-            <textField>
-                <reportElement x="0" y="24" width="802" height="26"/>
-                <textElement textAlignment="Center" verticalAlignment="Middle">
-                    <font fontName="DejaVu Sans" size="18" isBold="true"/>
-                </textElement>
-                <textFieldExpression><![CDATA[$P{reportTitle}]]></textFieldExpression>
-            </textField>
-            <textField>
-                <reportElement x="0" y="52" width="802" height="16"/>
-                <textElement textAlignment="Center" verticalAlignment="Middle">
-                    <font fontName="DejaVu Sans" size="10" isItalic="true"/>
-                </textElement>
-                <textFieldExpression><![CDATA[$P{filterInfo}]]></textFieldExpression>
-            </textField>
-            <textField>
-                <reportElement x="0" y="70" width="400" height="15"/>
-                <textElement verticalAlignment="Middle">
-                    <font fontName="DejaVu Sans" size="9"/>
-                </textElement>
-                <textFieldExpression><![CDATA["Người lập: " + $P{printedBy}]]></textFieldExpression>
-            </textField>
-            <textField>
-                <reportElement x="402" y="70" width="400" height="15"/>
-                <textElement textAlignment="Right" verticalAlignment="Middle">
-                    <font fontName="DejaVu Sans" size="9"/>
-                </textElement>
-                <textFieldExpression><![CDATA["Ngày xuất: " + $P{printedAt}]]></textFieldExpression>
-            </textField>
-        </band>
-    </title>
-
-    <columnHeader>
-        <band height="28">
-            <staticText>
-                <reportElement mode="Opaque" backcolor="#E9ECEF" x="0" y="0" width="35" height="28"/>
-                <box><pen lineWidth="0.5" lineColor="#CCCCCC"/></box>
-                <textElement textAlignment="Center" verticalAlignment="Middle">
-                    <font fontName="DejaVu Sans" size="9" isBold="true"/>
-                </textElement>
-                <text><![CDATA[STT]]></text>
-            </staticText>
-            <staticText>
-                <reportElement mode="Opaque" backcolor="#E9ECEF" x="35" y="0" width="95" height="28"/>
-                <box><pen lineWidth="0.5" lineColor="#CCCCCC"/></box>
-                <textElement textAlignment="Center" verticalAlignment="Middle">
-                    <font fontName="DejaVu Sans" size="9" isBold="true"/>
-                </textElement>
-                <text><![CDATA[Tài Khoản]]></text>
-            </staticText>
-            <staticText>
-                <reportElement mode="Opaque" backcolor="#E9ECEF" x="130" y="0" width="120" height="28"/>
-                <box><pen lineWidth="0.5" lineColor="#CCCCCC"/></box>
-                <textElement textAlignment="Left" verticalAlignment="Middle">
-                    <font fontName="DejaVu Sans" size="9" isBold="true"/>
-                </textElement>
-                <text><![CDATA[ Họ Và Tên]]></text>
-            </staticText>
-            <staticText>
-                <reportElement mode="Opaque" backcolor="#E9ECEF" x="250" y="0" width="95" height="28"/>
-                <box><pen lineWidth="0.5" lineColor="#CCCCCC"/></box>
-                <textElement textAlignment="Center" verticalAlignment="Middle">
-                    <font fontName="DejaVu Sans" size="9" isBold="true"/>
-                </textElement>
-                <text><![CDATA[Hành Động]]></text>
-            </staticText>
-            <staticText>
-                <reportElement mode="Opaque" backcolor="#E9ECEF" x="345" y="0" width="95" height="28"/>
-                <box><pen lineWidth="0.5" lineColor="#CCCCCC"/></box>
-                <textElement textAlignment="Center" verticalAlignment="Middle">
-                    <font fontName="DejaVu Sans" size="9" isBold="true"/>
-                </textElement>
-                <text><![CDATA[Đối Tượng]]></text>
-            </staticText>
-            <staticText>
-                <reportElement mode="Opaque" backcolor="#E9ECEF" x="440" y="0" width="147" height="28"/>
-                <box><pen lineWidth="0.5" lineColor="#CCCCCC"/></box>
-                <textElement textAlignment="Left" verticalAlignment="Middle">
-                    <font fontName="DejaVu Sans" size="9" isBold="true"/>
-                </textElement>
-                <text><![CDATA[ Mã Đối Tượng]]></text>
-            </staticText>
-            <staticText>
-                <reportElement mode="Opaque" backcolor="#E9ECEF" x="587" y="0" width="95" height="28"/>
-                <box><pen lineWidth="0.5" lineColor="#CCCCCC"/></box>
-                <textElement textAlignment="Center" verticalAlignment="Middle">
-                    <font fontName="DejaVu Sans" size="9" isBold="true"/>
-                </textElement>
-                <text><![CDATA[Địa Chỉ IP]]></text>
-            </staticText>
-            <staticText>
-                <reportElement mode="Opaque" backcolor="#E9ECEF" x="682" y="0" width="120" height="28"/>
-                <box><pen lineWidth="0.5" lineColor="#CCCCCC"/></box>
-                <textElement textAlignment="Center" verticalAlignment="Middle">
-                    <font fontName="DejaVu Sans" size="9" isBold="true"/>
-                </textElement>
-                <text><![CDATA[Thời Gian]]></text>
-            </staticText>
-        </band>
-    </columnHeader>
-
-    <detail>
-        <band height="24">
-            <textField isStretchWithOverflow="true" isBlankWhenNull="true">
-                <reportElement stretchType="RelativeToTallestObject" x="0" y="0" width="35" height="24"/>
-                <box><pen lineWidth="0.5" lineColor="#E0E0E0"/></box>
-                <textElement textAlignment="Center" verticalAlignment="Middle">
-                    <font fontName="DejaVu Sans" size="9"/>
-                </textElement>
-                <textFieldExpression><![CDATA[$F{stt}]]></textFieldExpression>
-            </textField>
-            <textField isStretchWithOverflow="true" isBlankWhenNull="true">
-                <reportElement stretchType="RelativeToTallestObject" x="35" y="0" width="95" height="24"/>
-                <box leftPadding="4"><pen lineWidth="0.5" lineColor="#E0E0E0"/></box>
-                <textElement verticalAlignment="Middle">
-                    <font fontName="DejaVu Sans" size="8"/>
-                </textElement>
-                <textFieldExpression><![CDATA[$F{username}]]></textFieldExpression>
-            </textField>
-            <textField isStretchWithOverflow="true" isBlankWhenNull="true">
-                <reportElement stretchType="RelativeToTallestObject" x="130" y="0" width="120" height="24"/>
-                <box leftPadding="4"><pen lineWidth="0.5" lineColor="#E0E0E0"/></box>
-                <textElement verticalAlignment="Middle">
-                    <font fontName="DejaVu Sans" size="8"/>
-                </textElement>
-                <textFieldExpression><![CDATA[$F{fullName}]]></textFieldExpression>
-            </textField>
-            <textField isStretchWithOverflow="true" isBlankWhenNull="true">
-                <reportElement stretchType="RelativeToTallestObject" x="250" y="0" width="95" height="24"/>
-                <box><pen lineWidth="0.5" lineColor="#E0E0E0"/></box>
-                <textElement textAlignment="Center" verticalAlignment="Middle">
-                    <font fontName="DejaVu Sans" size="8" isBold="true"/>
-                </textElement>
-                <textFieldExpression><![CDATA[$F{eventTypeLabel}]]></textFieldExpression>
-            </textField>
-            <textField isStretchWithOverflow="true" isBlankWhenNull="true">
-                <reportElement stretchType="RelativeToTallestObject" x="345" y="0" width="95" height="24"/>
-                <box><pen lineWidth="0.5" lineColor="#E0E0E0"/></box>
-                <textElement textAlignment="Center" verticalAlignment="Middle">
-                    <font fontName="DejaVu Sans" size="8"/>
-                </textElement>
-                <textFieldExpression><![CDATA[$F{targetTypeLabel}]]></textFieldExpression>
-            </textField>
-            <textField isStretchWithOverflow="true" isBlankWhenNull="true">
-                <reportElement stretchType="RelativeToTallestObject" x="440" y="0" width="147" height="24"/>
-                <box leftPadding="4"><pen lineWidth="0.5" lineColor="#E0E0E0"/></box>
-                <textElement verticalAlignment="Middle">
-                    <font fontName="DejaVu Sans" size="8"/>
-                </textElement>
-                <textFieldExpression><![CDATA[$F{targetId}]]></textFieldExpression>
-            </textField>
-            <textField isStretchWithOverflow="true" isBlankWhenNull="true">
-                <reportElement stretchType="RelativeToTallestObject" x="587" y="0" width="95" height="24"/>
-                <box><pen lineWidth="0.5" lineColor="#E0E0E0"/></box>
-                <textElement textAlignment="Center" verticalAlignment="Middle">
-                    <font fontName="DejaVu Sans" size="8"/>
-                </textElement>
-                <textFieldExpression><![CDATA[$F{ipAddress}]]></textFieldExpression>
-            </textField>
-            <textField isStretchWithOverflow="true" isBlankWhenNull="true">
-                <reportElement stretchType="RelativeToTallestObject" x="682" y="0" width="120" height="24"/>
-                <box><pen lineWidth="0.5" lineColor="#E0E0E0"/></box>
-                <textElement textAlignment="Center" verticalAlignment="Middle">
-                    <font fontName="DejaVu Sans" size="8"/>
-                </textElement>
-                <textFieldExpression><![CDATA[$F{createdAt}]]></textFieldExpression>
-            </textField>
-        </band>
-    </detail>
-
-    <pageFooter>
-        <band height="24">
-            <textField>
-                <reportElement x="602" y="4" width="200" height="16"/>
-                <textElement textAlignment="Right" verticalAlignment="Middle">
-                    <font fontName="DejaVu Sans" size="8"/>
-                </textElement>
-                <textFieldExpression><![CDATA["Trang " + $V{PAGE_NUMBER}]]></textFieldExpression>
-            </textField>
-            <textField>
-                <reportElement x="0" y="4" width="300" height="16"/>
-                <textElement verticalAlignment="Middle">
-                    <font fontName="DejaVu Sans" size="8" isItalic="true"/>
-                </textElement>
-                <textFieldExpression><![CDATA["Tổng số bản ghi: " + $P{totalRecords}]]></textFieldExpression>
-            </textField>
-        </band>
-    </pageFooter>
+<jasperReport name="activity_logs_report" language="java" pageWidth="842" pageHeight="595" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="a8dd4ed8-3233-4784-aef0-bd804a89b780">
+	<parameter name="reportTitle" class="java.lang.String"/>
+	<parameter name="filterInfo" class="java.lang.String"/>
+	<parameter name="printedBy" class="java.lang.String"/>
+	<parameter name="printedAt" class="java.lang.String"/>
+	<parameter name="totalRecords" class="java.lang.Integer"/>
+	<field name="stt" class="java.lang.Integer"/>
+	<field name="username" class="java.lang.String"/>
+	<field name="fullName" class="java.lang.String"/>
+	<field name="eventTypeLabel" class="java.lang.String"/>
+	<field name="targetTypeLabel" class="java.lang.String"/>
+	<field name="targetId" class="java.lang.String"/>
+	<field name="ipAddress" class="java.lang.String"/>
+	<field name="createdAt" class="java.lang.String"/>
+	<title height="90">
+		<element kind="staticText" uuid="9544c0e3-a9e6-4dee-ad92-f32ba39ed044" x="0" y="0" width="300" height="20" fontName="DejaVu Sans" fontSize="11.0" bold="true" vTextAlign="Middle">
+			<text><![CDATA[HỆ THỐNG ACTIVITY HUB]]></text>
+		</element>
+		<element kind="textField" uuid="2e13dffa-3aaf-40a2-aa35-4ebf569bccab" x="0" y="24" width="802" height="26" fontName="DejaVu Sans" fontSize="18.0" bold="true" hTextAlign="Center" vTextAlign="Middle">
+			<expression><![CDATA[$P{reportTitle}]]></expression>
+		</element>
+		<element kind="textField" uuid="42a6fd8c-8ada-40bc-8cfb-ae7ca83e48b1" x="0" y="52" width="802" height="16" fontName="DejaVu Sans" fontSize="10.0" italic="true" hTextAlign="Center" vTextAlign="Middle">
+			<expression><![CDATA[$P{filterInfo}]]></expression>
+		</element>
+		<element kind="textField" uuid="ff3f924b-e450-4605-8d8b-312ba4950a84" x="0" y="70" width="400" height="15" fontName="DejaVu Sans" fontSize="9.0" vTextAlign="Middle">
+			<expression><![CDATA["Người lập: " + $P{printedBy}]]></expression>
+		</element>
+		<element kind="textField" uuid="4124ca9c-7830-4bf9-97a8-640977e27f96" x="402" y="70" width="400" height="15" fontName="DejaVu Sans" fontSize="9.0" hTextAlign="Right" vTextAlign="Middle">
+			<expression><![CDATA["Ngày xuất: " + $P{printedAt}]]></expression>
+		</element>
+	</title>
+	<columnHeader height="28">
+		<element kind="staticText" uuid="83e6dccb-87a3-4014-b506-be2347c99b8f" mode="Opaque" x="0" y="0" width="40" height="28" backcolor="#E9ECEF" fontName="DejaVu Sans" fontSize="9.0" bold="true" hTextAlign="Center" vTextAlign="Middle">
+			<text><![CDATA[STT]]></text>
+			<box>
+				<topPen lineWidth="0.5" lineColor="#CCCCCC"/>
+				<leftPen lineWidth="0.5" lineColor="#CCCCCC"/>
+				<bottomPen lineWidth="0.5" lineColor="#CCCCCC"/>
+				<rightPen lineWidth="0.5" lineColor="#CCCCCC"/>
+			</box>
+		</element>
+		<element kind="staticText" uuid="e11a4b82-f98c-4476-9028-210051eb1f77" mode="Opaque" x="40" y="0" width="90" height="28" backcolor="#E9ECEF" fontName="DejaVu Sans" fontSize="9.0" bold="true" hTextAlign="Left" vTextAlign="Middle">
+			<text><![CDATA[Tài Khoản]]></text>
+			<box leftPadding="4">
+				<topPen lineWidth="0.5" lineColor="#CCCCCC"/>
+				<leftPen lineWidth="0.5" lineColor="#CCCCCC"/>
+				<bottomPen lineWidth="0.5" lineColor="#CCCCCC"/>
+				<rightPen lineWidth="0.5" lineColor="#CCCCCC"/>
+			</box>
+		</element>
+		<element kind="staticText" uuid="3f45cd6e-89c1-4425-a4fa-c774edcc2f24" mode="Opaque" x="130" y="0" width="120" height="28" backcolor="#E9ECEF" fontName="DejaVu Sans" fontSize="9.0" bold="true" hTextAlign="Left" vTextAlign="Middle">
+			<text><![CDATA[Họ Tên]]></text>
+			<box leftPadding="4">
+				<topPen lineWidth="0.5" lineColor="#CCCCCC"/>
+				<leftPen lineWidth="0.5" lineColor="#CCCCCC"/>
+				<bottomPen lineWidth="0.5" lineColor="#CCCCCC"/>
+				<rightPen lineWidth="0.5" lineColor="#CCCCCC"/>
+			</box>
+		</element>
+		<element kind="staticText" uuid="263e702f-b97e-41d1-bf1b-368051586757" mode="Opaque" x="250" y="0" width="120" height="28" backcolor="#E9ECEF" fontName="DejaVu Sans" fontSize="9.0" bold="true" hTextAlign="Center" vTextAlign="Middle">
+			<text><![CDATA[Hành Động]]></text>
+			<box>
+				<topPen lineWidth="0.5" lineColor="#CCCCCC"/>
+				<leftPen lineWidth="0.5" lineColor="#CCCCCC"/>
+				<bottomPen lineWidth="0.5" lineColor="#CCCCCC"/>
+				<rightPen lineWidth="0.5" lineColor="#CCCCCC"/>
+			</box>
+		</element>
+		<element kind="staticText" uuid="65be7eb6-afdd-4d11-b4a7-1f7f01cefbbf" mode="Opaque" x="370" y="0" width="100" height="28" backcolor="#E9ECEF" fontName="DejaVu Sans" fontSize="9.0" bold="true" hTextAlign="Center" vTextAlign="Middle">
+			<text><![CDATA[Đối Tượng]]></text>
+			<box>
+				<topPen lineWidth="0.5" lineColor="#CCCCCC"/>
+				<leftPen lineWidth="0.5" lineColor="#CCCCCC"/>
+				<bottomPen lineWidth="0.5" lineColor="#CCCCCC"/>
+				<rightPen lineWidth="0.5" lineColor="#CCCCCC"/>
+			</box>
+		</element>
+		<element kind="staticText" uuid="b7d68058-88fd-49ae-a9eb-7c70af480131" mode="Opaque" x="470" y="0" width="120" height="28" backcolor="#E9ECEF" fontName="DejaVu Sans" fontSize="9.0" bold="true" hTextAlign="Left" vTextAlign="Middle">
+			<text><![CDATA[Mã Đối Tượng]]></text>
+			<box leftPadding="4">
+				<topPen lineWidth="0.5" lineColor="#CCCCCC"/>
+				<leftPen lineWidth="0.5" lineColor="#CCCCCC"/>
+				<bottomPen lineWidth="0.5" lineColor="#CCCCCC"/>
+				<rightPen lineWidth="0.5" lineColor="#CCCCCC"/>
+			</box>
+		</element>
+		<element kind="staticText" uuid="c6e4cb72-5c37-44a9-9e27-8084913526c8" mode="Opaque" x="590" y="0" width="100" height="28" backcolor="#E9ECEF" fontName="DejaVu Sans" fontSize="9.0" bold="true" hTextAlign="Center" vTextAlign="Middle">
+			<text><![CDATA[IP Address]]></text>
+			<box>
+				<topPen lineWidth="0.5" lineColor="#CCCCCC"/>
+				<leftPen lineWidth="0.5" lineColor="#CCCCCC"/>
+				<bottomPen lineWidth="0.5" lineColor="#CCCCCC"/>
+				<rightPen lineWidth="0.5" lineColor="#CCCCCC"/>
+			</box>
+		</element>
+		<element kind="staticText" uuid="ed1c0a20-9240-4009-b145-87664831683e" mode="Opaque" x="690" y="0" width="112" height="28" backcolor="#E9ECEF" fontName="DejaVu Sans" fontSize="9.0" bold="true" hTextAlign="Center" vTextAlign="Middle">
+			<text><![CDATA[Thời Gian]]></text>
+			<box>
+				<topPen lineWidth="0.5" lineColor="#CCCCCC"/>
+				<leftPen lineWidth="0.5" lineColor="#CCCCCC"/>
+				<bottomPen lineWidth="0.5" lineColor="#CCCCCC"/>
+				<rightPen lineWidth="0.5" lineColor="#CCCCCC"/>
+			</box>
+		</element>
+	</columnHeader>
+	<detail>
+		<band height="24">
+			<element kind="textField" uuid="1188b381-f1da-4c14-8cc4-e72a428dc02d" x="0" y="0" width="40" height="24" fontName="DejaVu Sans" fontSize="8.0" blankWhenNull="true" bold="true" hTextAlign="Center" vTextAlign="Middle">
+				<expression><![CDATA[$F{stt}]]></expression>
+				<box>
+					<topPen lineWidth="0.5" lineColor="#E0E0E0"/>
+					<leftPen lineWidth="0.5" lineColor="#E0E0E0"/>
+					<bottomPen lineWidth="0.5" lineColor="#E0E0E0"/>
+					<rightPen lineWidth="0.5" lineColor="#E0E0E0"/>
+				</box>
+			</element>
+			<element kind="textField" uuid="834f740a-68b3-46f3-b1d8-42c55a2c2780" x="40" y="0" width="90" height="24" fontName="DejaVu Sans" fontSize="8.0" blankWhenNull="true" hTextAlign="Left" vTextAlign="Middle">
+				<expression><![CDATA[$F{username}]]></expression>
+				<box leftPadding="4">
+					<topPen lineWidth="0.5" lineColor="#E0E0E0"/>
+					<leftPen lineWidth="0.5" lineColor="#E0E0E0"/>
+					<bottomPen lineWidth="0.5" lineColor="#E0E0E0"/>
+					<rightPen lineWidth="0.5" lineColor="#E0E0E0"/>
+				</box>
+			</element>
+			<element kind="textField" uuid="156a8b7a-9050-4282-9153-e80ef7dda01b" x="130" y="0" width="120" height="24" fontName="DejaVu Sans" fontSize="8.0" blankWhenNull="true" hTextAlign="Left" vTextAlign="Middle">
+				<expression><![CDATA[$F{fullName}]]></expression>
+				<box leftPadding="4">
+					<topPen lineWidth="0.5" lineColor="#E0E0E0"/>
+					<leftPen lineWidth="0.5" lineColor="#E0E0E0"/>
+					<bottomPen lineWidth="0.5" lineColor="#E0E0E0"/>
+					<rightPen lineWidth="0.5" lineColor="#E0E0E0"/>
+				</box>
+			</element>
+			<element kind="textField" uuid="9272c711-1fdd-4eb0-be8d-a874f34cede7" x="250" y="0" width="120" height="24" fontName="DejaVu Sans" fontSize="8.0" blankWhenNull="true" hTextAlign="Center" vTextAlign="Middle">
+				<expression><![CDATA[$F{eventTypeLabel}]]></expression>
+				<box>
+					<topPen lineWidth="0.5" lineColor="#E0E0E0"/>
+					<leftPen lineWidth="0.5" lineColor="#E0E0E0"/>
+					<bottomPen lineWidth="0.5" lineColor="#E0E0E0"/>
+					<rightPen lineWidth="0.5" lineColor="#E0E0E0"/>
+				</box>
+			</element>
+			<element kind="textField" uuid="89498e98-8725-46be-aa3e-c6e8ee99920e" x="370" y="0" width="100" height="24" fontName="DejaVu Sans" fontSize="8.0" blankWhenNull="true" hTextAlign="Center" vTextAlign="Middle">
+				<expression><![CDATA[$F{targetTypeLabel}]]></expression>
+				<box>
+					<topPen lineWidth="0.5" lineColor="#E0E0E0"/>
+					<leftPen lineWidth="0.5" lineColor="#E0E0E0"/>
+					<bottomPen lineWidth="0.5" lineColor="#E0E0E0"/>
+					<rightPen lineWidth="0.5" lineColor="#E0E0E0"/>
+				</box>
+			</element>
+			<element kind="textField" uuid="b6880397-9cb5-452a-80a5-2a8c28c4df19" x="470" y="0" width="120" height="24" fontName="DejaVu Sans" fontSize="8.0" blankWhenNull="true" hTextAlign="Left" vTextAlign="Middle">
+				<expression><![CDATA[$F{targetId}]]></expression>
+				<box leftPadding="4">
+					<topPen lineWidth="0.5" lineColor="#E0E0E0"/>
+					<leftPen lineWidth="0.5" lineColor="#E0E0E0"/>
+					<bottomPen lineWidth="0.5" lineColor="#E0E0E0"/>
+					<rightPen lineWidth="0.5" lineColor="#E0E0E0"/>
+				</box>
+			</element>
+			<element kind="textField" uuid="d4bb686a-407a-47d7-9c2a-9fb59434bdf6" x="590" y="0" width="100" height="24" fontName="DejaVu Sans" fontSize="8.0" blankWhenNull="true" hTextAlign="Center" vTextAlign="Middle">
+				<expression><![CDATA[$F{ipAddress}]]></expression>
+				<box>
+					<topPen lineWidth="0.5" lineColor="#E0E0E0"/>
+					<leftPen lineWidth="0.5" lineColor="#E0E0E0"/>
+					<bottomPen lineWidth="0.5" lineColor="#E0E0E0"/>
+					<rightPen lineWidth="0.5" lineColor="#E0E0E0"/>
+				</box>
+			</element>
+			<element kind="textField" uuid="23cf26a6-ed22-4ae4-99b0-023d8352db48" x="690" y="0" width="112" height="24" fontName="DejaVu Sans" fontSize="8.0" blankWhenNull="true" hTextAlign="Center" vTextAlign="Middle">
+				<expression><![CDATA[$F{createdAt}]]></expression>
+				<box>
+					<topPen lineWidth="0.5" lineColor="#E0E0E0"/>
+					<leftPen lineWidth="0.5" lineColor="#E0E0E0"/>
+					<bottomPen lineWidth="0.5" lineColor="#E0E0E0"/>
+					<rightPen lineWidth="0.5" lineColor="#E0E0E0"/>
+				</box>
+			</element>
+		</band>
+	</detail>
+	<pageFooter height="24">
+		<element kind="textField" uuid="a2030937-236d-4dba-9be2-af64cb19952f" x="0" y="4" width="300" height="16" fontName="DejaVu Sans" fontSize="8.0" italic="true" vTextAlign="Middle">
+			<expression><![CDATA["Tổng số bản ghi: " + $P{totalRecords}]]></expression>
+		</element>
+		<element kind="textField" uuid="0256b931-cf43-40f6-8ce6-fc4d0ae7ce7a" x="602" y="4" width="200" height="16" fontName="DejaVu Sans" fontSize="8.0" hTextAlign="Right" vTextAlign="Middle">
+			<expression><![CDATA["Trang " + $V{PAGE_NUMBER}]]></expression>
+		</element>
+	</pageFooter>
 </jasperReport>

@@ -183,34 +183,6 @@ export class OrderListComponent implements OnInit {
     this.loadOrders();
   }
 
-  exportPdf(): void {
-    this.exporting.set(true);
-    this.orderService
-      .exportMyOrdersPdf(
-        this.keyword(),
-        this.statusFilter(),
-        this.paymentFilter(),
-        this.fromDate(),
-        this.toDate()
-      )
-      .subscribe({
-        next: (blob) => {
-          this.exporting.set(false);
-          const url = window.URL.createObjectURL(blob);
-          const a = document.createElement('a');
-          a.href = url;
-          a.download = `don-hang-cua-toi-${new Date().getTime()}.pdf`;
-          a.click();
-          window.URL.revokeObjectURL(url);
-          this.showAlert('Xuất báo cáo PDF thành công!', 'success');
-        },
-        error: () => {
-          this.exporting.set(false);
-          this.showAlert('Lỗi khi xuất file PDF đơn hàng!', 'danger');
-        },
-      });
-  }
-
   private fallbackLoadAllOrders(): void {
     this.orderService.getAllOrders().subscribe({
       next: (list) => {

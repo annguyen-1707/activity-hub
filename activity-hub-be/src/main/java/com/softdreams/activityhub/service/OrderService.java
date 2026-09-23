@@ -1,15 +1,10 @@
 package com.softdreams.activityhub.service;
 
 import java.math.BigDecimal;
-import java.text.NumberFormat;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import jakarta.transaction.Transactional;
@@ -20,9 +15,14 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.text.NumberFormat;
+import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.concurrent.atomic.AtomicInteger;
+import com.softdreams.activityhub.dto.report.OrderReportItem;
 import com.softdreams.activityhub.dto.projection.OrderLineProjection;
 import com.softdreams.activityhub.dto.projection.OrderStatisticsProjection;
-import com.softdreams.activityhub.dto.report.OrderReportItem;
 import com.softdreams.activityhub.dto.request.OrderRequest;
 import com.softdreams.activityhub.dto.response.OrderLineResponse;
 import com.softdreams.activityhub.dto.response.OrderResponse;
@@ -62,6 +62,7 @@ public class OrderService {
     ReviewRepository reviewRepository;
     ReviewMapper reviewMapper;
     JasperReportService jasperReportService;
+
 
     private User getMyUser() {
         User user;
@@ -152,31 +153,6 @@ public class OrderService {
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    public Page<OrderResponse> searchAdminOrders(
-            String keyword,
-            String status,
-            String paymentMethod,
-            LocalDateTime fromDate,
-            LocalDateTime toDate,
-            Pageable pageable) {
-        Page<Order> orderPages =
-                orderRepository.searchAllOrders(keyword, status, paymentMethod, fromDate, toDate, pageable);
-        return mapOrdersWithOrderLines(orderPages);
-    }
-
-    public byte[] exportMyOrdersPdf(
-            String keyword,
-            String status,
-            String paymentMethod,
-            LocalDateTime fromDate,
-            LocalDateTime toDate) {
-        User user = getMyUser();
-        List<Order> orders = orderRepository.findOrdersForExport(
-                keyword, status, paymentMethod, fromDate, toDate, user.getId());
-        return generateOrdersReport(orders, "LỊCH SỬ ĐƠN HÀNG CỦA TÔI", fromDate, toDate);
-    }
-
-    @PreAuthorize("hasRole('ADMIN')")
     public byte[] exportAdminOrdersPdf(
             String keyword,
             String status,
@@ -184,7 +160,7 @@ public class OrderService {
             LocalDateTime fromDate,
             LocalDateTime toDate) {
         List<Order> orders = orderRepository.findOrdersForExport(
-                keyword, status, paymentMethod, fromDate, toDate, null);
+                keyword, status, paymentMethod, fromDate, toDate);
         return generateOrdersReport(orders, "BÁO CÁO QUẢN LÝ ĐƠN HÀNG", fromDate, toDate);
     }
 
@@ -227,8 +203,6 @@ public class OrderService {
                 case CANCELLED -> "Đã hủy";
             } : "";
 
-            String customerName = order.getCustomerName();
-            if ((customerName == null || customerName.isBlank()) && order.getUser() != null) {
             String customerName = "";
             if (order.getUser() != null) {
                 customerName = (order.getUser().getFirstName() != null ? order.getUser().getFirstName() + " " : "")
@@ -241,11 +215,9 @@ public class OrderService {
             return OrderReportItem.builder()
                     .stt(counter.getAndIncrement())
                     .orderId("#" + order.getId().substring(0, Math.min(8, order.getId().length())))
-                    .customerName(customerName != null ? customerName.trim() : "")
                     .customerName(customerName.trim())
                     .productSummary(productSummary.isEmpty() ? "—" : productSummary)
                     .totalAmount(order.getTotalAmount() != null ? currencyFormat.format(order.getTotalAmount()) + " đ" : "0 đ")
-                    .paymentMethod(order.getPaymentMethod() != null ? order.getPaymentMethod() : "COD")
                     .paymentMethod(order.getPaymentMethod() != null ? order.getPaymentMethod().name() : "COD")
                     .statusLabel(statusLabel)
                     .createdAt(order.getCreatedAt() != null ? order.getCreatedAt().format(dtf) : "")
@@ -274,6 +246,20 @@ public class OrderService {
         parameters.put("totalRecords", reportItems.size());
 
         return jasperReportService.exportToPdf("orders_report", parameters, reportItems);
+    }
+
+
+    @PreAuthorize("hasRole('ADMIN')")
+    public Page<OrderResponse> searchAdminOrders(
+            String keyword,
+            String status,
+            String paymentMethod,
+            LocalDateTime fromDate,
+            LocalDateTime toDate,
+            Pageable pageable) {
+        Page<Order> orderPages =
+                orderRepository.searchAllOrders(keyword, status, paymentMethod, fromDate, toDate, pageable);
+        return mapOrdersWithOrderLines(orderPages);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -392,23 +378,6 @@ public class OrderService {
 
         order.setStatus(OrderStatus.CANCELLED);
         return orderMapper.toOrderResponse(orderRepository.save(order));
-    }
-
-    @PreAuthorize("hasRole('ADMIN')")
-    @Transactional
-    public OrderResponse updateStatus(String orderId, OrderStatus newStatus) {
-        return switch (newStatus) {
-            case CONFIRMED -> approve(orderId);
-            case COMPLETED -> done(orderId);
-            case CANCELLED -> cancel(orderId);
-            default -> {
-                Order order = orderRepository
-                        .findByIdWithLines(orderId)
-                        .orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_EXISTED));
-                order.setStatus(newStatus);
-                yield orderMapper.toOrderResponse(orderRepository.save(order));
-            }
-        };
     }
 
     @PreAuthorize("hasRole('ADMIN') or @security.isOrderOwner(#orderId, authentication)")

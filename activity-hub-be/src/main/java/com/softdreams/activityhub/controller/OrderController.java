@@ -7,6 +7,8 @@ import jakarta.validation.Valid;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -76,7 +78,7 @@ public class OrderController {
 
     @GetMapping("/me")
     ApiResponse<Page<OrderResponse>> searchMyOrders(
-            Pageable pageable,
+            @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable,
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) String status,
             @RequestParam(required = false) String paymentMethod,
@@ -87,24 +89,10 @@ public class OrderController {
                 .build();
     }
 
-    @GetMapping("/me/export/pdf")
-    public ResponseEntity<byte[]> exportMyOrdersPdf(
-            @RequestParam(required = false) String keyword,
-            @RequestParam(required = false) String status,
-            @RequestParam(required = false) String paymentMethod,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fromDate,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime toDate) {
-        byte[] pdfBytes = orderService.exportMyOrdersPdf(keyword, status, paymentMethod, fromDate, toDate);
-        return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=my_orders_" + System.currentTimeMillis() + ".pdf")
-                .contentType(MediaType.APPLICATION_PDF)
-                .body(pdfBytes);
-    }
-
     @GetMapping("/admin")
     @PreAuthorize("hasRole('ADMIN')")
     ApiResponse<Page<OrderResponse>> searchAdminOrders(
-            Pageable pageable,
+            @PageableDefault(sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable,
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) String status,
             @RequestParam(required = false) String paymentMethod,

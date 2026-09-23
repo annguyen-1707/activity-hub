@@ -3,6 +3,7 @@ package com.softdreams.activityhub.repository;
 import java.util.List;
 import java.util.Optional;
 
+import com.softdreams.activityhub.dto.projection.TopRatedProductProjection;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -70,6 +71,6 @@ public interface ReviewRepository extends JpaRepository<Review, String> {
         HAVING COUNT(r.id) > 0
         ORDER BY AVG(r.rating) DESC, COUNT(r.id) DESC
     """)
-    List<com.softdreams.activityhub.dto.projection.TopRatedProductProjection> getTopRatedProducts(
+    List<TopRatedProductProjection> getTopRatedProducts(
             Pageable pageable);
 }

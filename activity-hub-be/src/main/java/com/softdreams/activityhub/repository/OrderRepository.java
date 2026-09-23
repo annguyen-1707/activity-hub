@@ -1,8 +1,10 @@
 package com.softdreams.activityhub.repository;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
+import com.softdreams.activityhub.dto.projection.OrderRevenueProjection;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -118,7 +120,7 @@ public interface OrderRepository extends JpaRepository<Order, String> {
 			  AND o.createdAt >= :fromDate
 			ORDER BY o.createdAt ASC
 			""")
-    java.util.List<com.softdreams.activityhub.dto.projection.OrderRevenueProjection> findOrderRevenueSince(
+  List<OrderRevenueProjection> findOrderRevenueSince(
             @Param("fromDate") LocalDateTime fromDate);
 
     @Query(
@@ -156,11 +158,10 @@ public interface OrderRepository extends JpaRepository<Order, String> {
 			)
 			ORDER BY o.createdAt DESC
 			""")
-    java.util.List<Order> findOrdersForExport(
+    List<Order> findOrdersForExport(
             @Param("keyword") String keyword,
             @Param("status") String status,
             @Param("paymentMethod") String paymentMethod,
             @Param("fromDate") LocalDateTime fromDate,
-            @Param("toDate") LocalDateTime toDate,
-            @Param("userId") String userId);
+            @Param("toDate") LocalDateTime toDate);
 }

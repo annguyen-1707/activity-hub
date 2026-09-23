@@ -33,7 +33,8 @@ public class ActivityLogResponse {
             String eventId,
             String userId,
             String username,
-            String fullName,
+            String firstName,
+            String lastName,
             EventType eventType,
             TargetType targetType,
             String targetId,
@@ -44,7 +45,7 @@ public class ActivityLogResponse {
         this.eventId = eventId;
         this.userId = userId;
         this.username = username;
-        this.fullName = fullName;
+        this.fullName = firstName + lastName;
         this.eventType = eventType;
         this.targetType = targetType;
         this.targetId = targetId;

@@ -3,6 +3,7 @@ package com.softdreams.activityhub.repository;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import com.softdreams.activityhub.dto.response.ActivityLogResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -20,43 +21,96 @@ public interface ActivityLogRepository extends JpaRepository<ActivityLog, String
     boolean existsByEventId(String eventId);
 
     @Query(
-            """
-		SELECT al FROM ActivityLog al LEFT JOIN al.user u
-		WHERE (:keyword IS NULL OR :keyword = ''
-			OR LOWER(u.username) LIKE LOWER(CONCAT('%', :keyword, '%'))
-			OR LOWER(u.firstName) LIKE LOWER(CONCAT('%', :keyword, '%'))
-			OR LOWER(u.lastName) LIKE LOWER(CONCAT('%', :keyword, '%'))
-			OR LOWER(al.eventId) LIKE LOWER(CONCAT('%', :keyword, '%'))
-			OR LOWER(al.targetId) LIKE LOWER(CONCAT('%', :keyword, '%')))
-		AND (:eventType IS NULL OR al.eventType = :eventType)
-		AND (:targetType IS NULL OR al.targetType = :targetType)
-		AND (CAST(:fromDate AS timestamp) IS NULL OR al.createdAt >= :fromDate)
-		AND (CAST(:toDate AS timestamp) IS NULL OR al.createdAt <= :toDate)
-		""")
-    Page<ActivityLog> search(
+            value = """
+                    SELECT NEW com.softdreams.activityhub.dto.response.ActivityLogResponse(
+                        al.id,
+                        al.eventId,
+                        u.id,
+                        u.username,
+                        u.firstName,
+                        u.lastName,
+                        al.eventType,
+                        al.targetType,
+                        al.targetId,
+                        al.ipAddress,
+                        al.createdAt
+                    )
+                    FROM ActivityLog al
+                    LEFT JOIN al.user u
+                    WHERE (
+                        :keyword IS NULL
+                        OR :keyword = ''
+                        OR LOWER(u.username) LIKE LOWER(CONCAT('%', :keyword, '%'))
+                        OR LOWER(u.firstName) LIKE LOWER(CONCAT('%', :keyword, '%'))
+                        OR LOWER(u.lastName) LIKE LOWER(CONCAT('%', :keyword, '%'))
+                        OR LOWER(al.eventId) LIKE LOWER(CONCAT('%', :keyword, '%'))
+                        OR LOWER(al.targetId) LIKE LOWER(CONCAT('%', :keyword, '%'))
+                    )
+                    AND (:eventType IS NULL OR al.eventType = :eventType)
+                    AND (:targetType IS NULL OR al.targetType = :targetType)
+                    AND (:fromDate IS NULL OR al.createdAt >= :fromDate)
+                    AND (:toDate IS NULL OR al.createdAt <= :toDate)
+                    """,
+            countQuery = """
+                    SELECT COUNT(al)
+                    FROM ActivityLog al
+                    LEFT JOIN al.user u
+                    WHERE (
+                        :keyword IS NULL
+                        OR :keyword = ''
+                        OR LOWER(u.username) LIKE LOWER(CONCAT('%', :keyword, '%'))
+                        OR LOWER(u.firstName) LIKE LOWER(CONCAT('%', :keyword, '%'))
+                        OR LOWER(u.lastName) LIKE LOWER(CONCAT('%', :keyword, '%'))
+                        OR LOWER(al.eventId) LIKE LOWER(CONCAT('%', :keyword, '%'))
+                        OR LOWER(al.targetId) LIKE LOWER(CONCAT('%', :keyword, '%'))
+                    )
+                    AND (:eventType IS NULL OR al.eventType = :eventType)
+                    AND (:targetType IS NULL OR al.targetType = :targetType)
+                    AND (:fromDate IS NULL OR al.createdAt >= :fromDate)
+                    AND (:toDate IS NULL OR al.createdAt <= :toDate)
+                    """
+    )
+    Page<ActivityLogResponse> search(
             @Param("keyword") String keyword,
             @Param("eventType") EventType eventType,
             @Param("targetType") TargetType targetType,
             @Param("fromDate") LocalDateTime fromDate,
             @Param("toDate") LocalDateTime toDate,
-            Pageable pageable);
+            Pageable pageable
+    );
 
     @Query(
-            """
-		SELECT al FROM ActivityLog al LEFT JOIN FETCH al.user u
-		WHERE (:keyword IS NULL OR :keyword = ''
-			OR LOWER(u.username) LIKE LOWER(CONCAT('%', :keyword, '%'))
-			OR LOWER(u.firstName) LIKE LOWER(CONCAT('%', :keyword, '%'))
-			OR LOWER(u.lastName) LIKE LOWER(CONCAT('%', :keyword, '%'))
-			OR LOWER(al.eventId) LIKE LOWER(CONCAT('%', :keyword, '%'))
-			OR LOWER(al.targetId) LIKE LOWER(CONCAT('%', :keyword, '%')))
-		AND (:eventType IS NULL OR al.eventType = :eventType)
-		AND (:targetType IS NULL OR al.targetType = :targetType)
-		AND (CAST(:fromDate AS timestamp) IS NULL OR al.createdAt >= :fromDate)
-		AND (CAST(:toDate AS timestamp) IS NULL OR al.createdAt <= :toDate)
-		ORDER BY al.createdAt DESC
-		""")
-    List<ActivityLog> findForExport(
+            value = """
+                    SELECT NEW com.softdreams.activityhub.dto.response.ActivityLogResponse(
+                        al.id,
+                        al.eventId,
+                        u.id,
+                        u.username,
+                        u.firstName,
+                        u.lastName,
+                        al.eventType,
+                        al.targetType,
+                        al.targetId,
+                        al.ipAddress,
+                        al.createdAt
+                    )
+                    FROM ActivityLog al
+                    LEFT JOIN al.user u
+                    WHERE (
+                        :keyword IS NULL
+                        OR :keyword = ''
+                        OR LOWER(u.username) LIKE LOWER(CONCAT('%', :keyword, '%'))
+                        OR LOWER(u.firstName) LIKE LOWER(CONCAT('%', :keyword, '%'))
+                        OR LOWER(u.lastName) LIKE LOWER(CONCAT('%', :keyword, '%'))
+                        OR LOWER(al.eventId) LIKE LOWER(CONCAT('%', :keyword, '%'))
+                        OR LOWER(al.targetId) LIKE LOWER(CONCAT('%', :keyword, '%'))
+                    )
+                    AND (:eventType IS NULL OR al.eventType = :eventType)
+                    AND (:targetType IS NULL OR al.targetType = :targetType)
+                    AND (:fromDate IS NULL OR al.createdAt >= :fromDate)
+                    AND (:toDate IS NULL OR al.createdAt <= :toDate)
+                    """)
+    List<ActivityLogResponse> findForExport(
             @Param("keyword") String keyword,
             @Param("eventType") EventType eventType,
             @Param("targetType") TargetType targetType,
