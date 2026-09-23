@@ -192,12 +192,24 @@
 
               <!-- Actions -->
               <td class="text-center pe-4">
-                <button cButton color="primary" variant="ghost" size="sm"
-                  class="rounded-3 p-1 px-2 d-inline-flex align-items-center gap-1" (click)="openDetailModal(order)"
-                  title="Xem chi tiết đơn hàng">
-                  <svg cIcon name="cilMagnifyingGlass" size="sm"></svg>
-                  <span class="small">Chi tiết</span>
-                </button>
+                <div class="d-inline-flex align-items-center gap-1">
+                  <button cButton color="primary" variant="ghost" size="sm"
+                    class="rounded-3 p-1 px-2 d-inline-flex align-items-center gap-1" (click)="openDetailModal(order)"
+                    title="Xem chi tiết đơn hàng">
+                    <svg cIcon name="cilMagnifyingGlass" size="sm"></svg>
+                    <span class="small">Chi tiết</span>
+                  </button>
+
+                  @if (canCancelOrder(order)) {
+                  <button cButton color="danger" variant="ghost" size="sm"
+                    class="rounded-3 p-1 px-2 d-inline-flex align-items-center gap-1"
+                    (click)="openCancelModal(order, $event)"
+                    title="Hủy đơn hàng">
+                    <svg cIcon name="cilX" size="sm"></svg>
+                    <span class="small">Hủy</span>
+                  </button>
+                  }
+                </div>
               </td>
             </tr>
             }
@@ -384,7 +396,16 @@
     }
   </c-modal-body>
 
-  <c-modal-footer class="border-top-0 pt-0">
+  <c-modal-footer class="border-top-0 pt-0 d-flex justify-content-between align-items-center">
+    <div>
+      @if (canCancelOrder(selectedOrder())) {
+      <button cButton color="danger" variant="outline" class="rounded-pill px-3 d-inline-flex align-items-center gap-1"
+        (click)="openCancelModal(selectedOrder()!)" [disabled]="cancellingOrder()">
+        <svg cIcon name="cilX" size="sm"></svg>
+        <span>Hủy đơn hàng</span>
+      </button>
+      }
+    </div>
     <button cButton color="secondary" class="rounded-pill px-4" (click)="closeDetailModal()">
       Đóng
     </button>
@@ -433,6 +454,44 @@
       <span>Đang lưu...</span>
       } @else {
       <span>Gửi đánh giá</span>
+      }
+    </button>
+  </c-modal-footer>
+</c-modal>
+
+<!-- CANCEL ORDER CONFIRMATION MODAL -->
+<c-modal [visible]="cancelModalVisible()" (visibleChange)="cancelModalVisible.set($event)" backdrop="static" alignment="center">
+  <c-modal-header class="bg-danger text-white border-0 py-3">
+    <h5 cModalTitle class="d-flex align-items-center gap-2 mb-0">
+      <svg cIcon name="cilXCircle" size="lg"></svg>
+      <span>Xác Nhận Hủy Đơn Hàng</span>
+    </h5>
+    <button (click)="closeCancelModal()" class="btn-close btn-close-white"></button>
+  </c-modal-header>
+
+  <c-modal-body class="p-4">
+    <p class="mb-2">
+      Bạn có chắc chắn muốn hủy đơn hàng
+      <strong class="text-danger font-monospace">#{{ orderToCancel()?.id ? orderToCancel()?.id?.slice(0, 8) : '' }}</strong>?
+    </p>
+    <div class="alert alert-warning d-flex align-items-center gap-2 mb-0 py-2 small">
+      <svg cIcon name="cilReportSlash" size="sm" class="flex-shrink-0"></svg>
+      <span>
+        Sau khi hủy, số lượng tồn kho của các sản phẩm sẽ được tự động hoàn lại vào hệ thống.
+      </span>
+    </div>
+  </c-modal-body>
+
+  <c-modal-footer class="border-top-0 pt-0">
+    <button cButton color="secondary" variant="ghost" class="rounded-pill px-3" (click)="closeCancelModal()" [disabled]="cancellingOrder()">
+      Quay lại
+    </button>
+    <button cButton color="danger" class="rounded-pill px-4 d-inline-flex align-items-center gap-1" (click)="confirmCancelOrder()" [disabled]="cancellingOrder()">
+      @if (cancellingOrder()) {
+      <c-spinner size="sm" class="me-1"></c-spinner>
+      <span>Đang hủy...</span>
+      } @else {
+      <span>Xác nhận hủy đơn</span>
       }
     </button>
   </c-modal-footer>

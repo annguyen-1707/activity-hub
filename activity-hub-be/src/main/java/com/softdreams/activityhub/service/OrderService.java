@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import com.softdreams.activityhub.repository.custom.OrderCustomRepository;
 import jakarta.transaction.Transactional;
 
 import org.springframework.data.domain.Page;
@@ -62,6 +63,7 @@ public class OrderService {
     ReviewRepository reviewRepository;
     ReviewMapper reviewMapper;
     JasperReportService jasperReportService;
+    OrderCustomRepository orderCustomRepository;
 
 
     private User getMyUser() {
@@ -71,48 +73,55 @@ public class OrderService {
         return user;
     }
 
+//    @Transactional
+//    public OrderResponse create(OrderRequest request) {
+//        User user = getMyUser();
+//
+//        Order order = orderMapper.toOrder(request);
+//        order.setUser(user);
+//        order.setStatus(OrderStatus.CREATED);
+//
+//        List<OrderLine> orderLines = new ArrayList<>();
+//        List<StockTransactionService.StockLine> stockLines = new ArrayList<>();
+//
+//        for (var item : request.getItems()) {
+//            // Locked here so two concurrent checkouts can't both oversell the same product.
+//            Product product = productRepository
+//                    .findByIdForUpdate(item.getProductId())
+//                    .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_EXISTED));
+//
+//            BigDecimal unitPrice = product.getPrice();
+//            BigDecimal subtotal = unitPrice.multiply(BigDecimal.valueOf(item.getQuantity()));
+//
+//            orderLines.add(OrderLine.builder()
+//                    .order(order)
+//                    .product(product)
+//                    .quantity(item.getQuantity())
+//                    .unitPrice(unitPrice)
+//                    .subtotal(subtotal)
+//                    .build());
+//
+//            stockLines.add(new StockTransactionService.StockLine(product, item.getQuantity()));
+//        }
+//
+//        order.setOrderLines(orderLines);
+//
+//        BigDecimal total = orderLines.stream().map(OrderLine::getSubtotal).reduce(BigDecimal.ZERO, BigDecimal::add);
+//
+//        order.setTotalAmount(total);
+//
+//        // Deducts stock for every line; rolls back the whole order if any product is short.
+//        Order saved = orderRepository.save(order);
+//        stockTransactionService.postSale(saved.getId(), stockLines);
+//
+//        return orderMapper.toOrderResponse(saved);
+//    }
+
     @Transactional
     public OrderResponse create(OrderRequest request) {
         User user = getMyUser();
-
-        Order order = orderMapper.toOrder(request);
-        order.setUser(user);
-        order.setStatus(OrderStatus.CREATED);
-
-        List<OrderLine> orderLines = new ArrayList<>();
-        List<StockTransactionService.StockLine> stockLines = new ArrayList<>();
-
-        for (var item : request.getItems()) {
-            // Locked here so two concurrent checkouts can't both oversell the same product.
-            Product product = productRepository
-                    .findByIdForUpdate(item.getProductId())
-                    .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_EXISTED));
-
-            BigDecimal unitPrice = product.getPrice();
-            BigDecimal subtotal = unitPrice.multiply(BigDecimal.valueOf(item.getQuantity()));
-
-            orderLines.add(OrderLine.builder()
-                    .order(order)
-                    .product(product)
-                    .quantity(item.getQuantity())
-                    .unitPrice(unitPrice)
-                    .subtotal(subtotal)
-                    .build());
-
-            stockLines.add(new StockTransactionService.StockLine(product, item.getQuantity()));
-        }
-
-        order.setOrderLines(orderLines);
-
-        BigDecimal total = orderLines.stream().map(OrderLine::getSubtotal).reduce(BigDecimal.ZERO, BigDecimal::add);
-
-        order.setTotalAmount(total);
-
-        // Deducts stock for every line; rolls back the whole order if any product is short.
-        Order saved = orderRepository.save(order);
-        stockTransactionService.postSale(saved.getId(), stockLines);
-
-        return orderMapper.toOrderResponse(saved);
+        String newOrderId = orderCustomRepository.createOrder(request, user.getId());
+        return getById(newOrderId);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -342,42 +351,55 @@ public class OrderService {
         return orderMapper.toOrderResponse(orderRepository.save(order));
     }
 
+    private boolean isAdmin() {
+        var auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null) return false;
+        return auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ADMIN"));
+    }
+
     @PreAuthorize("hasRole('ADMIN')")
     @Transactional
     public OrderResponse reject(String orderId) {
         Order order = orderRepository
-                .findByIdWithLines(orderId)
+                .findById(orderId)
                 .orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_EXISTED));
 
-        OrderStatus oldStatus = order.getStatus();
-        if (oldStatus != OrderStatus.CANCELLED) {
-            List<StockTransactionService.StockLine> stockLines = order.getOrderLines().stream()
-                    .map(line -> new StockTransactionService.StockLine(line.getProduct(), line.getQuantity()))
-                    .toList();
-            stockTransactionService.postCancel(order.getId(), stockLines);
+        if (order.getStatus() != OrderStatus.CREATED) {
+            throw new AppException(
+                    ErrorCode.INVALID_REQUEST_BODY,
+                    "Chỉ có thể từ chối (reject) đơn hàng khi đang ở trạng thái mới tạo (chờ duyệt)!");
         }
 
-        order.setStatus(OrderStatus.CANCELLED);
-        return orderMapper.toOrderResponse(orderRepository.save(order));
+        User user = getMyUser();
+        orderCustomRepository.cancelOrder(orderId, user != null ? user.getId() : null);
+        return getById(orderId);
     }
 
     @PreAuthorize("hasRole('ADMIN') or @security.isOrderOwner(#orderId, authentication)")
     @Transactional
     public OrderResponse cancel(String orderId) {
         Order order = orderRepository
-                .findByIdWithLines(orderId)
+                .findById(orderId)
                 .orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_EXISTED));
 
-        OrderStatus oldStatus = order.getStatus();
-        if (oldStatus != OrderStatus.CANCELLED) {
-            List<StockTransactionService.StockLine> stockLines = order.getOrderLines().stream()
-                    .map(line -> new StockTransactionService.StockLine(line.getProduct(), line.getQuantity()))
-                    .toList();
-            stockTransactionService.postCancel(order.getId(), stockLines);
+        User user = getMyUser();
+        if (isAdmin()) {
+            if (order.getStatus() != OrderStatus.CONFIRMED) {
+                throw new AppException(
+                        ErrorCode.INVALID_REQUEST_BODY,
+                        "Admin chỉ có thể hủy (cancel) đơn hàng khi đã được duyệt (CONFIRMED). Với đơn mới tạo hãy dùng chức năng từ chối (reject)!");
+            }
+        } else {
+            if (order.getStatus() != OrderStatus.CREATED) {
+                throw new AppException(
+                        ErrorCode.INVALID_REQUEST_BODY,
+                        "Đơn hàng đã được duyệt, bạn không thể tự hủy đơn. Vui lòng liên hệ hỗ trợ!");
+            }
         }
 
-        order.setStatus(OrderStatus.CANCELLED);
-        return orderMapper.toOrderResponse(orderRepository.save(order));
+        orderCustomRepository.cancelOrder(orderId, user != null ? user.getId() : null);
+        return getById(orderId);
     }
 
     @PreAuthorize("hasRole('ADMIN') or @security.isOrderOwner(#orderId, authentication)")

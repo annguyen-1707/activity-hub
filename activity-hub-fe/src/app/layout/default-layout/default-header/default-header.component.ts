@@ -87,7 +87,14 @@ export class DefaultHeaderComponent extends HeaderComponent {
   getUserRole(): string {
     const user = this.currentUser();
     if (user?.roles && user.roles.length > 0) {
-      return user.roles[0].name;
+      const adminRole = user.roles.find((r) => {
+        const name = r.name?.toUpperCase();
+        return name === 'ADMIN' || name === 'ROLE_ADMIN';
+      });
+      if (adminRole) {
+        return adminRole.name.replace(/^ROLE_/i, '');
+      }
+      return user.roles[0].name.replace(/^ROLE_/i, '');
     }
     return 'USER';
   }

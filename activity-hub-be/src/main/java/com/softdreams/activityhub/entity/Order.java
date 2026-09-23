@@ -37,6 +37,7 @@ public class Order {
     private BigDecimal totalAmount;
 
     @Column(nullable = false, length = 30)
+    @Enumerated(EnumType.STRING)
     private OrderStatus status;
 
     @Column(name = "created_at", nullable = false)
@@ -46,6 +47,7 @@ public class Order {
     private LocalDateTime completedAt;
 
     @Column(name = "payment_method", length = 30)
+    @Enumerated(EnumType.STRING)
     PaymentMethodEnum paymentMethod;
 
     @Column(name = "shipping_address", length = 500, columnDefinition = "NVARCHAR(255)")

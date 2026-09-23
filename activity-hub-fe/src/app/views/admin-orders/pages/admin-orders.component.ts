@@ -319,14 +319,17 @@ export class AdminOrdersComponent implements OnInit {
     if (!order || !newStatus) return;
 
     this.updatingStatus.set(true);
-    this.orderService.updateOrderStatus(order.id, newStatus).subscribe({
+    this.orderService.updateOrderStatus(order.id, newStatus, order.status).subscribe({
       next: (updated) => {
         this.updatingStatus.set(false);
         this.statusConfirmModalVisible.set(false);
         if (this.selectedOrder()?.id === updated.id) {
           this.selectedOrder.set(updated);
         }
-        this.showAlert(`Đã chuyển trạng thái đơn sang "${this.getStatusLabel(newStatus)}"`, 'success');
+        const msg = newStatus === 'CANCELLED' && order.status === 'CREATED'
+          ? 'Đã từ chối đơn hàng thành công!'
+          : `Đã chuyển trạng thái đơn sang "${this.getStatusLabel(newStatus)}"`;
+        this.showAlert(msg, 'success');
         this.loadOrders();
         this.loadStatistics();
       },

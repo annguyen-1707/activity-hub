@@ -342,7 +342,7 @@
                         </button>
                       }
 
-                      <!-- Cancel Button (if not already cancelled or completed) -->
+                      <!-- Cancel / Reject Button (if not already cancelled or completed) -->
                       @if (order.status !== 'CANCELLED' && order.status !== 'COMPLETED') {
                         <button
                           cButton
@@ -350,7 +350,7 @@
                           variant="outline"
                           size="sm"
                           (click)="requestStatusChange(order, 'CANCELLED')"
-                          title="Hủy đơn hàng"
+                          [title]="order.status === 'CREATED' ? 'Từ chối đơn' : 'Hủy đơn hàng'"
                         >
                           <svg cIcon name="cilX"></svg>
                         </button>
@@ -508,7 +508,7 @@
             [disabled]="ord.status === 'CANCELLED' || ord.status === 'COMPLETED'"
             (click)="requestStatusChange(ord, 'CANCELLED')"
           >
-            Hủy đơn (Hoàn kho)
+            {{ ord.status === 'CREATED' ? 'Từ chối đơn' : 'Hủy đơn (Hoàn kho)' }}
           </button>
         </div>
       </div>
@@ -523,25 +523,33 @@
 <c-modal [visible]="statusConfirmModalVisible()" (visibleChange)="statusConfirmModalVisible.set($event)">
   <c-modal-header [class]="targetStatusToChange() === 'CANCELLED' ? 'bg-danger text-white' : 'bg-primary text-white'">
     <h5 cModalTitle class="d-flex align-items-center">
-      <svg cIcon name="cilCheck" class="me-2"></svg>
-      Xác Nhận Cập Nhật Trạng Thái
+      <svg cIcon [name]="targetStatusToChange() === 'CANCELLED' ? 'cilX' : 'cilCheck'" class="me-2"></svg>
+      {{ targetStatusToChange() === 'CANCELLED' && selectedOrder()?.status === 'CREATED' ? 'Xác Nhận Từ Chối Đơn' : (targetStatusToChange() === 'CANCELLED' ? 'Xác Nhận Hủy Đơn' : 'Xác Nhận Cập Nhật Trạng Thái') }}
     </h5>
     <button (click)="statusConfirmModalVisible.set(false)" class="btn-close btn-close-white"></button>
   </c-modal-header>
   <c-modal-body class="p-4">
     <p class="mb-2">
-      Bạn có chắc chắn muốn chuyển trạng thái đơn hàng
-      <code>{{ selectedOrder()?.id?.substring(0, 8) }}...</code> sang:
+      Bạn có chắc chắn muốn {{ targetStatusToChange() === 'CANCELLED' && selectedOrder()?.status === 'CREATED' ? 'từ chối' : 'chuyển trạng thái' }} đơn hàng
+      <code>{{ selectedOrder()?.id?.substring(0, 8) }}...</code>{{ targetStatusToChange() === 'CANCELLED' && selectedOrder()?.status === 'CREATED' ? '?' : ' sang:' }}
     </p>
-    <div class="p-3 bg-body-secondary rounded-3 text-center mb-3">
-      <c-badge [color]="targetStatusToChange() ? getStatusBadgeColor(targetStatusToChange()!) : 'primary'" class="fs-6 px-3 py-2">
-        {{ targetStatusToChange() ? getStatusLabel(targetStatusToChange()!) : '' }}
-      </c-badge>
-    </div>
+    @if (targetStatusToChange() !== 'CANCELLED' || selectedOrder()?.status !== 'CREATED') {
+      <div class="p-3 bg-body-secondary rounded-3 text-center mb-3">
+        <c-badge [color]="targetStatusToChange() ? getStatusBadgeColor(targetStatusToChange()!) : 'primary'" class="fs-6 px-3 py-2">
+          {{ targetStatusToChange() ? getStatusLabel(targetStatusToChange()!) : '' }}
+        </c-badge>
+      </div>
+    }
     @if (targetStatusToChange() === 'CANCELLED') {
       <div class="alert alert-warning small mb-0 d-flex align-items-center gap-2">
         <svg cIcon name="cilNotes"></svg>
-        <div><strong>Lưu ý:</strong> Khi hủy đơn hàng, hệ thống sẽ tự động hoàn trả số lượng các sản phẩm trong đơn trở lại kho hàng!</div>
+        <div>
+          @if (selectedOrder()?.status === 'CREATED') {
+            <strong>Lưu ý:</strong> Từ chối đơn hàng sẽ chuyển đơn sang trạng thái đã hủy và hoàn trả tồn kho các sản phẩm!
+          } @else {
+            <strong>Lưu ý:</strong> Khi hủy đơn hàng đã duyệt, hệ thống sẽ tự động hoàn trả số lượng các sản phẩm trong đơn trở lại kho hàng!
+          }
+        </div>
       </div>
     }
   </c-modal-body>
@@ -553,7 +561,8 @@
       @if (updatingStatus()) {
         <c-spinner size="sm" class="me-1"></c-spinner> Đang cập nhật...
       } @else {
-        <svg cIcon name="cilCheck" class="me-1"></svg> Xác Nhận Đổi
+        <svg cIcon [name]="targetStatusToChange() === 'CANCELLED' ? 'cilX' : 'cilCheck'" class="me-1"></svg>
+        {{ targetStatusToChange() === 'CANCELLED' && selectedOrder()?.status === 'CREATED' ? 'Xác Nhận Từ Chối' : (targetStatusToChange() === 'CANCELLED' ? 'Xác Nhận Hủy Đơn' : 'Xác Nhận Đổi') }}
       }
     </button>
   </c-modal-footer>

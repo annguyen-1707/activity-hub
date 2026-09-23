@@ -92,6 +92,11 @@ export class OrderListComponent implements OnInit {
   // Reviews for the order currently open in the detail modal, keyed by orderLineId
   reviewsByLineId = signal<Record<string, ReviewResponse>>({});
 
+  // Cancel Order Modal
+  cancelModalVisible = signal<boolean>(false);
+  orderToCancel = signal<OrderResponse | null>(null);
+  cancellingOrder = signal<boolean>(false);
+
   // Review Modal
   reviewModalVisible = signal<boolean>(false);
   reviewingLineId = signal<string>('');
@@ -395,5 +400,48 @@ export class OrderListComponent implements OnInit {
 
   getPaymentLabel(method: PaymentMethod): string {
     return method === 'BANK' ? 'Chuyển khoản' : 'Tiền mặt';
+  }
+
+  canCancelOrder(order: OrderResponse | null | undefined): boolean {
+    if (!order) return false;
+    return order.status === 'CREATED';
+  }
+
+  openCancelModal(order: OrderResponse, event?: Event): void {
+    if (event) {
+      event.stopPropagation();
+    }
+    this.orderToCancel.set(order);
+    this.cancelModalVisible.set(true);
+  }
+
+  closeCancelModal(): void {
+    if (this.cancellingOrder()) return;
+    this.cancelModalVisible.set(false);
+    this.orderToCancel.set(null);
+  }
+
+  confirmCancelOrder(): void {
+    const order = this.orderToCancel();
+    if (!order) return;
+
+    this.cancellingOrder.set(true);
+    this.orderService.cancelOrder(order.id).subscribe({
+      next: (updatedOrder) => {
+        this.cancellingOrder.set(false);
+        this.closeCancelModal();
+        this.showAlert(`Đã hủy đơn hàng #${order.id.slice(0, 8)} thành công!`, 'success');
+
+        if (this.selectedOrder()?.id === order.id) {
+          this.selectedOrder.set(updatedOrder || { ...order, status: 'CANCELLED' });
+        }
+
+        this.loadOrders();
+      },
+      error: (err) => {
+        this.cancellingOrder.set(false);
+        this.showAlert(err?.error?.message || 'Có lỗi xảy ra khi hủy đơn hàng!', 'danger');
+      },
+    });
   }
 }

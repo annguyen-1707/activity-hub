@@ -4,6 +4,8 @@ import jakarta.validation.Valid;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.*;
 
 import com.softdreams.activityhub.anotation.ActivityLog;
@@ -38,7 +40,7 @@ public class ProductController {
 
     @GetMapping
     ApiResponse<Page<ProductResponse>> search(
-            Pageable pageable,
+            @PageableDefault(size = 10, sort = "quantity", direction = Sort.Direction.DESC) Pageable pageable,
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) String categoryId,
             @RequestParam(required = false) String category) {

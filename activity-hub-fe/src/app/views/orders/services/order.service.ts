@@ -243,7 +243,7 @@ export class OrderService {
       .pipe(map((res) => res.result));
   }
 
-  updateOrderStatus(orderId: string, status: OrderStatus): Observable<OrderResponse> {
+  updateOrderStatus(orderId: string, status: OrderStatus, currentStatus?: OrderStatus): Observable<OrderResponse> {
     if (status === 'CONFIRMED') {
       return this.approveOrder(orderId);
     }
@@ -251,6 +251,9 @@ export class OrderService {
       return this.doneOrder(orderId);
     }
     if (status === 'CANCELLED') {
+      if (currentStatus === 'CONFIRMED') {
+        return this.cancelOrder(orderId);
+      }
       return this.rejectOrder(orderId);
     }
     const params = new HttpParams().set('status', status);
