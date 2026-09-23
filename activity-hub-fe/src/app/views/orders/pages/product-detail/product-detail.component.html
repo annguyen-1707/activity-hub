@@ -48,7 +48,7 @@
                 <!-- Category & Stock Badges -->
                 <div class="d-flex align-items-center gap-2 mb-2 flex-wrap">
                   <span class="badge bg-body-secondary text-body border px-3 py-2 rounded-pill small">
-                    {{ prod.category?.name || 'Chưa phân loại' }}
+                    {{ prod.categoryName || prod.category?.name || 'Chưa phân loại' }}
                   </span>
                   @if (prod.quantity > 0) {
                     <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2 rounded-pill small">

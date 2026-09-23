@@ -4,7 +4,7 @@ import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import { ApiResponse, PageResponse } from '../models/api-response.model';
-import { ProductRequest, ProductResponse } from '../models/product.model';
+import { ProductLookupResponse, ProductRequest, ProductResponse } from '../models/product.model';
 import { Product } from '../models/order.model';
 
 @Injectable({
@@ -13,6 +13,21 @@ import { Product } from '../models/order.model';
 export class ProductService {
   private readonly http = inject(HttpClient);
   private readonly baseUrl = environment.apiUrl;
+
+  lookupProducts(
+    page: number = 0,
+    size: number = 10
+  ): Observable<PageResponse<ProductLookupResponse>> {
+    const params = new HttpParams()
+      .set('page', page.toString())
+      .set('size', size.toString());
+
+    return this.http
+      .get<ApiResponse<PageResponse<ProductLookupResponse>>>(`${this.baseUrl}/products/lookup`, {
+        params,
+      })
+      .pipe(map((res) => res.result));
+  }
 
   searchProducts(
     page: number = 0,
@@ -52,7 +67,7 @@ export class ProductService {
           id: p.id,
           name: p.name,
           price: p.price,
-          category: p.category?.name || '',
+          category: p.categoryName || '',
           image: p.image || '',
           description: p.description || '',
           stock: p.quantity,

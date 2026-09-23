@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import com.softdreams.activityhub.dto.response.lookup.ProductLookupResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -49,31 +50,31 @@ public class ProductService {
     }
 
     public Page<ProductResponse> search(String keyword, String categoryId, Pageable pageable) {
-        Page<Product> products = productRepository.search(keyword, categoryId, pageable);
-        List<String> productIds = products.stream().map(Product::getId).toList();
+        Page<ProductResponse> products = productRepository.search(keyword, categoryId, pageable);
+        List<String> productIds = products.stream().map(ProductResponse::getId).toList();
         List<ProductRatingProjection> ratings = reviewRepository.getProductRatings(productIds);
         Map<String, ProductRatingProjection> ratingMap =
                 ratings.stream().collect(Collectors.toMap(ProductRatingProjection::getProductId, Function.identity()));
         return products.map(product -> {
-            ProductResponse response = productMapper.toProductResponse(product);
-
             ProductRatingProjection rating = ratingMap.get(product.getId());
 
             double avg = rating != null && rating.getAverageRating() != null
                     ? Math.round(rating.getAverageRating() * 10.0) / 10.0
                     : 0.0;
-            response.setRate(avg);
-            response.setTotalReviews(rating != null && rating.getTotalReviews() != null ? rating.getTotalReviews() : 0L);
-            return response;
+            product.setRate(avg);
+            product.setTotalReviews(rating != null && rating.getTotalReviews() != null ? rating.getTotalReviews() : 0L);
+            return product;
         });
     }
 
-    public ProductResponse getById(String productId) {
-        Product product = productRepository
-                .findById(productId)
-                .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_EXISTED));
+    public Page<ProductLookupResponse> lookup(Pageable pageable) {
+        return productRepository.lookup(pageable);
+    }
 
-        ProductResponse response = productMapper.toProductResponse(product);
+    public ProductResponse getById(String productId) {
+        ProductResponse response = productRepository
+                .getProductResponseById(productId)
+                .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_EXISTED));
 
         reviewRepository.getProductRating(productId).ifPresent(rating -> {
             if (rating.getAverageRating() != null) {

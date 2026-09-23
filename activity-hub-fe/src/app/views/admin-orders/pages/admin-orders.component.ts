@@ -109,14 +109,23 @@ export class AdminOrdersComponent implements OnInit {
   }
 
   loadStatistics(): void {
-    this.orderService.getAdminStatistics().subscribe({
-      next: (stats) => this.statistics.set(stats),
-      error: () => {},
-    });
+    this.orderService
+      .getAdminStatistics(
+        this.keyword(),
+        this.statusFilter(),
+        this.paymentFilter(),
+        this.fromDate(),
+        this.toDate()
+      )
+      .subscribe({
+        next: (stats) => this.statistics.set(stats),
+        error: () => {},
+      });
   }
 
   loadOrders(): void {
     this.loading.set(true);
+    this.loadStatistics();
 
     this.orderService
       .searchAdminOrders(

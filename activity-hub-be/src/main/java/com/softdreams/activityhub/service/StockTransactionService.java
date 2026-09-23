@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
+import com.softdreams.activityhub.dto.response.StockTransactionLineResponse;
 import jakarta.transaction.Transactional;
 
 import org.springframework.data.domain.Page;
@@ -147,18 +148,10 @@ public class StockTransactionService {
                     : "—";
 
             int totalQty = tx.getLines() != null
-                    ? tx.getLines().stream().mapToInt(com.softdreams.activityhub.dto.response.StockTransactionLineResponse::getQuantity).sum()
+                    ? tx.getLines().stream().mapToInt(StockTransactionLineResponse::getQuantity).sum()
                     : 0;
 
-            String typeStr = tx.getType() != null ? tx.getType().name() : "";
-            String typeLabel = switch (typeStr) {
-                case "IMPORT" -> "Nhập kho";
-                case "EXPORT" -> "Xuất kho";
-                case "SALE" -> "Bán hàng";
-                case "CANCEL" -> "Hủy đơn";
-                case "RETURN" -> "Trả hàng";
-                default -> typeStr;
-            };
+            String typeLabel = tx.getTypeLabel();
 
             return StockTransactionReportItem.builder()
                     .stt(counter.getAndIncrement())

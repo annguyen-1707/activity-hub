@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Optional;
 
 import com.softdreams.activityhub.dto.projection.OrderRevenueProjection;
+import com.softdreams.activityhub.enums.OrderStatus;
+import com.softdreams.activityhub.enums.PaymentMethodEnum;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -53,8 +55,8 @@ public interface OrderRepository extends JpaRepository<Order, String> {
 					""")
     Page<Order> searchMyOrders(
             @Param("keyword") String keyword,
-            @Param("status") String status,
-            @Param("paymentMethod") String paymentMethod,
+            @Param("status") OrderStatus status,
+            @Param("paymentMethod") PaymentMethodEnum paymentMethod,
             @Param("fromDate") LocalDateTime fromDate,
             @Param("toDate") LocalDateTime toDate,
             @Param("userId") String userId,
@@ -92,8 +94,8 @@ public interface OrderRepository extends JpaRepository<Order, String> {
 					""")
     Page<Order> searchAllOrders(
             @Param("keyword") String keyword,
-            @Param("status") String status,
-            @Param("paymentMethod") String paymentMethod,
+            @Param("status") OrderStatus status,
+            @Param("paymentMethod") PaymentMethodEnum paymentMethod,
             @Param("fromDate") LocalDateTime fromDate,
             @Param("toDate") LocalDateTime toDate,
             Pageable pageable);
@@ -109,8 +111,42 @@ public interface OrderRepository extends JpaRepository<Order, String> {
 				COALESCE(SUM(CASE WHEN o.status = com.softdreams.activityhub.enums.OrderStatus.CREATED THEN 1L ELSE 0L END), 0) AS createdCount,
 				COALESCE(SUM(CASE WHEN o.status = com.softdreams.activityhub.enums.OrderStatus.CONFIRMED THEN 1L ELSE 0L END), 0) AS confirmedCount
 			FROM Order o
+			LEFT JOIN o.user u
+			WHERE
+			(
+				:keyword IS NULL
+				OR :keyword = ''
+				OR u.username LIKE CONCAT('%', :keyword, '%')
+				OR u.firstName LIKE CONCAT('%', :keyword, '%')
+				OR u.lastName LIKE CONCAT('%', :keyword, '%')
+			)
+			AND (
+				:status IS NULL
+				OR :status = ''
+				OR :status = 'ALL'
+				OR o.status = :status
+			)
+			AND (
+				:paymentMethod IS NULL
+				OR :paymentMethod = ''
+				OR :paymentMethod = 'ALL'
+				OR o.paymentMethod = :paymentMethod
+			)
+			AND (
+				:fromDate IS NULL
+				OR o.createdAt >= :fromDate
+			)
+			AND (
+				:toDate IS NULL
+				OR o.createdAt <= :toDate
+			)
 			""")
-    OrderStatisticsProjection getAdminStatistics();
+    OrderStatisticsProjection getAdminStatistics(
+            @Param("keyword") String keyword,
+            @Param("status") OrderStatus status,
+            @Param("paymentMethod") PaymentMethodEnum paymentMethod,
+            @Param("fromDate") LocalDateTime fromDate,
+            @Param("toDate") LocalDateTime toDate);
 
     @Query(
             """
@@ -160,7 +196,7 @@ public interface OrderRepository extends JpaRepository<Order, String> {
 			""")
     List<Order> findOrdersForExport(
             @Param("keyword") String keyword,
-            @Param("status") String status,
+            @Param("status") OrderStatus status,
             @Param("paymentMethod") String paymentMethod,
             @Param("fromDate") LocalDateTime fromDate,
             @Param("toDate") LocalDateTime toDate);

@@ -202,7 +202,7 @@
                       <!-- Category -->
                       <td>
                         <c-badge color="light" class="text-body border px-2 py-1">
-                          {{ prod.category.name || '—' }}
+                          {{ prod.categoryName || prod.category?.name || '—' }}
                         </c-badge>
                       </td>
 
@@ -542,7 +542,6 @@
       </c-card>
     }
   </div>
-</div>
 
 <!-- CREATE PRODUCT MODAL -->
 <c-modal [visible]="createProductModalVisible()" (visibleChange)="createProductModalVisible.set($event)" backdrop="static">
@@ -700,15 +699,77 @@
         </select>
       </div>
 
-      <div class="mb-3">
+      <div class="mb-3 position-relative product-lookup-group">
         <label cLabel class="fw-semibold">Chọn sản phẩm <span class="text-danger">*</span></label>
-        <select cSelect formControlName="productId">
-          @for (p of allProductsList(); track p.id) {
-            <option [value]="p.id">
-              {{ p.name }} (Hiện có: {{ p.quantity }})
-            </option>
-          }
-        </select>
+
+        <!-- Custom Select Box Trigger -->
+        <div
+          class="form-select custom-lookup-select d-flex align-items-center justify-content-between"
+          (click)="toggleProductDropdown($event)"
+          [class.is-invalid]="stockForm.get('productId')?.touched && stockForm.get('productId')?.invalid"
+          [class.show]="productDropdownOpen()"
+        >
+          <div class="text-truncate pe-3">
+            @if (getSelectedLookupProduct(); as sel) {
+              <span class="fw-semibold text-body">{{ sel.name }}</span>
+              <span class="badge bg-primary-subtle text-primary border border-primary-subtle ms-2">
+                Tồn: {{ sel.quantity }}
+              </span>
+            } @else {
+              <span class="text-body-secondary">-- Chọn sản phẩm --</span>
+            }
+          </div>
+        </div>
+
+        <input type="hidden" formControlName="productId" />
+
+        <!-- Floating Dropdown Menu with Infinite Scroll -->
+        @if (productDropdownOpen()) {
+          <div
+            class="lookup-dropdown-menu shadow-lg border rounded-3 p-1 position-absolute w-100"
+            (scroll)="onProductDropdownScroll($event)"
+          >
+            @for (p of allProductsList(); track p.id) {
+              <div
+                class="lookup-item px-3 py-2 rounded-2 d-flex align-items-center justify-content-between cursor-pointer"
+                [class.active]="stockForm.get('productId')?.value === p.id"
+                (click)="selectProductForStock(p)"
+              >
+                <div class="text-truncate me-2">
+                  <div class="fw-medium text-body text-truncate" style="font-size: 0.88rem;">{{ p.name }}</div>
+                </div>
+                <span
+                  class="badge flex-shrink-0"
+                  [class.bg-success-subtle]="p.quantity > 0"
+                  [class.text-success]="p.quantity > 0"
+                  [class.bg-danger-subtle]="p.quantity <= 0"
+                  [class.text-danger]="p.quantity <= 0"
+                >
+                  Kho: {{ p.quantity }}
+                </span>
+              </div>
+            }
+
+            @if (lookupLoading()) {
+              <div class="text-center py-2 text-body-secondary small d-flex align-items-center justify-content-center gap-2">
+                <c-spinner size="sm" color="primary"></c-spinner>
+                <span>Đang tải thêm...</span>
+              </div>
+            } @else if (allProductsList().length === 0) {
+              <div class="text-center py-3 text-body-secondary small">
+                Không tìm thấy sản phẩm nào
+              </div>
+            } @else if (lookupPage() >= lookupTotalPages() - 1) {
+              <div class="text-center py-1 text-body-tertiary small" style="font-size: 0.75rem;">
+                Đã tải hết sản phẩm ({{ allProductsList().length }})
+              </div>
+            }
+          </div>
+        }
+
+        @if (stockForm.get('productId')?.touched && stockForm.get('productId')?.invalid) {
+          <div class="invalid-feedback d-block">Vui lòng chọn sản phẩm</div>
+        }
       </div>
 
       <div class="mb-3">
@@ -742,3 +803,4 @@
     </button>
   </c-modal-footer>
 </c-modal>
+</div>

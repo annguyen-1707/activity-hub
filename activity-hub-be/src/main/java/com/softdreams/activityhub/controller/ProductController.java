@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import com.softdreams.activityhub.anotation.ActivityLog;
 import com.softdreams.activityhub.dto.request.ApiResponse;
 import com.softdreams.activityhub.dto.request.ProductRequest;
+import com.softdreams.activityhub.dto.response.lookup.ProductLookupResponse;
 import com.softdreams.activityhub.dto.response.ProductResponse;
 import com.softdreams.activityhub.dto.response.ReviewResponse;
 import com.softdreams.activityhub.enums.EventType;
@@ -74,6 +75,14 @@ public class ProductController {
     ApiResponse<Page<ReviewResponse>> getReviews(@PathVariable String productId, Pageable pageable) {
         return ApiResponse.<Page<ReviewResponse>>builder()
                 .result(reviewService.getByProduct(productId, pageable))
+                .build();
+    }
+
+    @GetMapping("/lookup")
+    ApiResponse<Page<ProductLookupResponse>> lookup(
+            @PageableDefault(size = 10, sort = "quantity", direction = Sort.Direction.DESC) Pageable pageable) {
+        return ApiResponse.<Page<ProductLookupResponse>>builder()
+                .result(productService.lookup(pageable))
                 .build();
     }
 }

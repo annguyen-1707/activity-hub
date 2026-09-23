@@ -213,9 +213,37 @@ export class OrderService {
     });
   }
 
-  getAdminStatistics(): Observable<OrderStatistics> {
+  getAdminStatistics(
+    keyword: string = '',
+    status?: string,
+    paymentMethod?: string,
+    fromDate?: string,
+    toDate?: string
+  ): Observable<OrderStatistics> {
+    let params = new HttpParams();
+
+    if (keyword && keyword.trim()) {
+      params = params.set('keyword', keyword.trim());
+    }
+    if (status && status !== 'ALL') {
+      params = params.set('status', status);
+    }
+    if (paymentMethod && paymentMethod !== 'ALL') {
+      params = params.set('paymentMethod', paymentMethod);
+    }
+    if (fromDate && fromDate.trim()) {
+      const formattedFrom = fromDate.length === 10 ? `${fromDate}T00:00:00` : fromDate;
+      params = params.set('fromDate', formattedFrom);
+    }
+    if (toDate && toDate.trim()) {
+      const formattedTo = toDate.length === 10 ? `${toDate}T23:59:59` : toDate;
+      params = params.set('toDate', formattedTo);
+    }
+
     return this.http
-      .get<ApiResponse<OrderStatistics>>(`${this.baseUrl}/orders/admin/statistics`)
+      .get<ApiResponse<OrderStatistics>>(`${this.baseUrl}/orders/admin/statistics`, {
+        params,
+      })
       .pipe(map((res) => res.result));
   }
 

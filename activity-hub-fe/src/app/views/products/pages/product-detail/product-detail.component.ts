@@ -132,7 +132,7 @@ export class ProductDetailComponent implements OnInit {
     this.editForm.patchValue({
       name: prod.name,
       price: prod.price,
-      categoryId: prod.category?.id || '',
+      categoryId: prod.categoryId || prod.category?.id || '',
       image: prod.image || '',
       description: prod.description || '',
     });

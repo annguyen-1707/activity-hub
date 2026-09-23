@@ -2,7 +2,10 @@ export interface ProductResponse {
   id: string;
   name: string;
   price: number;
-  category: CategoryResponse;
+  categoryName?: string;
+  categoryId?: string;
+  categoryCode?: string;
+  category?: CategoryResponse;
   rate: number;
   totalReviews: number;
   quantity: number;
@@ -29,4 +32,10 @@ export interface CategoryResponse {
   productCount?: number;
   createdAt?: string;
   updatedAt?: string;
+}
+
+export interface ProductLookupResponse {
+  id: string;
+  name: string;
+  quantity: number;
 }

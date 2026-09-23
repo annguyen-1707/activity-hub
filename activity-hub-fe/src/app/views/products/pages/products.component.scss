@@ -23,3 +23,69 @@
     cursor: pointer;
   }
 }
+
+// Ensure modal dialog and body allow dropdown to float outside if needed
+::ng-deep .modal-dialog,
+::ng-deep .modal-content,
+::ng-deep .modal-body {
+  overflow: visible !important;
+}
+
+// Product Lookup Dropdown
+.product-lookup-group,
+::ng-deep .product-lookup-group {
+  position: relative;
+
+  .custom-lookup-select {
+    cursor: pointer;
+    min-height: 40px;
+    user-select: none;
+    background-color: var(--cui-body-bg, #fff);
+    border: 1px solid var(--cui-border-color, #dee2e6);
+    border-radius: var(--cui-border-radius, 0.375rem);
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+
+    &:hover,
+    &.show {
+      border-color: var(--cui-primary, #0d6efd);
+    }
+
+    &.show {
+      box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.15);
+    }
+
+    &.is-invalid {
+      border-color: var(--cui-form-invalid-border-color, #dc3545);
+    }
+  }
+
+  .lookup-dropdown-menu {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    right: 0;
+    width: 100%;
+    max-height: 220px;
+    overflow-y: auto;
+    z-index: 1060;
+    background-color: var(--cui-body-bg, #fff);
+    border: 1px solid var(--cui-border-color, #dee2e6) !important;
+    border-radius: 0.5rem;
+    box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.15);
+
+    .lookup-item {
+      cursor: pointer;
+      transition: background-color 0.15s ease;
+
+      &:hover {
+        background-color: var(--cui-tertiary-bg, #f8f9fa);
+      }
+
+      &.active {
+        background-color: var(--cui-primary-subtle, rgba(13, 110, 253, 0.12));
+        color: var(--cui-primary, #0d6efd);
+        font-weight: 600;
+      }
+    }
+  }
+}

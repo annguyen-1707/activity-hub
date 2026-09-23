@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { Component, OnInit, inject, signal, computed, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -33,6 +33,7 @@ import { StockTransactionService } from '../../../core/services/stock-transactio
 import { CategoryService } from '../../../core/services/category.service';
 import { CategoryResponse } from '../../../core/models/category.model';
 import {
+  ProductLookupResponse,
   ProductRequest,
   ProductResponse,
 } from '../../../core/models/product.model';
@@ -134,15 +135,19 @@ export class ProductsComponent implements OnInit {
   productForm!: FormGroup;
   stockForm!: FormGroup;
 
-  // List of all products for stock modal dropdown
-  allProductsList = signal<ProductResponse[]>([]);
+  // List of all products for stock modal dropdown (paginated infinite scroll)
+  allProductsList = signal<ProductLookupResponse[]>([]);
+  lookupPage = signal<number>(0);
+  lookupTotalPages = signal<number>(1);
+  lookupLoading = signal<boolean>(false);
+  productDropdownOpen = signal<boolean>(false);
 
   ngOnInit(): void {
     this.initForms();
     this.loadCategories();
     this.loadProducts();
     this.loadStockTransactions();
-    this.loadAllProductsForDropdown();
+    this.loadAllProductsForDropdown(true);
   }
 
   loadCategories(): void {
@@ -241,7 +246,7 @@ export class ProductsComponent implements OnInit {
     this.productForm.patchValue({
       name: product.name,
       price: product.price,
-      categoryId: product.category.id || '',
+      categoryId: product.categoryId || product.category?.id || '',
       image: product.image || '',
       description: product.description || '',
     });
@@ -356,11 +361,69 @@ export class ProductsComponent implements OnInit {
       });
   }
 
-  loadAllProductsForDropdown(): void {
-    this.productService.searchProducts(0, 200).subscribe({
-      next: (res) => this.allProductsList.set(res.content || []),
-      error: () => {},
+  loadAllProductsForDropdown(reset: boolean = true): void {
+    if (this.lookupLoading()) return;
+    if (!reset && this.lookupPage() >= this.lookupTotalPages() - 1) return;
+
+    const targetPage = reset ? 0 : this.lookupPage() + 1;
+    this.lookupLoading.set(true);
+
+    this.productService.lookupProducts(targetPage, 10).subscribe({
+      next: (res) => {
+        this.lookupLoading.set(false);
+        this.lookupPage.set(targetPage);
+        this.lookupTotalPages.set(res.totalPages || 1);
+        const newItems = res.content || [];
+        if (reset) {
+          this.allProductsList.set(newItems);
+          if (!this.stockForm?.get('productId')?.value && newItems.length > 0) {
+            this.stockForm?.get('productId')?.setValue(newItems[0].id);
+          }
+        } else {
+          this.allProductsList.update((curr) => [...curr, ...newItems]);
+        }
+      },
+      error: () => {
+        this.lookupLoading.set(false);
+      },
     });
+  }
+
+  onProductDropdownScroll(event: Event): void {
+    const target = event.target as HTMLElement;
+    if (!target) return;
+    if (target.scrollTop + target.clientHeight >= target.scrollHeight - 15) {
+      if (!this.lookupLoading() && this.lookupPage() < this.lookupTotalPages() - 1) {
+        this.loadAllProductsForDropdown(false);
+      }
+    }
+  }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    if (!this.productDropdownOpen()) return;
+    const target = event.target as HTMLElement;
+    if (!target.closest('.product-lookup-group')) {
+      this.productDropdownOpen.set(false);
+    }
+  }
+
+  toggleProductDropdown(event?: Event): void {
+    if (event) {
+      event.stopPropagation();
+    }
+    this.productDropdownOpen.update((v) => !v);
+  }
+
+  selectProductForStock(p: ProductLookupResponse): void {
+    this.stockForm.get('productId')?.setValue(p.id);
+    this.stockForm.get('productId')?.markAsDirty();
+    this.productDropdownOpen.set(false);
+  }
+
+  getSelectedLookupProduct(): ProductLookupResponse | undefined {
+    const id = this.stockForm?.get('productId')?.value;
+    return this.allProductsList().find((p) => p.id === id);
   }
 
   onStockTypeChange(type: StockTransactionType | ''): void {
@@ -429,13 +492,18 @@ export class ProductsComponent implements OnInit {
   }
 
   openStockModal(): void {
-    const firstProd = this.allProductsList()[0]?.id || '';
+    if (this.allProductsList().length === 0) {
+      this.loadAllProductsForDropdown(true);
+    }
+    const currentSelected = this.stockForm.get('productId')?.value;
+    const firstProd = currentSelected || this.allProductsList()[0]?.id || '';
     this.stockForm.reset({
       type: 'IMPORT',
       productId: firstProd,
       quantity: 10,
       note: '',
     });
+    this.productDropdownOpen.set(false);
     this.stockModalVisible.set(true);
   }
 

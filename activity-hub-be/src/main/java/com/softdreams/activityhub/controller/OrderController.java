@@ -3,6 +3,8 @@ package com.softdreams.activityhub.controller;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import com.softdreams.activityhub.enums.OrderStatus;
+import com.softdreams.activityhub.enums.PaymentMethodEnum;
 import jakarta.validation.Valid;
 
 import org.springframework.data.domain.Page;
@@ -80,8 +82,8 @@ public class OrderController {
     ApiResponse<Page<OrderResponse>> searchMyOrders(
             @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable,
             @RequestParam(required = false) String keyword,
-            @RequestParam(required = false) String status,
-            @RequestParam(required = false) String paymentMethod,
+            @RequestParam(required = false) OrderStatus status,
+            @RequestParam(required = false) PaymentMethodEnum paymentMethod,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fromDate,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime toDate) {
         return ApiResponse.<Page<OrderResponse>>builder()
@@ -94,8 +96,8 @@ public class OrderController {
     ApiResponse<Page<OrderResponse>> searchAdminOrders(
             @PageableDefault(sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable,
             @RequestParam(required = false) String keyword,
-            @RequestParam(required = false) String status,
-            @RequestParam(required = false) String paymentMethod,
+            @RequestParam(required = false) OrderStatus status,
+            @RequestParam(required = false) PaymentMethodEnum paymentMethod,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fromDate,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime toDate) {
         return ApiResponse.<Page<OrderResponse>>builder()
@@ -107,7 +109,7 @@ public class OrderController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<byte[]> exportAdminOrdersPdf(
             @RequestParam(required = false) String keyword,
-            @RequestParam(required = false) String status,
+            @RequestParam(required = false) OrderStatus status,
             @RequestParam(required = false) String paymentMethod,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fromDate,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime toDate) {
@@ -127,9 +129,14 @@ public class OrderController {
 
     @GetMapping("/admin/statistics")
     @PreAuthorize("hasRole('ADMIN')")
-    ApiResponse<OrderStatisticsResponse> getAdminStatistics() {
+    ApiResponse<OrderStatisticsResponse> getAdminStatistics(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) OrderStatus status,
+            @RequestParam(required = false) PaymentMethodEnum paymentMethod,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fromDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime toDate) {
         return ApiResponse.<OrderStatisticsResponse>builder()
-                .result(orderService.getAdminStatistics())
+                .result(orderService.getAdminStatistics(keyword, status, paymentMethod, fromDate, toDate))
                 .build();
     }
 

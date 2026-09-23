@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import com.softdreams.activityhub.enums.PaymentMethodEnum;
 import com.softdreams.activityhub.repository.custom.OrderCustomRepository;
 import jakarta.transaction.Transactional;
 
@@ -150,8 +151,8 @@ public class OrderService {
 
     public Page<OrderResponse> searchMyOrders(
             String keyword,
-            String status,
-            String paymentMethod,
+            OrderStatus status,
+            PaymentMethodEnum paymentMethod,
             LocalDateTime fromDate,
             LocalDateTime toDate,
             Pageable pageable) {
@@ -164,7 +165,7 @@ public class OrderService {
     @PreAuthorize("hasRole('ADMIN')")
     public byte[] exportAdminOrdersPdf(
             String keyword,
-            String status,
+            OrderStatus status,
             String paymentMethod,
             LocalDateTime fromDate,
             LocalDateTime toDate) {
@@ -205,12 +206,7 @@ public class OrderService {
                     .map(l -> l.getProductName() + " (x" + l.getQuantity() + ")")
                     .collect(Collectors.joining(", "));
 
-            String statusLabel = order.getStatus() != null ? switch (order.getStatus()) {
-                case CREATED -> "Chờ xác nhận";
-                case CONFIRMED -> "Đã xác nhận";
-                case COMPLETED -> "Hoàn thành";
-                case CANCELLED -> "Đã hủy";
-            } : "";
+            String statusLabel = order.getStatus().getLabel();
 
             String customerName = "";
             if (order.getUser() != null) {
@@ -261,8 +257,8 @@ public class OrderService {
     @PreAuthorize("hasRole('ADMIN')")
     public Page<OrderResponse> searchAdminOrders(
             String keyword,
-            String status,
-            String paymentMethod,
+            OrderStatus status,
+            PaymentMethodEnum paymentMethod,
             LocalDateTime fromDate,
             LocalDateTime toDate,
             Pageable pageable) {
@@ -272,9 +268,20 @@ public class OrderService {
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    public OrderStatisticsResponse getAdminStatistics() {
-        OrderStatisticsProjection proj = orderRepository.getAdminStatistics();
+    public OrderStatisticsResponse getAdminStatistics(
+            String keyword,
+            OrderStatus status,
+            PaymentMethodEnum paymentMethod,
+            LocalDateTime fromDate,
+            LocalDateTime toDate) {
+        OrderStatisticsProjection proj =
+                orderRepository.getAdminStatistics(keyword, status, paymentMethod, fromDate, toDate);
         return toStatisticsResponse(proj);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    public OrderStatisticsResponse getAdminStatistics() {
+        return getAdminStatistics(null, null, null, null, null);
     }
 
     private OrderStatisticsResponse toStatisticsResponse(OrderStatisticsProjection proj) {
