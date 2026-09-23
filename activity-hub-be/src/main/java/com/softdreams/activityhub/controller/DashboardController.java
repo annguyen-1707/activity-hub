@@ -22,9 +22,11 @@ public class DashboardController {
 
     @GetMapping("/overview")
     public ApiResponse<DashboardOverviewResponse> getOverview(
-            @RequestParam(defaultValue = "7") int days) {
+            @RequestParam(defaultValue = "7") int days,
+            @RequestParam(required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE_TIME) java.time.LocalDateTime fromDate,
+            @RequestParam(required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE_TIME) java.time.LocalDateTime toDate) {
         return ApiResponse.<DashboardOverviewResponse>builder()
-                .result(dashboardService.getOverview(days))
+                .result(dashboardService.getOverview(days, fromDate, toDate))
                 .build();
     }
 }

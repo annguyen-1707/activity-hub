@@ -6,49 +6,140 @@
       <div class="text-body-secondary small">
         Báo cáo tổng quan tình hình kinh doanh, doanh thu, tồn kho và các hoạt động gần đây
       </div>
+  <!-- TOP HEADER -->
+  <div class="mb-3">
+    <h3 class="fw-bold mb-1 text-body">Bảng Điều Khiển Hệ Thống</h3>
+    <div class="text-body-secondary small">
+      Báo cáo tổng quan tình hình kinh doanh, doanh thu, tồn kho và các hoạt động gần đây
+    </div>
+  </div>
+
+    <div class="filter-panel d-flex align-items-center gap-2 flex-wrap">
+  <!-- FILTER TOOLBAR (FULL WIDTH) -->
+  <div class="filter-panel w-100 d-flex align-items-center justify-content-between flex-wrap gap-3 mb-4">
+    <!-- LEFT CONTROLS -->
+    <div class="d-flex align-items-center gap-2 flex-wrap">
+      <!-- 1. MODE SELECTOR (SEGMENTED SWITCH) -->
+      <div class="segmented-switch">
+        <button
+          type="button"
+          class="segmented-btn"
+          [class.active]="filterMode() === 'PRESET'"
+          (click)="setFilterMode('PRESET')"
+        >
+          <svg cIcon name="cilSpeedometer" size="sm"></svg>
+          <span> Khoảng ngày</span>
+          <span>Khoảng ngày</span>
+        </button>
+        <button
+          type="button"
+          class="segmented-btn"
+          [class.active]="filterMode() === 'CUSTOM'"
+          (click)="setFilterMode('CUSTOM')"
+        >
+          <svg cIcon name="cilCalendar" size="sm"></svg>
+          <span class="mr-2"> Theo ngày</span>
+          <span>Theo ngày</span>
+        </button>
+      </div>
+
+      <div class="vr my-auto text-body-secondary opacity-25 d-none d-sm-block" style="height: 24px;"></div>
+
+      <!-- 2A. PRESET MODE CONTROLS -->
+      @if (filterMode() === 'PRESET') {
+        <div class="d-flex align-items-center gap-1">
+          <button
+            type="button"
+            class="preset-pill"
+            [class.active]="selectedDays() === 7"
+            (click)="selectPreset(7)"
+          >
+            7 ngày qua
+          </button>
+          <button
+            type="button"
+            class="preset-pill"
+            [class.active]="selectedDays() === 14"
+            (click)="selectPreset(14)"
+          >
+            14 ngày qua
+          </button>
+          <button
+            type="button"
+            class="preset-pill"
+            [class.active]="selectedDays() === 30"
+            (click)="selectPreset(30)"
+          >
+            30 ngày qua
+          </button>
+        </div>
+      }
+
+      <!-- 2B. CUSTOM DATE MODE CONTROLS -->
+      @if (filterMode() === 'CUSTOM') {
+        <div class="d-flex align-items-center gap-2 flex-wrap">
+          <div class="custom-date-box">
+            <span class="text-body-secondary small me-1">Từ</span>
+            <input
+              type="date"
+              [ngModel]="fromDate()"
+              (ngModelChange)="fromDate.set($event)"
+            />
+            <span class="text-body-secondary mx-2">—</span>
+            <span class="text-body-secondary small me-1">Đến</span>
+            <input
+              type="date"
+              [ngModel]="toDate()"
+              (ngModelChange)="toDate.set($event)"
+            />
+          </div>
+
+          <button
+            cButton
+            color="primary"
+            size="sm"
+            class="rounded-pill px-3 d-flex align-items-center gap-1 shadow-sm"
+            (click)="applyCustomDateFilter()"
+            [disabled]="!fromDate() && !toDate()"
+          >
+            <svg cIcon name="cilCheck" size="sm"></svg>
+            <span>Áp dụng</span>
+          </button>
+        </div>
+      }
     </div>
 
-    <div class="d-flex align-items-center gap-2 flex-wrap">
-      <!-- TIME FILTER BUTTONS -->
-      <c-button-group role="group" size="sm" class="shadow-sm">
-        <button
-          cButton
-          [color]="selectedDays() === 7 ? 'primary' : 'outline-secondary'"
-          (click)="loadOverview(7)"
-        >
-          7 ngày qua
-        </button>
-        <button
-          cButton
-          [color]="selectedDays() === 14 ? 'primary' : 'outline-secondary'"
-          (click)="loadOverview(14)"
-        >
-          14 ngày qua
-        </button>
-        <button
-          cButton
-          [color]="selectedDays() === 30 ? 'primary' : 'outline-secondary'"
-          (click)="loadOverview(30)"
-        >
-          30 ngày qua
-        </button>
-      </c-button-group>
+      <div class="vr my-auto text-body-secondary opacity-25 d-none d-sm-block ms-auto" style="height: 24px;"></div>
 
-      <!-- REFRESH BUTTON -->
+      <!-- 3. REFRESH BUTTON -->
       <button
         cButton
         color="secondary"
         variant="outline"
         size="sm"
-        class="rounded-pill d-flex align-items-center gap-1 shadow-sm"
+        class="rounded-pill d-flex align-items-center gap-1"
         (click)="loadOverview()"
         [disabled]="loading()"
         title="Làm mới dữ liệu"
       >
         <svg cIcon name="cilSpeedometer" size="sm"></svg>
-        <span>Làm mới</span>
+        <span class="d-none d-md-inline">Làm mới</span>
       </button>
     </div>
+    <!-- RIGHT CONTROLS: REFRESH BUTTON -->
+    <button
+      cButton
+      color="secondary"
+      variant="outline"
+      size="sm"
+      class="rounded-pill d-flex align-items-center gap-1 ms-auto"
+      (click)="loadOverview()"
+      [disabled]="loading()"
+      title="Làm mới dữ liệu"
+    >
+      <svg cIcon name="cilSpeedometer" size="sm"></svg>
+      <span>Làm mới</span>
+    </button>
   </div>
 
   <!-- LOADING SPINNER -->
@@ -149,7 +240,7 @@
         <c-card class="border-0 shadow-sm rounded-4 h-100">
           <c-card-header class="bg-body py-3 px-4 border-bottom d-flex justify-content-between align-items-center">
             <div class="fw-bold text-body">
-              Xu Hướng Doanh Thu & Số Đơn Đặt Hàng ({{ selectedDays() }} ngày qua)
+              Xu Hướng Doanh Thu & Số Đơn Đặt Hàng ({{ filterRangeText() }})
             </div>
             <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-3 py-1">
               Doanh thu + Số đơn

@@ -13,4 +13,89 @@
     height: 52px;
     flex-shrink: 0;
   }
+
+  .filter-panel {
+    background: var(--cui-card-bg, #fff);
+    border: 1px solid var(--cui-border-color, #e9ecef);
+    border-radius: 1rem;
+    box-shadow: 0 0.125rem 0.35rem rgba(0, 0, 0, 0.04);
+    padding: 0.5rem 0.85rem;
+
+    .segmented-switch {
+      background: var(--cui-tertiary-bg, #f8f9fa);
+      border: 1px solid var(--cui-border-color, #dee2e6);
+      border-radius: 50rem;
+      padding: 0.2rem;
+      display: inline-flex;
+      align-items: center;
+
+      .segmented-btn {
+        border: none;
+        background: transparent;
+        color: var(--cui-body-color, #495057);
+        font-size: 0.8rem;
+        font-weight: 600;
+        padding: 0.3rem 0.85rem;
+        border-radius: 50rem;
+        transition: all 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+
+        &:hover:not(.active) {
+          color: var(--cui-primary, #0d6efd);
+        }
+
+        &.active {
+          background: var(--cui-primary, #0d6efd);
+          color: #fff;
+          box-shadow: 0 2px 6px rgba(13, 110, 253, 0.3);
+        }
+      }
+    }
+
+    .preset-pill {
+      font-size: 0.8rem;
+      font-weight: 500;
+      padding: 0.35rem 0.85rem;
+      border-radius: 50rem;
+      border: 1px solid var(--cui-border-color, #dee2e6);
+      background: var(--cui-tertiary-bg, #f8f9fa);
+      color: var(--cui-body-color, #495057);
+      transition: all 0.2s ease;
+      cursor: pointer;
+
+      &:hover:not(.active) {
+        border-color: var(--cui-primary, #0d6efd);
+        color: var(--cui-primary, #0d6efd);
+      }
+
+      &.active {
+        background: var(--cui-primary-subtle, rgba(13, 110, 253, 0.12));
+        border-color: var(--cui-primary, #0d6efd);
+        color: var(--cui-primary, #0d6efd);
+        font-weight: 600;
+      }
+    }
+
+    .custom-date-box {
+      background: var(--cui-tertiary-bg, #f8f9fa);
+      border: 1px solid var(--cui-border-color, #dee2e6);
+      border-radius: 50rem;
+      padding: 0.25rem 0.85rem;
+      display: inline-flex;
+      align-items: center;
+
+      input[type="date"] {
+        border: none;
+        background: transparent;
+        font-size: 0.82rem;
+        color: var(--cui-body-color, #212529);
+        outline: none;
+        padding: 0.1rem 0.2rem;
+        cursor: pointer;
+      }
+    }
+  }
 }

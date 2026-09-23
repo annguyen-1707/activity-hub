@@ -1,5 +1,6 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import {
   ButtonDirective,
@@ -25,6 +26,7 @@ import { DashboardOverviewResponse } from '../../core/models/dashboard.model';
   styleUrls: ['./dashboard.component.scss'],
   imports: [
     CommonModule,
+    FormsModule,
     RouterLink,
     RowComponent,
     ColComponent,
@@ -32,7 +34,6 @@ import { DashboardOverviewResponse } from '../../core/models/dashboard.model';
     CardHeaderComponent,
     CardBodyComponent,
     ButtonDirective,
-    ButtonGroupComponent,
     SpinnerComponent,
     TableDirective,
     ChartjsComponent,
@@ -44,8 +45,26 @@ export class DashboardComponent implements OnInit {
 
   readonly loading = signal<boolean>(true);
   readonly error = signal<string>('');
+  readonly filterMode = signal<'PRESET' | 'CUSTOM'>('PRESET');
   readonly selectedDays = signal<number>(7);
+  readonly fromDate = signal<string>('');
+  readonly toDate = signal<string>('');
   readonly data = signal<DashboardOverviewResponse | null>(null);
+
+  readonly filterRangeText = computed<string>(() => {
+    if (this.filterMode() === 'CUSTOM') {
+      if (this.fromDate() && this.toDate()) {
+        return `Từ ${this.formatDateOnly(this.fromDate())} đến ${this.formatDateOnly(this.toDate())}`;
+      }
+      if (this.fromDate()) {
+        return `Từ ngày ${this.formatDateOnly(this.fromDate())}`;
+      }
+      if (this.toDate()) {
+        return `Đến ngày ${this.formatDateOnly(this.toDate())}`;
+      }
+    }
+    return `${this.selectedDays()} ngày qua`;
+  });
 
   readonly revenueChartData = computed<ChartData>(() => {
     const trend = this.data()?.revenueTrend || [];
@@ -190,12 +209,53 @@ export class DashboardComponent implements OnInit {
     this.loadOverview();
   }
 
-  loadOverview(days: number = this.selectedDays()): void {
+  setFilterMode(mode: 'PRESET' | 'CUSTOM'): void {
+    if (this.filterMode() === mode) return;
+    this.filterMode.set(mode);
+
+    if (mode === 'PRESET') {
+      this.fromDate.set('');
+      this.toDate.set('');
+      if (this.selectedDays() === 0) {
+        this.selectedDays.set(7);
+      }
+      this.loadOverview();
+    } else {
+      // CUSTOM mode: if neither date is filled, pre-fill with the past 7 days
+      if (!this.fromDate() && !this.toDate()) {
+        const today = new Date();
+        const past = new Date();
+        past.setDate(today.getDate() - 7);
+        this.fromDate.set(past.toISOString().split('T')[0]);
+        this.toDate.set(today.toISOString().split('T')[0]);
+      }
+      this.loadOverview();
+    }
+  }
+
+  selectPreset(days: number): void {
+    this.filterMode.set('PRESET');
+    this.selectedDays.set(days);
+    this.fromDate.set('');
+    this.toDate.set('');
+    this.loadOverview();
+  }
+
+  applyCustomDateFilter(): void {
+    if (!this.fromDate() && !this.toDate()) return;
+    this.filterMode.set('CUSTOM');
+    this.loadOverview();
+  }
+
+  loadOverview(): void {
     this.loading.set(true);
     this.error.set('');
-    this.selectedDays.set(days);
 
-    this.dashboardService.getOverview(days).subscribe({
+    const days = this.filterMode() === 'PRESET' ? this.selectedDays() : 0;
+    const from = this.filterMode() === 'CUSTOM' ? this.fromDate() : '';
+    const to = this.filterMode() === 'CUSTOM' ? this.toDate() : '';
+
+    this.dashboardService.getOverview(days, from, to).subscribe({
       next: (res) => {
         this.data.set(res);
         this.loading.set(false);
@@ -207,6 +267,23 @@ export class DashboardComponent implements OnInit {
         this.loading.set(false);
       },
     });
+  }
+
+  resetDateFilter(): void {
+    this.setFilterMode('PRESET');
+  }
+
+  formatDateOnly(dateStr: string): string {
+    if (!dateStr) return '';
+    try {
+      const parts = dateStr.split('-');
+      if (parts.length === 3) {
+        return `${parts[2]}/${parts[1]}/${parts[0]}`;
+      }
+      return dateStr;
+    } catch {
+      return dateStr;
+    }
   }
 
   formatCurrency(value?: number): string {
