@@ -9,8 +9,6 @@ import com.softdreams.activityhub.configuration.RabbitMQConfig;
 
 import lombok.RequiredArgsConstructor;
 
-import static com.softdreams.activityhub.configuration.RabbitMQConfig.ACTIVITY_EXCHANGE;
-
 @Component
 @RequiredArgsConstructor
 @Slf4j

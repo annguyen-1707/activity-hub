@@ -29,7 +29,6 @@ import com.softdreams.activityhub.enums.TargetType;
 import com.softdreams.activityhub.exception.AppException;
 import com.softdreams.activityhub.exception.ErrorCode;
 import com.softdreams.activityhub.mapper.ActivityLogMapper;
-import com.softdreams.activityhub.repository.ActivityLogRepository;
 import com.softdreams.activityhub.repository.UserRepository;
 
 import lombok.AccessLevel;

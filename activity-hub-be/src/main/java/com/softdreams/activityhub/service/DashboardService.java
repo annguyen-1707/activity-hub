@@ -1,28 +1,13 @@
 package com.softdreams.activityhub.service;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.*;
-import java.util.stream.Collectors;
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
-import com.softdreams.activityhub.dto.projection.OrderRevenueProjection;
-import com.softdreams.activityhub.dto.projection.OrderStatisticsProjection;
-import com.softdreams.activityhub.dto.response.ActivityLogResponse;
-import com.softdreams.activityhub.dto.response.dashboard.CategoryDistributionItem;
-import com.softdreams.activityhub.dto.response.dashboard.DailyRevenueItem;
 import com.softdreams.activityhub.dto.response.dashboard.DashboardOverviewResponse;
-import com.softdreams.activityhub.dto.response.dashboard.TopRatedProductItem;
-import com.softdreams.activityhub.dto.response.dashboard.TopSellingProductItem;
-import com.softdreams.activityhub.entity.ActivityLog;
 import com.softdreams.activityhub.mapper.ActivityLogMapper;
-import com.softdreams.activityhub.repository.ActivityLogRepository;
+import com.softdreams.activityhub.activitylog.ActivityLogRepository;
 import com.softdreams.activityhub.repository.CategoryRepository;
 import com.softdreams.activityhub.repository.OrderLineRepository;
 import com.softdreams.activityhub.repository.OrderRepository;

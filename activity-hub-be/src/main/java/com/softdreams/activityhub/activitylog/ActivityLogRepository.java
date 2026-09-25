@@ -1,4 +1,4 @@
-package com.softdreams.activityhub.repository;
+package com.softdreams.activityhub.activitylog;
 
 import java.time.LocalDateTime;
 import java.util.List;
