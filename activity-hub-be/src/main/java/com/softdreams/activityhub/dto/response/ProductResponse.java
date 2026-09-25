@@ -20,25 +20,11 @@ public class ProductResponse {
     String categoryName;
     String categoryId;
     String categoryCode;
-    double rate;
-    long totalReviews;
+    BigDecimal rate;
+    Integer totalReviews;
     int quantity;
     String description;
     String image;
     LocalDateTime createdAt;
     LocalDateTime updatedAt;
-
-    public ProductResponse(String id, String name, BigDecimal price, String categoryName, String categoryId, String categoryCode, int quantity, String description, String image, LocalDateTime createdAt, LocalDateTime updatedAt) {
-        this.id = id;
-        this.name = name;
-        this.price = price;
-        this.categoryName = categoryName;
-        this.categoryId = categoryId;
-        this.categoryCode = categoryCode;
-        this.quantity = quantity;
-        this.description = description;
-        this.image = image;
-        this.createdAt = createdAt;
-        this.updatedAt = updatedAt;
-    }
 }

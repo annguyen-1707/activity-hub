@@ -51,20 +51,21 @@ public class ProductService {
 
     public Page<ProductResponse> search(String keyword, String categoryId, Pageable pageable) {
         Page<ProductResponse> products = productRepository.search(keyword, categoryId, pageable);
-        List<String> productIds = products.stream().map(ProductResponse::getId).toList();
-        List<ProductRatingProjection> ratings = reviewRepository.getProductRatings(productIds);
-        Map<String, ProductRatingProjection> ratingMap =
-                ratings.stream().collect(Collectors.toMap(ProductRatingProjection::getProductId, Function.identity()));
-        return products.map(product -> {
-            ProductRatingProjection rating = ratingMap.get(product.getId());
-
-            double avg = rating != null && rating.getAverageRating() != null
-                    ? Math.round(rating.getAverageRating() * 10.0) / 10.0
-                    : 0.0;
-            product.setRate(avg);
-            product.setTotalReviews(rating != null && rating.getTotalReviews() != null ? rating.getTotalReviews() : 0L);
-            return product;
-        });
+//        List<String> productIds = products.stream().map(ProductResponse::getId).toList();
+//        List<ProductRatingProjection> ratings = reviewRepository.getProductRatings(productIds);
+//        Map<String, ProductRatingProjection> ratingMap =
+//                ratings.stream().collect(Collectors.toMap(ProductRatingProjection::getProductId, Function.identity()));
+//        return products.map(product -> {
+//            ProductRatingProjection rating = ratingMap.get(product.getId());
+//
+//            double avg = rating != null && rating.getAverageRating() != null
+//                    ? Math.round(rating.getAverageRating() * 10.0) / 10.0
+//                    : 0.0;
+//            product.setRate(avg);
+//            product.setTotalReviews(rating != null && rating.getTotalReviews() != null ? rating.getTotalReviews() : 0L);
+//            return product;
+//        });
+        return products;
     }
 
     public Page<ProductLookupResponse> lookup(Pageable pageable) {
@@ -75,16 +76,6 @@ public class ProductService {
         ProductResponse response = productRepository
                 .getProductResponseById(productId)
                 .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_EXISTED));
-
-        reviewRepository.getProductRating(productId).ifPresent(rating -> {
-            if (rating.getAverageRating() != null) {
-                response.setRate(Math.round(rating.getAverageRating() * 10.0) / 10.0);
-            }
-            if (rating.getTotalReviews() != null) {
-                response.setTotalReviews(rating.getTotalReviews());
-            }
-        });
-
         return response;
     }
 

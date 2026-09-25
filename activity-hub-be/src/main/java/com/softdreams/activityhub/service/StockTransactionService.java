@@ -2,10 +2,7 @@ package com.softdreams.activityhub.service;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
@@ -51,7 +48,8 @@ public class StockTransactionService {
     StockTransactionLineRepository stockTransactionLineRepository;
     JasperReportService jasperReportService;
 
-    public record StockLine(Product product, int quantity) {}
+    public record StockLine(Product product, int quantity) {
+    }
 
     @PreAuthorize("hasRole('ADMIN')")
     @Transactional
@@ -100,37 +98,51 @@ public class StockTransactionService {
         List<String> transactionIds =
                 page.getContent().stream().map(StockTransaction::getId).toList();
 
-        List<StockTransactionLine> lines = transactionIds.isEmpty()
+        List<StockTransactionLineResponse> lines = transactionIds.isEmpty()
                 ? List.of()
                 : stockTransactionLineRepository.findLinesWithProduct(transactionIds);
 
-        Map<String, List<StockTransactionLine>> linesByTransaction = lines.stream()
+        Map<String, List<StockTransactionLineResponse>> linesByTransaction = lines.stream()
                 .collect(
-                        Collectors.groupingBy(line -> line.getStockTransaction().getId()));
-        return page.map(transaction -> {
-            transaction.setLines(linesByTransaction.getOrDefault(transaction.getId(), List.of()));
-            return stockTransactionMapper.toResponse(transaction);
+                        Collectors.groupingBy(StockTransactionLineResponse::getStockTransactionId));
+        return page.map(stockTransaction -> {
+            StockTransactionResponse response =
+                    stockTransactionMapper.toResponse(stockTransaction);
+            response.setLines(
+                    linesByTransaction.getOrDefault(
+                            response.getId(),
+                            Collections.emptyList()
+                    )
+            );
+            return response;
         });
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     public List<StockTransactionResponse> getTransactionsForExport(
             StockTransactionType type, String productId, LocalDateTime fromDate, LocalDateTime toDate) {
-        List<StockTransaction> list = stockTransactionRepository.findForExport(type, productId, fromDate, toDate);
+        List<StockTransaction> stockTransactionList = stockTransactionRepository.findForExport(type, productId, fromDate, toDate);
 
-        List<String> transactionIds = list.stream().map(StockTransaction::getId).toList();
+        List<String> transactionIds = stockTransactionList.stream().map(StockTransaction::getId).toList();
 
-        List<StockTransactionLine> lines = transactionIds.isEmpty()
+        List<StockTransactionLineResponse> lines = transactionIds.isEmpty()
                 ? List.of()
                 : stockTransactionLineRepository.findLinesWithProduct(transactionIds);
 
-        Map<String, List<StockTransactionLine>> linesByTransaction = lines.stream()
+        Map<String, List<StockTransactionLineResponse>> linesByTransaction = lines.stream()
                 .collect(
-                        Collectors.groupingBy(line -> line.getStockTransaction().getId()));
-        return list.stream().map(transaction -> {
-            transaction.setLines(linesByTransaction.getOrDefault(transaction.getId(), List.of()));
-            return stockTransactionMapper.toResponse(transaction);
-        }).toList();
+                        Collectors.groupingBy(StockTransactionLineResponse::getStockTransactionId));
+
+        return stockTransactionList
+                .stream()
+                .map(stockTransactionMapper::toResponse)
+                .peek(response -> response.setLines(
+                        linesByTransaction.getOrDefault(
+                                response.getId(),
+                                Collections.emptyList()
+                        )
+                ))
+                .toList();
     }
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -143,8 +155,8 @@ public class StockTransactionService {
         List<StockTransactionReportItem> reportItems = list.stream().map(tx -> {
             String prodSummary = tx.getLines() != null && !tx.getLines().isEmpty()
                     ? tx.getLines().stream()
-                            .map(l -> l.getProductName() + " (" + (l.getQuantity() > 0 ? "+" + l.getQuantity() : l.getQuantity()) + ")")
-                            .collect(Collectors.joining(", "))
+                    .map(l -> l.getProductName() + " (" + (l.getQuantity() > 0 ? "+" + l.getQuantity() : l.getQuantity()) + ")")
+                    .collect(Collectors.joining(", "))
                     : "—";
 
             int totalQty = tx.getLines() != null
@@ -189,7 +201,8 @@ public class StockTransactionService {
         return jasperReportService.exportToPdf("stock_transactions_report", parameters, reportItems);
     }
 
-    private record PendingLine(Product product, int delta) {}
+    private record PendingLine(Product product, int delta) {
+    }
 
     private StockTransactionResponse apply(
             StockTransactionType type, String note, String referenceId, List<PendingLine> pendingLines) {

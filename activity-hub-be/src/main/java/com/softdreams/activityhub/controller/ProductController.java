@@ -41,7 +41,7 @@ public class ProductController {
 
     @GetMapping
     ApiResponse<Page<ProductResponse>> search(
-            @PageableDefault(size = 10, sort = "quantity", direction = Sort.Direction.DESC) Pageable pageable,
+            @PageableDefault(size = 10, sort = {"averageRating", "totalReviews", "quantity"}, direction = Sort.Direction.DESC) Pageable pageable,
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) String categoryId,
             @RequestParam(required = false) String category) {

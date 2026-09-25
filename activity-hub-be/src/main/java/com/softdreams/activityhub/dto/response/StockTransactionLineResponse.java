@@ -13,4 +13,5 @@ public class StockTransactionLineResponse {
     String productId;
     String productName;
     Integer quantity;
+    String stockTransactionId;
 }

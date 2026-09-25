@@ -2,6 +2,8 @@ package com.softdreams.activityhub.service;
 
 import java.time.LocalDateTime;
 
+import com.softdreams.activityhub.entity.*;
+import com.softdreams.activityhub.repository.ProductRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -9,10 +11,6 @@ import org.springframework.stereotype.Service;
 
 import com.softdreams.activityhub.dto.request.ReviewRequest;
 import com.softdreams.activityhub.dto.response.ReviewResponse;
-import com.softdreams.activityhub.entity.Order;
-import com.softdreams.activityhub.entity.OrderLine;
-import com.softdreams.activityhub.entity.Review;
-import com.softdreams.activityhub.entity.User;
 import com.softdreams.activityhub.enums.OrderStatus;
 import com.softdreams.activityhub.exception.AppException;
 import com.softdreams.activityhub.exception.ErrorCode;
@@ -39,6 +37,7 @@ public class ReviewService {
     OrderLineRepository orderLineRepository;
     UserRepository userRepository;
     ReviewMapper reviewMapper;
+    ProductRepository productRepository;
 
     @Transactional
     public ReviewResponse create(String orderLineId, ReviewRequest request) {
@@ -60,7 +59,10 @@ public class ReviewService {
                 .comment(request.getComment())
                 .build();
 
-        return reviewMapper.toResponse(reviewRepository.save(review));
+        ReviewResponse response = reviewMapper.toResponse(reviewRepository.save(review));
+        Product product = orderLine.getProduct();
+        productRepository.updateProductRating(product.getId());
+        return response;
     }
 
     @Transactional
@@ -78,7 +80,12 @@ public class ReviewService {
         review.setRating(request.getRating());
         review.setComment(request.getComment());
 
-        return reviewMapper.toResponse(reviewRepository.save(review));
+        ReviewResponse response = reviewMapper.toResponse(reviewRepository.save(review));
+
+        Product product = orderLine.getProduct();
+        productRepository.updateProductRating(product.getId());
+
+        return response;
     }
 
     public ReviewResponse getByOrderLine(String orderLineId) {
@@ -92,7 +99,9 @@ public class ReviewService {
         return reviewRepository.findByOrderLine_Product_Id(productId, pageable).map(reviewMapper::toResponse);
     }
 
-    /** Only the order's own buyer may review it, and only once it has been delivered within the last 30 days. */
+    /**
+     * Only the order's own buyer may review it, and only once it has been delivered within the last 30 days.
+     */
     private void validateReviewable(OrderLine orderLine, User user) {
         Order order = orderLine.getOrder();
 

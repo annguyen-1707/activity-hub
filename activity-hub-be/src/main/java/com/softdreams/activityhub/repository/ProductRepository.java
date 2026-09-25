@@ -1,18 +1,17 @@
 package com.softdreams.activityhub.repository;
 
-import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
-import com.softdreams.activityhub.dto.projection.ProductRatingProjection;
 import com.softdreams.activityhub.dto.response.ProductResponse;
 import com.softdreams.activityhub.dto.response.lookup.ProductLookupResponse;
 import jakarta.persistence.LockModeType;
 
+import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -30,6 +29,8 @@ public interface ProductRepository extends JpaRepository<Product, String> {
                 c.name,
                 c.id,
                 c.code,
+                p.averageRating,
+                p.totalReviews,
                 p.quantity,
                 p.description,
                 p.image,
@@ -63,6 +64,8 @@ public interface ProductRepository extends JpaRepository<Product, String> {
                 c.name,
                 c.id,
                 c.code,
+                p.averageRating,
+                p.totalReviews,
                 p.quantity,
                 p.description,
                 p.image,
@@ -95,7 +98,27 @@ public interface ProductRepository extends JpaRepository<Product, String> {
     @Query("SELECT p FROM Product p WHERE p.id = :id")
     Optional<Product> findByIdForUpdate(@Param("id") String id);
 
-    @Query("SELECT p FROM Product p LEFT JOIN FETCH p.category WHERE p.quantity <= :threshold ORDER BY p.quantity ASC")
-    List<Product> findLowStockProducts(@Param("threshold") int threshold, Pageable pageable);
+    @Modifying
+    @Transactional
+    @Query(value = """
+            UPDATE p
+                SET
+                    p.average_rating = COALESCE(rating_data.avg_rating, 0),
+                    p.total_reviews = COALESCE(rating_data.review_count, 0)
+                FROM dbo.products p
+                LEFT JOIN (
+                    SELECT
+                        ol.product_id,
+                        AVG(CAST(r.rating AS DECIMAL(10, 2))) AS avg_rating,
+                        COUNT(r.id) AS review_count
+                    FROM dbo.order_lines ol
+                    INNER JOIN dbo.reviews r
+                        ON r.order_line_id = ol.id
+                    GROUP BY ol.product_id
+                ) rating_data
+                    ON rating_data.product_id = p.id
+                WHERE p.id = :productId
+            """, nativeQuery = true)
+    void updateProductRating(@Param("productId") String productId);
 
 }

@@ -13,9 +13,7 @@ public interface StockTransactionMapper {
 
     @Mapping(target = "typeLabel", source = "type.label")
     @Mapping(target = "createdByUsername", source = "createdBy.username")
+    @Mapping(target = "lines" , ignore = true)
     StockTransactionResponse toResponse(StockTransaction stockTransaction);
-
-    @Mapping(target = "productId", source = "product.id")
-    @Mapping(target = "productName", source = "product.name")
-    StockTransactionLineResponse toLineResponse(StockTransactionLine line);
+    
 }

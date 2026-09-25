@@ -45,6 +45,12 @@ public class Product {
     @Column(name = "updated_at")
     LocalDateTime updatedAt;
 
+    @Column(name = "average_rating", precision = 3, scale = 2)
+    private BigDecimal averageRating = BigDecimal.ZERO;
+
+    @Column(name = "total_reviews")
+    private Integer totalReviews = 0;
+
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();
