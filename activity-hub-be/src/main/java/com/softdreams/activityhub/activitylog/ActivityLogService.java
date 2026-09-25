@@ -1,4 +1,4 @@
-package com.softdreams.activityhub.service;
+package com.softdreams.activityhub.activitylog;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -9,6 +9,8 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import com.softdreams.activityhub.service.JasperReportService;
+import com.softdreams.activityhub.infrastructure.outbox.OutboxService;
 import jakarta.servlet.http.HttpServletRequest;
 
 import org.springframework.data.domain.Page;
@@ -17,7 +19,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
-import com.softdreams.activityhub.dto.ActivityLogEvent;
 import com.softdreams.activityhub.dto.report.ActivityLogReportItem;
 import com.softdreams.activityhub.dto.response.ActivityLogResponse;
 import com.softdreams.activityhub.dto.response.TargetTypeResponse;
@@ -28,7 +29,6 @@ import com.softdreams.activityhub.enums.TargetType;
 import com.softdreams.activityhub.exception.AppException;
 import com.softdreams.activityhub.exception.ErrorCode;
 import com.softdreams.activityhub.mapper.ActivityLogMapper;
-import com.softdreams.activityhub.producer.ActivityLogProducer;
 import com.softdreams.activityhub.repository.ActivityLogRepository;
 import com.softdreams.activityhub.repository.UserRepository;
 
@@ -48,6 +48,7 @@ public class ActivityLogService {
     ActivityLogMapper activityLogMapper;
     HttpServletRequest request;
     JasperReportService jasperReportService;
+    OutboxService outboxService;
 
     public void save(ActivityLogEvent event) {
 
@@ -95,7 +96,7 @@ public class ActivityLogService {
                 .createdAt(LocalDateTime.now())
                 .build();
 
-        producer.send(event);
+        outboxService.save(event);
     }
 
     @PreAuthorize("hasRole('ADMIN')")

@@ -2,6 +2,7 @@ package com.softdreams.activityhub.controller;
 
 import java.util.List;
 
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 import com.softdreams.activityhub.anotation.ActivityLog;
@@ -27,7 +28,7 @@ public class RoleController {
 
     @PostMapping
     @ActivityLog(eventType = EventType.CREATED, targetType = TargetType.ROLE, targetId = "#result.result.name")
-    ApiResponse<RoleResponse> create(@RequestBody RoleRequest request) {
+    ApiResponse<RoleResponse> create(@RequestBody @Valid RoleRequest request) {
         return ApiResponse.<RoleResponse>builder()
                 .result(roleService.create(request))
                 .build();

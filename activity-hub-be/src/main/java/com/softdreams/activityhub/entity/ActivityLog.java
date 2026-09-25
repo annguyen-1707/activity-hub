@@ -57,6 +57,9 @@ public class ActivityLog {
 
     @PrePersist
     protected void onCreate() {
-        createdAt = LocalDateTime.now();
+        // Keep the time the action happened (carried in the event); fall back only when absent.
+        if (createdAt == null) {
+            createdAt = LocalDateTime.now();
+        }
     }
 }

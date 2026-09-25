@@ -1,10 +1,9 @@
-package com.softdreams.activityhub.producer;
+package com.softdreams.activityhub.activitylog;
 
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Component;
 
 import com.softdreams.activityhub.configuration.RabbitMQConfig;
-import com.softdreams.activityhub.dto.ActivityLogEvent;
 
 import lombok.RequiredArgsConstructor;
 

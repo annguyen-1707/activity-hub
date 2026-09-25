@@ -1,5 +1,7 @@
 package com.softdreams.activityhub.dto.request;
 
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -9,6 +11,7 @@ import lombok.experimental.FieldDefaults;
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class RoleRequest {
+    @Size(min = 5)
     String name;
     String description;
 }

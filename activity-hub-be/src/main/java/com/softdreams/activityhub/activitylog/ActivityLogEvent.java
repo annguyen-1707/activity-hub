@@ -1,4 +1,4 @@
-package com.softdreams.activityhub.dto;
+package com.softdreams.activityhub.activitylog;
 
 import java.time.LocalDateTime;
 

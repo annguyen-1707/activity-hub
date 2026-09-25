@@ -1,10 +1,11 @@
-package com.softdreams.activityhub.aspect;
+package com.softdreams.activityhub.activitylog;
 
 import java.lang.reflect.Method;
 import java.text.ParseException;
 
 import org.aspectj.lang.JoinPoint;
-import org.aspectj.lang.annotation.AfterReturning;
+import org.aspectj.lang.ProceedingJoinPoint;
+import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.expression.ExpressionParser;
@@ -14,7 +15,6 @@ import org.springframework.stereotype.Component;
 
 import com.nimbusds.jwt.SignedJWT;
 import com.softdreams.activityhub.anotation.ActivityLog;
-import com.softdreams.activityhub.service.ActivityLogService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -31,20 +31,32 @@ public class ActivityLogAspect {
 
     private static final Method JWT_SUBJECT_FUNCTION = resolveJwtSubjectMethod();
 
-    @AfterReturning(pointcut = "@annotation(activityLog)", returning = "result")
-    public void logActivity(JoinPoint joinPoint, ActivityLog activityLog, Object result) {
-        try {
-            String targetId = resolveTargetId(joinPoint, activityLog, result);
+    // around để nghiệp vụ chính chạy thành công ms lưu log
+    @Around("@annotation(activityLog)")
+    public Object logActivity(
+            ProceedingJoinPoint joinPoint,
+            ActivityLog activityLog
+    ) throws Throwable {
 
-            activityLogService.log(activityLog.eventType(), activityLog.targetType(), targetId);
-        } catch (Exception e) {
-            // Auditing must never break the business flow it observes.
-            log.warn(
-                    "Skipped activity log for {} on {}: {}",
-                    activityLog.eventType(),
-                    joinPoint.getSignature().toShortString(),
-                    e.getMessage());
-        }
+        // 1. Chạy nghiệp vụ chính
+        Object result = joinPoint.proceed();
+
+        // 2. Chỉ tạo log nếu nghiệp vụ thành công
+        String targetId = resolveTargetId(
+                joinPoint,
+                activityLog,
+                result
+        );
+
+        // 3. Lưu OutboxEvent
+        activityLogService.log(
+                activityLog.eventType(),
+                activityLog.targetType(),
+                targetId
+        );
+
+        // 4. Trả kết quả nghiệp vụ
+        return result;
     }
 
     private String resolveTargetId(JoinPoint joinPoint, ActivityLog activityLog, Object result) {

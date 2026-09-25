@@ -18,7 +18,7 @@ import com.softdreams.activityhub.dto.response.ActivityLogResponse;
 import com.softdreams.activityhub.dto.response.TargetTypeResponse;
 import com.softdreams.activityhub.enums.EventType;
 import com.softdreams.activityhub.enums.TargetType;
-import com.softdreams.activityhub.service.ActivityLogService;
+import com.softdreams.activityhub.activitylog.ActivityLogService;
 
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
