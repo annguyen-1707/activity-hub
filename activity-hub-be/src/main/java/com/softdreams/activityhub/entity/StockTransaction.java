@@ -19,7 +19,13 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Entity
-@Table(name = "stock_transactions")
+@Table(
+        name = "stock_transactions",
+        indexes = {
+            @Index(name = "idx_stock_transactions_created_at", columnList = "created_at"),
+            @Index(name = "idx_stock_transactions_type_created_at", columnList = "type, created_at"),
+            @Index(name = "idx_stock_transactions_created_by", columnList = "created_by")
+        })
 public class StockTransaction {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)

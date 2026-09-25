@@ -20,7 +20,8 @@ import lombok.experimental.FieldDefaults;
             @UniqueConstraint(
                     name = "uk_order_user",
                     columnNames = {"order_line_id", "user_id"})
-        })
+        },
+        indexes = {@Index(name = "idx_reviews_user_id", columnList = "user_id")})
 public class Review {
 
     @Id

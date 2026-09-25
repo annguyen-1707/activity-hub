@@ -12,7 +12,12 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Entity
-@Table(name = "stock_transaction_lines")
+@Table(
+        name = "stock_transaction_lines",
+        indexes = {
+            @Index(name = "idx_stock_tx_lines_transaction_id", columnList = "stock_transaction_id"),
+            @Index(name = "idx_stock_tx_lines_product_id", columnList = "product_id, stock_transaction_id")
+        })
 public class StockTransactionLine {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)

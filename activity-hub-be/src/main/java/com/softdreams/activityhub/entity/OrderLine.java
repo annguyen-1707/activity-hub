@@ -14,7 +14,12 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Entity
-@Table(name = "order_lines")
+@Table(
+        name = "order_lines",
+        indexes = {
+            @Index(name = "idx_order_lines_order_id", columnList = "order_id"),
+            @Index(name = "idx_order_lines_product_id", columnList = "product_id")
+        })
 public class OrderLine {
 
     @Id

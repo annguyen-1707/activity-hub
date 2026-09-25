@@ -19,14 +19,19 @@ import lombok.experimental.FieldDefaults;
 @Entity
 @Table(
         name = "activity_logs",
-        uniqueConstraints = {@UniqueConstraint(name = "uk_activity_event_id", columnNames = "event_id")})
+        uniqueConstraints = {@UniqueConstraint(name = "uk_activity_event_id", columnNames = "event_id")},
+        indexes = {
+            @Index(name = "idx_activity_logs_created_at", columnList = "created_at"),
+            @Index(name = "idx_activity_logs_user_id", columnList = "user_id"),
+            @Index(name = "idx_activity_logs_event_type_created_at", columnList = "event_type, created_at")
+        })
 public class ActivityLog {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     String id;
 
-    @Column(name = "event_id", nullable = false, unique = true, length = 100)
+    @Column(name = "event_id", nullable = false, length = 100)
     private String eventId;
 
     @ManyToOne(fetch = FetchType.LAZY)
