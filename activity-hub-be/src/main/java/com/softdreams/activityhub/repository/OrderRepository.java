@@ -188,10 +188,6 @@ public interface OrderRepository extends JpaRepository<Order, String> {
 				CAST(:toDate AS timestamp) IS NULL
 				OR o.createdAt <= :toDate
 			)
-			AND (
-				:userId IS NULL
-				OR u.id = :userId
-			)
 			ORDER BY o.createdAt DESC
 			""")
     List<Order> findOrdersForExport(
@@ -199,5 +195,6 @@ public interface OrderRepository extends JpaRepository<Order, String> {
             @Param("status") OrderStatus status,
             @Param("paymentMethod") String paymentMethod,
             @Param("fromDate") LocalDateTime fromDate,
-            @Param("toDate") LocalDateTime toDate);
+            @Param("toDate") LocalDateTime toDate)
+			;
 }

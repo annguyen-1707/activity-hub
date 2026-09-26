@@ -32,6 +32,7 @@ public enum ErrorCode {
     REVIEW_WINDOW_EXPIRED(1022, "Reviews are only allowed within 30 days of delivery", HttpStatus.BAD_REQUEST),
     REVIEW_ALREADY_EXISTS(1023, "This order line has already been reviewed", HttpStatus.BAD_REQUEST),
     REVIEW_NOT_EXISTED(1024, "Review not existed", HttpStatus.NOT_FOUND),
+    OUT_OF_QUANTITY(1025, "Out of quantity product", HttpStatus.BAD_REQUEST)
     ;
 
     ErrorCode(int code, String message, HttpStatusCode statusCode) {

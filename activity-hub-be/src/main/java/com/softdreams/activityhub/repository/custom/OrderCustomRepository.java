@@ -84,7 +84,7 @@ public class OrderCustomRepository {
                         errorMessage
                 );
 
-                throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
+                throw new AppException(ErrorCode.OUT_OF_QUANTITY);
             }
 
             Object orderIdValue = output.get("orderId");
